@@ -1,0 +1,52 @@
+{
+  "name": "Wavefront",
+  "version": "0.0.1",
+  "description": "A User Interface library unlike React",
+  "main": "index.js",
+  "scripts": {
+    "pretest": "rollup -c rollup.config.test.js",
+    "build": "rollup -c rollup.config.build.js",
+    "test": "mocha test/bundle.js"
+  },
+  "keywords": [
+    "dom",
+    "dom library",
+    "user interface",
+    "ui library",
+    "virtual dom",
+    "shadow dom",
+    "polymer",
+    "react",
+    "jsx",
+    "minimal",
+    "minimalist",
+    "client-side",
+    "framework",
+    "declarative",
+    "templating",
+    "template",
+    "data binding",
+    "mvc",
+    "router",
+    "model",
+    "view",
+    "controller",
+    "riotjs"
+  ],
+  "author": "Julien Etienne",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-eslint": "^6.1.2",
+    "babel-preset-es2015-rollup": "^1.1.1",
+    "chai": "^3.5.0",
+    "eslint": "^3.6.1",
+    "mocha": "^3.0.2",
+    "mocha-sinon": "^1.1.5",
+    "rollup": "^0.36.0",
+    "rollup-plugin-babel": "^2.3.9",
+    "rollup-plugin-multi-entry": "^2.0.1",
+    "rollup-watch": "^2.5.0",
+    "sinon": "^1.17.3",
+    "source-map-support": "^0.4.0"
+  }
+}
