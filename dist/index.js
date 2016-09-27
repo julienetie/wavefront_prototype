@@ -2,72 +2,133 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory() :
     typeof define === 'function' && define.amd ? define(factory) :
     (factory());
-}(this, function () { 'use strict';
+}(this, (function () { 'use strict';
 
-    const div = (attributes, ...args) => {
-        var tree = {};
-        var childTree;
-        var childElement;
-        // Check args to see 
-        args.map((param, i) => {
-            if (typeof param === 'string') {
-                // we need the position of the text node i
-                // the string its self param
-                // create the node 
-                // then add to the childElements list
-                let textNode = document.createTextNode(param);
-                addChildElement(textNode, i);
-                // } else if (typeof param === 'object') {
-            } else if (param.hasOwnProperty('element')) {
-                // console.log(param)
-                // Use Lodash to check object literal
-                // Because the function has already been executed, 
-                // it should return an object with a list of inner nodes including its self.
+// Parameters: 
+// 1. Attributes
+// *. Object that contains .element and .tree
+// *. Text node.  :: nodeType 3
+// *. Element node :: nodeType 1
+// *. Comment node :: nodeType 8
+// *. IE9 supports all nodes
 
-                // This element takees the list, adds its own property and returns it.
-                // childTree[i] = param;
-                // console.log(param)
-                childElement = param.element;
-                if (param.hasOwnProperty('tree')) {
-                    childTree = param.tree;
-                }
-            }
-        });
+const div = (attributes, ...args) => {
+    var tagName = 'div';
+    const ELEMENT_NODE = 1;
+    const TEXT_NODE = 3;
+    const PROCESSING_INSTRUCTION_NODE = 7;
+    const COMMENT_NODE = 8;
+    const DOCUMENT_NODE = 9;
+    const DOCUMENT_TYPE_NODE = 10;
+    const DOCUMENT_FRAGMENT_NODE = 11;
+    var childTree;
+    var childElement;
+    var childWavefrontNodes = [];
 
-        //    el-fn('attributes')
-        //    el-fn('attributes', function)
-        //    el-fn('attributes', 'text')
-        //    el-fn('attributes', 'text', function)
+    var hasAttributes = typeof attributes === 'string' && !!attributes;
+    // if (typeof attributes !== 'string' || attributes !== 0) {
+    //     throw new Error(`${attributes} is an invalid type for attributes.`);
+    // }
 
-        // Attributes 
-        // Every space separation is a pair, 
-        // Every attribute should have an equals value as a delimiter
-        var attr = attributes.split('=');
+    // Check args to see 
+    args.map((param, i) => {
+        // Every param must be pushed to childWavefrontNodes
 
-        var oddPairs = attr.map(attributePair => {
-            var splitIndex = attributePair.lastIndexOf(' ');
-            if (splitIndex >= 0) {
-                return [attributePair.slice(0, splitIndex), attributePair.slice(splitIndex, attributePair.length)];
+        // Wavefront Element Object.
+        if (param.hasOwnProperty('element') && param.hasOwnProperty('tree')) {
+            childWavefrontNodes.push(param);
+        } else if (typeof param === 'string') {
+            // String for text node.  
+        }
+
+        switch (param.textNode) {
+            // ELEMENT_NODE
+            case 1:
+
+                break;
+            // TEXT_NODE
+            case 3:
+                //
+                break;
+            // COMMENT_NODE
+            case 8:
+                //
+                break;
+        }
+
+        // if (typeof param === 'string') {
+        //     // we need the position of the text node i
+        //     // the string its self param
+        //     // create the node 
+        //     // then add to the childElements list
+        //     let textNode = document.createTextNode(param);
+        //     addChildElement(textNode, i);
+        //     // } else if (typeof param === 'object') {
+        // }  
+
+        // if (param.hasOwnProperty('element') && !param.nodeType) {
+        //     // console.log(param)
+        //     // Use Lodash to check object literal
+        //     // Because the function has already been executed, 
+        //     // it should return an object with a list of inner nodes including its self.
+
+        //     // This element takees the list, adds its own property and returns it.
+        //     // childTree[i] = param;
+        //     // console.log(param)
+        //     childElement = param.element;
+        //     if (param.hasOwnProperty('tree')) {
+        //         childTree = param.tree;
+        //     }
+
+        // }
+    });
+
+    //    el-fn('attributes')
+    //    el-fn('attributes', function)
+    //    el-fn('attributes', 'text')
+    //    el-fn('attributes', 'text', function)
+
+    // Attributes 
+    // Every space separation is a pair, 
+    // Every attribute should have an equals value as a delimiter
+
+
+    function assignAttributes(element, strAttributes) {
+        var splitAttributes = strAttributes.split('=');
+        var separatedPairs = [];
+        var sortedPairs = [];
+        var last = 0;
+
+        let splitOddPairs = attributePair => {
+            var splitFromIndex = attributePair.lastIndexOf(' ');
+            if (splitFromIndex >= 0) {
+                return [attributePair.slice(0, splitFromIndex), attributePair.slice(splitFromIndex, attributePair.length)];
             } else {
                 return [attributePair];
             }
-            // return attributePair.slice(splitIndex,attr.length -1);
-        });
+        };
 
-        var separatedPairs = [];
+        var oddPairs = splitAttributes.map(splitOddPairs);
+
+        /**
+         * Separate odd pairs 
+         */
         for (var i = 0; i < oddPairs.length; i++) {
-            oddPairs[i].forEach(part => {
-                separatedPairs.push(part);
+            oddPairs[i].forEach(oddPair => {
+                separatedPairs.push(oddPair);
             });
         }
-        var sortedPairs = [];
-        var last = 0;
+        /**
+         * Sort every concurrent pair
+         */
         for (i = 0; i < Math.floor(separatedPairs.length / 2); i++) {
             sortedPairs[i] = [separatedPairs[last], separatedPairs[last += 1]];
             last += 1;
         }
 
-        // Trim attributes. 
+        /**
+         * Trim attributes and remove quotes from values.
+         */
         var trimmed = sortedPairs.map(pair => {
             let value = pair[1];
             let halfCleaned;
@@ -84,47 +145,63 @@
             return [pair[0].trim(), cleanedValue];
         });
 
-        // Create Element
-        var element = document.createElement('div');
-
-        // Add to tree
-        var newTree = {};
-        newTree['div' + parseFloat(Math.random(), 10)] = element;
-        childTree = childTree || {};
-
-        tree = Object.assign(newTree, childTree);
-        // Merge with child tree
-
-        // Add attributes
+        /**
+         * Assign attributes to element.  
+         */
         trimmed.forEach(pair => {
             element.setAttribute(pair[0], pair[1]);
         });
-        // Add Inner HTML 
+    }
 
-
-        // For testing append to body (wrong document.body for mulitple body elements)
-        if (childElement) {
-            element.appendChild(childElement);
+    /**
+     * Create new element. 
+     */
+    function createElement(tagName, attr, wavefrontNodes, hasAttributes) {
+        var tree = {};
+        let branch = {};
+        var element = document.createElement(tagName);
+        var innerTrees;
+        var nodeDetails;
+        /**
+         * Assign attributes to the new element. 
+         */
+        if (hasAttributes) {
+            assignAttributes(element, attr);
         }
+        // Dummy new element name system. 
+        branch[tagName + parseFloat(Math.random(), 10)] = element;
 
-        // console.log(attr, oddPairs, separatedPairs, sortedPairs, trimmed)
-        // document.createElement('div');
+        // Ensure an objest is merged.
+        // innerTree = innerTree || {};
+        nodeDetails = wavefrontNodes.map(nodeDetail => {
+            return nodeDetail.tree || {};
+        });
 
+        // New Tree from current branch and nested trees.
+        tree = Object.assign(branch, ...nodeDetails);
 
-        function addChildElement() {}
+        // Append the child element to the new element.
+        wavefrontNodes.forEach(node => {
+            element.appendChild(node.element);
+        });
         return {
             element,
             tree
         };
-        // return tree;
-    };
+    }
 
-    // Rules: Every attribute must have an equals sign:
-    // var someElement = div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', {someOtherElements: 'wfewefwef'},{list1: 'wfewefwef',list2:'hytht',list4:'fwefw'}, 'Hello World')
+    var wavefront = createElement(tagName, attributes, childWavefrontNodes, hasAttributes);
+
+    return wavefront;
+    // return tree;
+};
+
+// Rules: Every attribute must have an equals sign:
+// var someElement = div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', {someOtherElements: 'wfewefwef'},{list1: 'wfewefwef',list2:'hytht',list4:'fwefw'}, 'Hello World')
 
 
-    var someElement = div(`class="container" id="some-id"`, div('id="some-id"', div('id="some-id"', div('id="some-id"', div('id="some-id"', div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', { someOtherElements: 'wfewefwef' }, { list1: 'wfewefwef', list2: 'hytht', list4: 'fwefw' }, 'Hello World'))))));
-    document.body.appendChild(someElement.element);
-    console.log('TREE', someElement);
+var someElement = div(`class="container" id="some-id"`, div('', div('id="some-id"', div('id="some-id"', div('id="some-id"', div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', { someOtherElements: 'wfewefwef' }, { list1: 'wfewefwef', list2: 'hytht', list4: 'fwefw' }, 'Hello World')))), div('id="some-id"', div('id="some-id"', div('id="some-id"', div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', { someOtherElements: 'wfewefwef' }, { list1: 'wfewefwef', list2: 'hytht', list4: 'fwefw' }, 'Hello World'))))));
+document.body.appendChild(someElement.element);
+console.log('TREE', someElement);
 
-}));
+})));

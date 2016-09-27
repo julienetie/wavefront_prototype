@@ -17,15 +17,39 @@ const div = (attributes, ...args) => {
     const DOCUMENT_FRAGMENT_NODE = 11;
     var childTree;
     var childElement;
+    var childWavefrontNodes = [];
 
     var hasAttributes = typeof attributes === 'string' && !!attributes;
-    if(typeof attributes !== 'string' || attributes !== 0 ){
-        throw new Error(`${attributes} is an invalid type for attributes.`);
-    }
+    // if (typeof attributes !== 'string' || attributes !== 0) {
+    //     throw new Error(`${attributes} is an invalid type for attributes.`);
+    // }
 
     // Check args to see 
     args.map((param, i) => {
+        // Every param must be pushed to childWavefrontNodes
 
+        // Wavefront Element Object.
+        if (param.hasOwnProperty('element') && param.hasOwnProperty('tree')) {
+            childWavefrontNodes.push(param);
+        } else if (typeof param === 'string') {
+            // String for text node.  
+        }
+
+
+        switch (param.textNode) {
+            // ELEMENT_NODE
+            case 1:
+
+                break;
+                // TEXT_NODE
+            case 3:
+                //
+                break;
+                // COMMENT_NODE
+            case 8:
+                //
+                break;
+        }
 
 
         // if (typeof param === 'string') {
@@ -74,7 +98,8 @@ const div = (attributes, ...args) => {
 
 
         let splitOddPairs = (attributePair) => {
-            if (attributePair.lastIndexOf(' ') >= 0) {
+            var splitFromIndex = attributePair.lastIndexOf(' ');
+            if (splitFromIndex >= 0) {
                 return [
                     attributePair.slice(0, splitFromIndex),
                     attributePair.slice(splitFromIndex, attributePair.length)
@@ -133,47 +158,44 @@ const div = (attributes, ...args) => {
     /**
      * Create new element. 
      */
-    function createElement(tagName, attr, innerTrees,childElements, hasAttributes) {
+    function createElement(tagName, attr, wavefrontNodes, hasAttributes) {
         var tree = {};
         let branch = {};
         var element = document.createElement(tagName);
+        var innerTrees;
+        var nodeDetails;
         /**
          * Assign attributes to the new element. 
          */
-        if(hasAttributes){
+        if (hasAttributes) {
             assignAttributes(element, attr);
         }
         // Dummy new element name system. 
         branch[tagName + parseFloat(Math.random(), 10)] = element;
 
         // Ensure an objest is merged.
-        innerTree = innerTree || {};
+        // innerTree = innerTree || {};
+        nodeDetails = wavefrontNodes.map((nodeDetail) => {
+            return nodeDetail.tree || {};
+        });
+
 
         // New Tree from current branch and nested trees.
-        tree = Object.assign(branch, innerTree);
+        tree = Object.assign(branch, ...nodeDetails);
 
         // Append the child element to the new element.
-        if (childElement) {
-            element.appendChild(childElement);
-        }
+        wavefrontNodes.forEach((node) => {
+            element.appendChild(node.element);
+        })
+        return {
+            element,
+            tree
+        };
     }
 
-    createElement(tagName, attributes, childTrees, param.element, hasAttributes);
+    var wavefront = createElement(tagName, attributes, childWavefrontNodes, hasAttributes);
 
-
-    // console.log(attr, oddPairs, separatedPairs, sortedPairs, trimmed)
-    // document.createElement('div');
-
-
-    function addChildElement() {
-
-    }
-
-
-    return {
-        element,
-        tree
-    };
+    return wavefront;
     // return tree;
 };
 
@@ -184,6 +206,13 @@ const div = (attributes, ...args) => {
 var someElement =
     div(`class="container" id="some-id"`,
         div('',
+            div('id="some-id"',
+                div('id="some-id"',
+                    div('id="some-id"',
+                        div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', { someOtherElements: 'wfewefwef' }, { list1: 'wfewefwef', list2: 'hytht', list4: 'fwefw' }, 'Hello World')
+                    )
+                )
+            ),
             div('id="some-id"',
                 div('id="some-id"',
                     div('id="some-id"',
