@@ -2,8 +2,8 @@ import babel from 'rollup-plugin-babel';
 
 export default {
     moduleName: 'plow',
-    entry: 'src/wavefront.js',
+    entry: 'src/app.js',
     plugins: [babel()],
     format: 'umd',
-    dest: 'dist/index.js'
+    dest: 'dist/app.js'
 };

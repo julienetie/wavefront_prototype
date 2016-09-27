@@ -4,34 +4,14 @@
     (factory());
 }(this, (function () { 'use strict';
 
-var _this = undefined;
-
-// Parameters: 
-// 1. Attributes
-// *. Object that contains .element and .tree
-// *. Text node.  :: nodeType 3
-// *. Element node :: nodeType 1
-// *. Comment node :: nodeType 8
-// *. IE9 supports all nodes
-
-const div = (attributes, ...args) => {
+let div = (attributes, ...args) => {
     var tagName = 'div';
-    const ELEMENT_NODE = 1;
-    const TEXT_NODE = 3;
-    const PROCESSING_INSTRUCTION_NODE = 7;
-    const COMMENT_NODE = 8;
-    const DOCUMENT_NODE = 9;
-    const DOCUMENT_TYPE_NODE = 10;
-    const DOCUMENT_FRAGMENT_NODE = 11;
+
     var childTree;
     var childElement;
     var childWavefrontNodes = [];
 
     var hasAttributes = typeof attributes === 'string' && !!attributes;
-    // if (!hasAttributes) {
-    //     throw new Error(`${attributes} is an invalid type for attributes.`);
-    // }
-
 
     // Check args to see 
     args.map((param, i) => {
@@ -187,19 +167,25 @@ const div = (attributes, ...args) => {
     var wave = createElement(tagName, attributes, childWavefrontNodes, hasAttributes);
 
     return wave;
-    // return tree;
 };
 
 // Rules: Every attribute must have an equals sign:
 // var someElement = div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', {someOtherElements: 'wfewefwef'},{list1: 'wfewefwef',list2:'hytht',list4:'fwefw'}, 'Hello World')
-
-var someElement = () => {
-    console.log('this', _this);
-
-    return div(`class="container" id="some-id"`, 'This is inserted before nested elements', div('', div('id="some-id"', div('id="some-id"', div('id="some-id"', div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', 'January')))), div('id="some-id"', div('id="some-id"', div('id="some-id"', div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', 'februrary'))))), 'This is inserted after nested elements');
+var __ = {};
+__.comment = message => {
+    return document.createComment(message);
 };
 
-document.body.appendChild(someElement().node);
+// var message = 'don\'t forget to turn the oven off';
+// var comment = document.createComment(message);
+
+var comment = __.comment('don\'t forget to turn the oven off');
+/*______________________________________*/
+let someElement = div(`class="container" id="some-id"`, 'This is inserted before nested elements', div('', comment, div('id="some-id"', div('id="some-id" style="background:red;"', div('id="some-id"', div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', 'January')))), div('id="some-id"', div('id="some-id"', div('id="some-id"', div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', 'februrary'))))), 'This is inserted after nested elements');
+/*______________________________________*/
+
+// Append to the page.
+document.body.appendChild(someElement.node);
 console.log('TREE', someElement);
 
 })));

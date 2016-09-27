@@ -1,82 +1,54 @@
-// Parameters: 
-// 1. Attributes
-// *. Object that contains .element and .tree
-// *. Text node.  :: nodeType 3
-// *. Element node :: nodeType 1
-// *. Comment node :: nodeType 8
-// *. IE9 supports all nodes
-
-const div = (attributes, ...args) => {
+let div = (attributes, ...args) => {
     var tagName = 'div';
-    const ELEMENT_NODE = 1;
-    const TEXT_NODE = 3;
-    const PROCESSING_INSTRUCTION_NODE = 7;
-    const COMMENT_NODE = 8;
-    const DOCUMENT_NODE = 9;
-    const DOCUMENT_TYPE_NODE = 10;
-    const DOCUMENT_FRAGMENT_NODE = 11;
+
     var childTree;
     var childElement;
     var childWavefrontNodes = [];
 
     var hasAttributes = typeof attributes === 'string' && !!attributes;
-    // if (typeof attributes !== 'string' || attributes !== 0) {
-    //     throw new Error(`${attributes} is an invalid type for attributes.`);
-    // }
 
     // Check args to see 
     args.map((param, i) => {
         // Every param must be pushed to childWavefrontNodes
 
         // Wavefront Element Object.
-        if (param.hasOwnProperty('element') && param.hasOwnProperty('tree')) {
+        if (param.hasOwnProperty('node') && param.hasOwnProperty('tree')) {
             childWavefrontNodes.push(param);
         } else if (typeof param === 'string') {
-            // String for text node.  
+            // Create text nodes from string.
+            childWavefrontNodes.push({
+                node: document.createTextNode(param),
+                tree: {}
+            })
         }
 
-
-        switch (param.textNode) {
-            // ELEMENT_NODE
-            case 1:
-
-                break;
-                // TEXT_NODE
-            case 3:
-                //
-                break;
-                // COMMENT_NODE
-            case 8:
-                //
-                break;
+        // Parse DOM nodes.
+        if (param.nodeType) {
+            switch (param.nodeType) {
+                // ELEMENT_NODE
+                case 1:
+                    // TEXT_NODE
+                case 3:
+                    // PROCESSING_INSTRUCTION_NODE
+                case 7:
+                    // COMMENT_NODE
+                case 8:
+                    // DOCUMENT_NODE
+                case 9:
+                    // DOCUMENT_TYPE_NODE
+                case 10:
+                    // DOCUMENT_FRAGMENT_NODE
+                case 11:
+                    childWavefrontNodes.push({
+                        node: param,
+                        tree: {}
+                    })
+                    break;
+                default:
+                    throw new Error(`${param.nodeType} is not supported.`);
+            }
         }
 
-
-        // if (typeof param === 'string') {
-        //     // we need the position of the text node i
-        //     // the string its self param
-        //     // create the node 
-        //     // then add to the childElements list
-        //     let textNode = document.createTextNode(param);
-        //     addChildElement(textNode, i);
-        //     // } else if (typeof param === 'object') {
-        // }  
-
-        // if (param.hasOwnProperty('element') && !param.nodeType) {
-        //     // console.log(param)
-        //     // Use Lodash to check object literal
-        //     // Because the function has already been executed, 
-        //     // it should return an object with a list of inner nodes including its self.
-
-        //     // This element takees the list, adds its own property and returns it.
-        //     // childTree[i] = param;
-        //     // console.log(param)
-        //     childElement = param.element;
-        //     if (param.hasOwnProperty('tree')) {
-        //         childTree = param.tree;
-        //     }
-
-        // }
 
     });
 
@@ -164,9 +136,10 @@ const div = (attributes, ...args) => {
         var element = document.createElement(tagName);
         var innerTrees;
         var nodeDetails;
-        /**
-         * Assign attributes to the new element. 
-         */
+        console.log(wavefrontNodes)
+            /**
+             * Assign attributes to the new element. 
+             */
         if (hasAttributes) {
             assignAttributes(element, attr);
         }
@@ -185,42 +158,17 @@ const div = (attributes, ...args) => {
 
         // Append the child element to the new element.
         wavefrontNodes.forEach((node) => {
-            element.appendChild(node.element);
+            element.appendChild(node.node);
         })
         return {
-            element,
+            node: element,
             tree
         };
     }
 
-    var wavefront = createElement(tagName, attributes, childWavefrontNodes, hasAttributes);
+    var wave = createElement(tagName, attributes, childWavefrontNodes, hasAttributes);
 
-    return wavefront;
-    // return tree;
+    return wave;
 };
 
-// Rules: Every attribute must have an equals sign:
-// var someElement = div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', {someOtherElements: 'wfewefwef'},{list1: 'wfewefwef',list2:'hytht',list4:'fwefw'}, 'Hello World')
-
-
-var someElement =
-    div(`class="container" id="some-id"`,
-        div('',
-            div('id="some-id"',
-                div('id="some-id"',
-                    div('id="some-id"',
-                        div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', { someOtherElements: 'wfewefwef' }, { list1: 'wfewefwef', list2: 'hytht', list4: 'fwefw' }, 'Hello World')
-                    )
-                )
-            ),
-            div('id="some-id"',
-                div('id="some-id"',
-                    div('id="some-id"',
-                        div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', { someOtherElements: 'wfewefwef' }, { list1: 'wfewefwef', list2: 'hytht', list4: 'fwefw' }, 'Hello World')
-                    )
-                )
-            )
-        )
-    );
-document.body.appendChild(someElement.element);
-console.log('TREE', someElement);
+export default div;
