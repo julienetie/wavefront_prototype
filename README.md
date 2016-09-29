@@ -1,6 +1,7 @@
 ![](http://oi66.tinypic.com/fmrlnc.jpg)
  
-A promising little ES6 project (working... but) still being prototyped, (don't use this it in production).
+A promising little ES6 project (working... but) still being prototyped, (Not ready for production).
+
 Wavefront is a user interface creation library that...
 
 - Has a readable syntax for creating HTML nodes.
