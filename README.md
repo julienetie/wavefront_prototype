@@ -8,11 +8,12 @@ Wavefront is a user interface creation library that...
 - Directly replicates Markup for HTML, XML and SVG.
 - Dosen't require a transformer i.e. JSX 
 - Built with ES6 for use with ES6.
+- Uses DOM diffing.
 - Clearly separates concerns for existing nodes, created nodes, DOM traversing, data binding, ordering and events/mutations. 
 - Has intuitive render management.
 - Compliments standard JavaScript methods (Not an eco system).
 
-Wavefront is a view/ UI library _(.e.g, jQuery, React)_ that enforces pre-creation over re-inserting and translation over destruction where feasible. Utilizing wavefront's methodology is likely to yield "practical" performance and memory consumption that rivals common DOM diffing algorithms.
+Wavefront is a view/ UI library _(.e.g, jQuery, React)_ that enforces pre-creation over re-inserting and translation over destruction where feasible. Utilizing wavefront's methodology will reduce expensive DOM manipulation.
 
 
 _Example:_ 
