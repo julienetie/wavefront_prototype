@@ -10,39 +10,31 @@ import classList from './polyfills/class-list';
 
 // waveFront();
 
-// var __ = {}
-// __.comment = (message)=>{
-//     return document.createComment(message);
-// };
 
-export function __(){
+export function __() {
 
 }
 
-__.append = (...args)=>{
+__.append = (...args) => {
     let appendValues = Array.from(args);
     let parent = appendValues.pop();
-    for(let i =0;i< appendValues.length; i++){
+    for (let i = 0; i < appendValues.length; i++) {
         parent.appendChild(appendValues[i].node);
     }
 }
 
-__.polyfills = (...args)=>{
-    if(args.length){
-        args.forEach((polyfill)=>{
+__.polyfills = (...args) => {
+    if (args.length) {
+        args.forEach((polyfill) => {
             polyfill();
         });
-    }else{
-        classList(); 
+    } else {
+        classList();
         // List of polyfills.    
     }
 }
 
-__.comment = (message)=>{
-    return document.createComment(message);
-};
-
-var wavefront = (tagName) => {
+var assembly = (tagName) => {
     return (...args) => {
         // var tagName = 'div';
 
@@ -51,268 +43,304 @@ var wavefront = (tagName) => {
         var childWavefrontNodes = [];
         var attributes;
         var hasAttributes;
-        
+        var skip = false;
+
+        function applyAttributes(value) {
+            return value
+        }
+
+        function createCommentNode(value, nodeStorage) {
+            nodeStorage.push({
+                node: document.createComment(value),
+                tree: {}
+            });
+        }
+
+        function createTextNode(value, nodeStorage, indicator) {
+            let text = indicator ? value.substring(1) : value;
+            nodeStorage.push({
+                node: document.createTextNode(text),
+                tree: {}
+            });
+        }
+
+        function addChildWaveNode(value, nodeStorage) {
+            nodeStorage.push(value);
+        }
+
+        function parseStringEntry(value, nodeStorage) {
+            switch (value[0]) {
+                case '@':
+                    attributes = value.substring(1);
+                    break;
+                case '//':
+                    createCommentNode(value, nodeStorage);
+                    break;
+
+                case '#':
+                    createTextNode(value, nodeStorage, '#');
+                    break;
+                default:
+                    createTextNode(value, nodeStorage);
+            }
+        }
+
+        function createDOMNode(value, nodeStorage) {
+            switch (value.nodeType) {
+                // ELEMENT_NODE
+                case 1:
+                    // TEXT_NODE
+                case 3:
+                    // PROCESSING_INSTRUCTION_NODE
+                case 7:
+                    // COMMENT_NODE
+                case 8:
+                    // DOCUMENT_NODE
+                case 9:
+                    // DOCUMENT_TYPE_NODE
+                case 10:
+                    // DOCUMENT_FRAGMENT_NODE
+                case 11:
+                    nodeStorage.push({
+                        node: value,
+                        tree: {}
+                    })
+                    break;
+                default:
+                    throw new Error(`${value.nodeType} is not supported.`);
+            }
+        }
+
+        const isTruthy = (value)=>{
+            return !!value; 
+        }
 
         // Check args to see 
-        args.forEach((param, i) => {
-            // Every param must be pushed to childWavefrontNodes
-
-            // Wavefront Element Object.
-            if (param.hasOwnProperty('node') && param.hasOwnProperty('tree')) {
-                childWavefrontNodes.push(param);
-            } else if (typeof param === 'string') {
-
-                if(param[0] === '@'){
-                // Treat as attribute.
-                    attributes = param.substring(1);
-                    console.log('attributes',attributes)
-                    hasAttributes = typeof attributes === 'string' && !!attributes;
-                }else{
-                // Create text nodes from string.
-                childWavefrontNodes.push({
-                    node: document.createTextNode(param),
-                    tree: {}
-                });
+      args.forEach((param, i, isTruthy) => {
+                let waveNode = param.hasOwnProperty('node') && param.hasOwnProperty('tree');
+                let string = typeof param === 'string';
+                let DOMNode = param.hasOwnProperty('nodeType');
+     
+                if (waveNode) {
+                    addChildWaveNode(param, childWavefrontNodes);
+                } else if (string) {
+                   parseStringEntry(param, childWavefrontNodes);
+                } else if (DOMNode) {
+                    createDOMNode(param, childWavefrontNodes);
+                } else {
+                    throw new Error(`${param} is not a valid Wavefront node.`);
                 }
-
-            }
-
-            // Parse DOM nodes.
-            if (param.nodeType) {
-                switch (param.nodeType) {
-                    // ELEMENT_NODE
-                    case 1:
-                        // TEXT_NODE
-                    case 3:
-                        // PROCESSING_INSTRUCTION_NODE
-                    case 7:
-                        // COMMENT_NODE
-                    case 8:
-                        // DOCUMENT_NODE
-                    case 9:
-                        // DOCUMENT_TYPE_NODE
-                    case 10:
-                        // DOCUMENT_FRAGMENT_NODE
-                    case 11:
-                        childWavefrontNodes.push({
-                            node: param,
-                            tree: {}
-                        })
-                        break;
-                    default:
-                        throw new Error(`${param.nodeType} is not supported.`);
-                }
-            }
-
 
         });
 
-        function assignAttributes(element, strAttributes) {
-            var splitAttributes = strAttributes.split('=');
-            var separatedPairs = [];
-            var sortedPairs = [];
-            var last = 0;
+    function assignAttributes(element, strAttributes) {
+        var splitAttributes = strAttributes.split('=');
+        var separatedPairs = [];
+        var sortedPairs = [];
+        var last = 0;
 
 
-            let splitOddPairs = (attributePair) => {
-                var splitFromIndex = attributePair.lastIndexOf(' ');
-                if (splitFromIndex >= 0) {
-                    return [
-                        attributePair.slice(0, splitFromIndex),
-                        attributePair.slice(splitFromIndex, attributePair.length)
-                    ];
-                } else {
-                    return [attributePair];
-                }
+        let splitOddPairs = (attributePair) => {
+            var splitFromIndex = attributePair.lastIndexOf(' ');
+            if (splitFromIndex >= 0) {
+                return [
+                    attributePair.slice(0, splitFromIndex),
+                    attributePair.slice(splitFromIndex, attributePair.length)
+                ];
+            } else {
+                return [attributePair];
             }
-
-            var oddPairs = splitAttributes.map(splitOddPairs);
-
-            /**
-             * Separate odd pairs 
-             */
-            for (var i = 0; i < oddPairs.length; i++) {
-                oddPairs[i].forEach((oddPair) => {
-                    separatedPairs.push(oddPair);
-                });
-            }
-            /**
-             * Sort every concurrent pair
-             */
-            for (i = 0; i < Math.floor(separatedPairs.length / 2); i++) {
-                sortedPairs[i] = [separatedPairs[last], separatedPairs[last += 1]];
-                last += 1;
-            }
-
-            /**
-             * Trim attributes and remove quotes from values.
-             */
-            var trimmed = sortedPairs.map((pair) => {
-                let value = pair[1];
-                let halfCleaned;
-                let halfCleanedLength;
-                let cleanedValue;
-                if (value[0] === '"' || value[0] === '\'') {
-                    halfCleaned = value.substring(1);
-                    halfCleanedLength = halfCleaned.length - 1;
-                }
-
-                if (halfCleaned[halfCleanedLength] === '"' || value[0] === '\'') {
-                    cleanedValue = halfCleaned.substr(0, halfCleanedLength);
-                }
-                return [pair[0].trim(), cleanedValue];
-            });
-
-            /**
-             * Assign attributes to element.  
-             */
-            trimmed.forEach((pair) => {
-                element.setAttribute(pair[0], pair[1]);
-            });
         }
 
+        var oddPairs = splitAttributes.map(splitOddPairs);
 
         /**
-         * Create new element. 
+         * Separate odd pairs 
          */
-        function createElement(tagName, attr, wavefrontNodes, hasAttributes) {
-            var tree = {};
-            let branch = {};
-            var element = document.createElement(tagName);
-            var innerTrees;
-            var nodeDetails;
-                /**
-                 * Assign attributes to the new element. 
-                 */
-            if (hasAttributes) {
-                assignAttributes(element, attr);
-            }
-            // Dummy new element name system. 
-            branch[tagName + parseFloat(Math.random(), 10)] = element;
-
-            // Ensure an objest is merged.
-            // innerTree = innerTree || {};
-            nodeDetails = wavefrontNodes.map((nodeDetail) => {
-                return nodeDetail.tree || {};
+        for (var i = 0; i < oddPairs.length; i++) {
+            oddPairs[i].forEach((oddPair) => {
+                separatedPairs.push(oddPair);
             });
-
-
-            // New Tree from current branch and nested trees.
-            tree = Object.assign(branch, ...nodeDetails);
-
-            // Append the child element to the new element.
-            wavefrontNodes.forEach((node) => {
-                element.appendChild(node.node);
-            })
-            return {
-                node: element,
-                tree
-            };
+        }
+        /**
+         * Sort every concurrent pair
+         */
+        for (i = 0; i < Math.floor(separatedPairs.length / 2); i++) {
+            sortedPairs[i] = [separatedPairs[last], separatedPairs[last += 1]];
+            last += 1;
         }
 
-        var wave = createElement(tagName, attributes, childWavefrontNodes, hasAttributes);
+        /**
+         * Trim attributes and remove quotes from values.
+         */
+        var trimmed = sortedPairs.map((pair) => {
+            let value = pair[1];
+            let halfCleaned;
+            let halfCleanedLength;
+            let cleanedValue;
+            if (value[0] === '"' || value[0] === '\'') {
+                halfCleaned = value.substring(1);
+                halfCleanedLength = halfCleaned.length - 1;
+            }
 
-        return wave;
-    };
+            if (halfCleaned[halfCleanedLength] === '"' || value[0] === '\'') {
+                cleanedValue = halfCleaned.substr(0, halfCleanedLength);
+            }
+            return [pair[0].trim(), cleanedValue];
+        });
+
+        /**
+         * Assign attributes to element.  
+         */
+        trimmed.forEach((pair) => {
+            element.setAttribute(pair[0], pair[1]);
+        });
+    }
+
+
+    /**
+     * Create new element. 
+     */
+    function createElement(tagName, attributes, wavefrontNodes) {
+
+        var tree = {};
+        let branch = {};
+        var element = document.createElement(tagName);
+        var innerTrees;
+        var nodeDetails;
+        /**
+         * Assign attributes to the new element. 
+         */
+         // console.log(attr)
+        if (attributes) {
+            assignAttributes(element, attributes);
+        }
+        // Dummy new element name system. 
+        branch[tagName + parseFloat(Math.random(), 10)] = element;
+
+        // Ensure an objest is merged.
+        // innerTree = innerTree || {};
+        nodeDetails = wavefrontNodes.map((nodeDetail) => {
+            return nodeDetail.tree || {};
+        });
+
+
+        // New Tree from current branch and nested trees.
+        tree = Object.assign(branch, ...nodeDetails);
+
+        // Append the child element to the new element.
+        wavefrontNodes.forEach((node) => {
+            element.appendChild(node.node);
+        })
+        return {
+            node: element,
+            tree
+        };
+    }
+    
+    var wave = createElement(tagName, attributes, childWavefrontNodes);
+
+    return wave;
+};
 }
 
 
-export var a = wavefront('a');
-export var abbr = wavefront('abbr');
-export var address = wavefront('address');
-export var area = wavefront('area');
-export var article = wavefront('article');
-export var aside = wavefront('aside');
-export var audio = wavefront('audio');
-export var b = wavefront('b');
-export var base = wavefront('base');
-export var bdi = wavefront('bdi');
-export var bdo = wavefront('bdo');
-export var blockquote = wavefront('blockquote');
-export var body = wavefront('body');
-export var br = wavefront('br');
-export var button = wavefront('button');
-export var canvas = wavefront('canvas');
-export var caption = wavefront('caption');
-export var cite = wavefront('cite');
-export var code = wavefront('code');
-export var col = wavefront('col');
-export var colgroup = wavefront('colgroup');
-export var command = wavefront('command');
-export var dd = wavefront('dd');
-export var del = wavefront('del');
-export var dfn = wavefront('dfn');
-export var div = wavefront('div');
-export var dl = wavefront('dl');
-export var doctype = wavefront('doctype');
-export var dt = wavefront('dt');
-export var em = wavefront('em');
-export var embed = wavefront('embed');
-export var fieldset = wavefront('fieldset');
-export var figcaption = wavefront('figcaption');
-export var figure = wavefront('figure');
-export var footer = wavefront('footer');
-export var form = wavefront('form');
-export var h1 = wavefront('h1');
-export var h2 = wavefront('h2');
-export var h3 = wavefront('h3');
-export var h4 = wavefront('h4');
-export var h5 = wavefront('h5');
-export var h6 = wavefront('h6');
-export var header = wavefront('header');
-export var hgroup = wavefront('hgroup');
-export var hr = wavefront('hr');
-export var html = wavefront('html');
-export var i = wavefront('i');
-export var iframe = wavefront('iframe');
-export var img = wavefront('img');
-export var input = wavefront('input');
-export var ins = wavefront('ins');
-export var kbd = wavefront('kbd');
-export var keygen = wavefront('keygen');
-export var label = wavefront('label');
-export var legend = wavefront('legend');
-export var li = wavefront('li');
-export var link = wavefront('link');
-export var map = wavefront('map'); 
-export var mark = wavefront('mark');
-export var menu = wavefront('menu');
-export var meta = wavefront('meta');
-export var nav = wavefront('nav');
-export var noscript = wavefront('noscript');
-export var object = wavefront('object');
-export var ol = wavefront('ol');
-export var optgroup = wavefront('optgroup');
-export var option = wavefront('option');
-export var p = wavefront('p');
-export var param = wavefront('param');
-export var pre = wavefront('pre');
-export var progress = wavefront('progress');
-export var q = wavefront('q');
-export var rp = wavefront('rp');
-export var rt = wavefront('rt');
-export var ruby = wavefront('ruby');
-export var s = wavefront('s');
-export var samp = wavefront('samp');
-export var script = wavefront('script');
-export var section = wavefront('section');
-export var select = wavefront('select');
-export var small = wavefront('small');
-export var source = wavefront('source');
-export var span = wavefront('span');
-export var strong = wavefront('strong');
-export var style = wavefront('style');
-export var sub = wavefront('sub');
-export var sup = wavefront('sup');
-export var table = wavefront('table');
-export var tbody = wavefront('tbody');
-export var td = wavefront('td');
-export var textarea = wavefront('textarea');
-export var tfoot = wavefront('tfoot');
-export var th = wavefront('th');
-export var thead = wavefront('thead');
-export var title = wavefront('title');
-export var tr = wavefront('tr');
-export var ul = wavefront('ul');
-export var v = wavefront('var');
-export var video = wavefront('video');
+export var a = assembly('a');
+export var abbr = assembly('abbr');
+export var address = assembly('address');
+export var area = assembly('area');
+export var article = assembly('article');
+export var aside = assembly('aside');
+export var audio = assembly('audio');
+export var b = assembly('b');
+export var base = assembly('base');
+export var bdi = assembly('bdi');
+export var bdo = assembly('bdo');
+export var blockquote = assembly('blockquote');
+export var body = assembly('body');
+export var br = assembly('br');
+export var button = assembly('button');
+export var canvas = assembly('canvas');
+export var caption = assembly('caption');
+export var cite = assembly('cite');
+export var code = assembly('code');
+export var col = assembly('col');
+export var colgroup = assembly('colgroup');
+export var command = assembly('command');
+export var dd = assembly('dd');
+export var del = assembly('del');
+export var dfn = assembly('dfn');
+export var div = assembly('div');
+export var dl = assembly('dl');
+export var doctype = assembly('doctype');
+export var dt = assembly('dt');
+export var em = assembly('em');
+export var embed = assembly('embed');
+export var fieldset = assembly('fieldset');
+export var figcaption = assembly('figcaption');
+export var figure = assembly('figure');
+export var footer = assembly('footer');
+export var form = assembly('form');
+export var h1 = assembly('h1');
+export var h2 = assembly('h2');
+export var h3 = assembly('h3');
+export var h4 = assembly('h4');
+export var h5 = assembly('h5');
+export var h6 = assembly('h6');
+export var header = assembly('header');
+export var hgroup = assembly('hgroup');
+export var hr = assembly('hr');
+export var html = assembly('html');
+export var i = assembly('i');
+export var iframe = assembly('iframe');
+export var img = assembly('img');
+export var input = assembly('input');
+export var ins = assembly('ins');
+export var kbd = assembly('kbd');
+export var keygen = assembly('keygen');
+export var label = assembly('label');
+export var legend = assembly('legend');
+export var li = assembly('li');
+export var link = assembly('link');
+export var map = assembly('map');
+export var mark = assembly('mark');
+export var menu = assembly('menu');
+export var meta = assembly('meta');
+export var nav = assembly('nav');
+export var noscript = assembly('noscript');
+export var object = assembly('object');
+export var ol = assembly('ol');
+export var optgroup = assembly('optgroup');
+export var option = assembly('option');
+export var p = assembly('p');
+export var param = assembly('param');
+export var pre = assembly('pre');
+export var progress = assembly('progress');
+export var q = assembly('q');
+export var rp = assembly('rp');
+export var rt = assembly('rt');
+export var ruby = assembly('ruby');
+export var s = assembly('s');
+export var samp = assembly('samp');
+export var script = assembly('script');
+export var section = assembly('section');
+export var select = assembly('select');
+export var small = assembly('small');
+export var source = assembly('source');
+export var span = assembly('span');
+export var strong = assembly('strong');
+export var style = assembly('style');
+export var sub = assembly('sub');
+export var sup = assembly('sup');
+export var table = assembly('table');
+export var tbody = assembly('tbody');
+export var td = assembly('td');
+export var textarea = assembly('textarea');
+export var tfoot = assembly('tfoot');
+export var th = assembly('th');
+export var thead = assembly('thead');
+export var title = assembly('title');
+export var tr = assembly('tr');
+export var ul = assembly('ul');
+export var v = assembly('var');
+export var video = assembly('video');

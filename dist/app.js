@@ -5,7 +5,6 @@
 }(this, (function (dotenv) { 'use strict';
 
 let classList = () => {
-    console.log('polyfilled class List');
 
     /*
      * classList.js: Cross-browser full element.classList implementation.
@@ -233,13 +232,9 @@ let classList = () => {
 
 // waveFront();
 
-// var __ = {}
-// __.comment = (message)=>{
-//     return document.createComment(message);
-// };
-
 
 function __() {}
+
 __.append = (...args) => {
     let appendValues = Array.from(args);
     let parent = appendValues.pop();
@@ -247,6 +242,7 @@ __.append = (...args) => {
         parent.appendChild(appendValues[i].node);
     }
 };
+
 __.polyfills = (...args) => {
     if (args.length) {
         args.forEach(polyfill => {
@@ -258,7 +254,7 @@ __.polyfills = (...args) => {
     }
 };
 
-var wavefront = tagName => {
+var assembly = tagName => {
     return (...args) => {
         // var tagName = 'div';
 
@@ -267,55 +263,92 @@ var wavefront = tagName => {
         var childWavefrontNodes = [];
         var attributes;
         var hasAttributes;
+        var skip = false;
 
-        // Check args to see 
-        args.forEach((param, i) => {
-            // Every param must be pushed to childWavefrontNodes
+        function applyAttributes(value) {
+            return value;
+        }
 
-            // Wavefront Element Object.
-            if (param.hasOwnProperty('node') && param.hasOwnProperty('tree')) {
-                childWavefrontNodes.push(param);
-            } else if (typeof param === 'string') {
+        function createCommentNode(value, nodeStorage) {
+            nodeStorage.push({
+                node: document.createComment(value),
+                tree: {}
+            });
+        }
 
-                if (param[0] === '@') {
-                    // Treat as attribute.
-                    attributes = param.substring(1);
-                    console.log('attributes', attributes);
-                    hasAttributes = typeof attributes === 'string' && !!attributes;
-                } else {
-                    // Create text nodes from string.
-                    childWavefrontNodes.push({
-                        node: document.createTextNode(param),
+        function createTextNode(value, nodeStorage, indicator) {
+            let text = indicator ? value.substring(1) : value;
+            nodeStorage.push({
+                node: document.createTextNode(text),
+                tree: {}
+            });
+        }
+
+        function addChildWaveNode(value, nodeStorage) {
+            nodeStorage.push(value);
+        }
+
+        function parseStringEntry(value, nodeStorage) {
+            switch (value[0]) {
+                case '@':
+                    attributes = value.substring(1);
+                    break;
+                case '//':
+                    createCommentNode(value, nodeStorage);
+                    break;
+
+                case '#':
+                    createTextNode(value, nodeStorage, '#');
+                    break;
+                default:
+                    createTextNode(value, nodeStorage);
+            }
+        }
+
+        function createDOMNode(value, nodeStorage) {
+            switch (value.nodeType) {
+                // ELEMENT_NODE
+                case 1:
+                // TEXT_NODE
+                case 3:
+                // PROCESSING_INSTRUCTION_NODE
+                case 7:
+                // COMMENT_NODE
+                case 8:
+                // DOCUMENT_NODE
+                case 9:
+                // DOCUMENT_TYPE_NODE
+                case 10:
+                // DOCUMENT_FRAGMENT_NODE
+                case 11:
+                    nodeStorage.push({
+                        node: value,
                         tree: {}
                     });
-                }
+                    break;
+                default:
+                    throw new Error(`${ value.nodeType } is not supported.`);
             }
+        }
 
-            // Parse DOM nodes.
-            if (param.nodeType) {
-                switch (param.nodeType) {
-                    // ELEMENT_NODE
-                    case 1:
-                    // TEXT_NODE
-                    case 3:
-                    // PROCESSING_INSTRUCTION_NODE
-                    case 7:
-                    // COMMENT_NODE
-                    case 8:
-                    // DOCUMENT_NODE
-                    case 9:
-                    // DOCUMENT_TYPE_NODE
-                    case 10:
-                    // DOCUMENT_FRAGMENT_NODE
-                    case 11:
-                        childWavefrontNodes.push({
-                            node: param,
-                            tree: {}
-                        });
-                        break;
-                    default:
-                        throw new Error(`${ param.nodeType } is not supported.`);
-                }
+        const isTruthy = value => {
+            return !!value;
+        };
+
+        // Check args to see 
+        args.forEach((param, i, isTruthy) => {
+            let waveNode = param.hasOwnProperty('node') && param.hasOwnProperty('tree');
+            let string = typeof param === 'string';
+            let DOMNode = param.hasOwnProperty('nodeType');
+
+            if (waveNode) {
+                addChildWaveNode(param, childWavefrontNodes);
+            } else if (string) {
+                parseStringEntry(param, childWavefrontNodes);
+            } else if (DOMNode) {
+                createDOMNode(param, childWavefrontNodes);
+            } else {
+                throw new Error(`${ param } is not a valid Wavefront node.`);
             }
         });
 
@@ -382,7 +415,8 @@ var wavefront = tagName => {
         /**
          * Create new element. 
          */
-        function createElement(tagName, attr, wavefrontNodes, hasAttributes) {
+        function createElement(tagName, attributes, wavefrontNodes) {
+
             var tree = {};
             let branch = {};
             var element = document.createElement(tagName);
@@ -391,8 +425,9 @@ var wavefront = tagName => {
             /**
              * Assign attributes to the new element. 
              */
-            if (hasAttributes) {
-                assignAttributes(element, attr);
+            // console.log(attr)
+            if (attributes) {
+                assignAttributes(element, attributes);
             }
             // Dummy new element name system. 
             branch[tagName + parseFloat(Math.random(), 10)] = element;
@@ -416,32 +451,109 @@ var wavefront = tagName => {
             };
         }
 
-        var wave = createElement(tagName, attributes, childWavefrontNodes, hasAttributes);
+        var wave = createElement(tagName, attributes, childWavefrontNodes);
 
         return wave;
     };
 };
 
-
-var ul = wavefront('ul');
-var li = wavefront('li');
-var h1 = wavefront('h1');
-var h2 = wavefront('h2');
+var a = assembly('a');
 
 
 
+var article = assembly('article');
+var aside = assembly('aside');
 
-var article = wavefront('article');
-var section = wavefront('section');
-var header = wavefront('header');
-var footer = wavefront('footer');
-var nav = wavefront('nav');
-var a = wavefront('a');
-var mark = wavefront('mark');
-var aside = wavefront('aside');
-var figure = wavefront('figure');
-var img = wavefront('img');
-var figcaption = wavefront('figcaption');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var figcaption = assembly('figcaption');
+var figure = assembly('figure');
+var footer = assembly('footer');
+
+var h1 = assembly('h1');
+var h2 = assembly('h2');
+
+
+
+
+var header = assembly('header');
+
+
+
+
+
+var img = assembly('img');
+
+
+
+
+
+
+var li = assembly('li');
+
+
+var mark = assembly('mark');
+
+
+var nav = assembly('nav');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var section = assembly('section');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var ul = assembly('ul');
 
 // var dotenv =require('dotenv').config();
 
