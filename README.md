@@ -1,6 +1,4 @@
-# Wavefront
-
-This is a promising little ES6 project still in its quick and dirty prototyping phase.
+This is a promising little ES6 project still in its prototyping phase.
 Wavefront is for in-depth and maintainable DOM manipulation and event handling. 
 
 
