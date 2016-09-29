@@ -1,3 +1,5 @@
+import classList from './polyfills/class-list';
+
 // const waveFront = () => {
 //     window.addEventListener('load', function() {
 //         if (window.WAVEFRONT_ENV === 'dev') {
@@ -16,6 +18,7 @@
 export function __(){
 
 }
+
 __.append = (...args)=>{
     let appendValues = Array.from(args);
     let parent = appendValues.pop();
@@ -24,6 +27,20 @@ __.append = (...args)=>{
     }
 }
 
+__.polyfills = (...args)=>{
+    if(args.length){
+        args.forEach((polyfill)=>{
+            polyfill();
+        });
+    }else{
+        classList(); 
+        // List of polyfills.    
+    }
+}
+
+__.comment = (message)=>{
+    return document.createComment(message);
+};
 
 var wavefront = (tagName) => {
     return (...args) => {
@@ -200,23 +217,102 @@ var wavefront = (tagName) => {
 }
 
 
+export var a = wavefront('a');
+export var abbr = wavefront('abbr');
+export var address = wavefront('address');
+export var area = wavefront('area');
+export var article = wavefront('article');
+export var aside = wavefront('aside');
+export var audio = wavefront('audio');
+export var b = wavefront('b');
+export var base = wavefront('base');
+export var bdi = wavefront('bdi');
+export var bdo = wavefront('bdo');
+export var blockquote = wavefront('blockquote');
+export var body = wavefront('body');
+export var br = wavefront('br');
+export var button = wavefront('button');
+export var canvas = wavefront('canvas');
+export var caption = wavefront('caption');
+export var cite = wavefront('cite');
+export var code = wavefront('code');
+export var col = wavefront('col');
+export var colgroup = wavefront('colgroup');
+export var command = wavefront('command');
+export var dd = wavefront('dd');
+export var del = wavefront('del');
+export var dfn = wavefront('dfn');
 export var div = wavefront('div');
-export var ul = wavefront('ul');
-export var li = wavefront('li');
+export var dl = wavefront('dl');
+export var doctype = wavefront('doctype');
+export var dt = wavefront('dt');
+export var em = wavefront('em');
+export var embed = wavefront('embed');
+export var fieldset = wavefront('fieldset');
+export var figcaption = wavefront('figcaption');
+export var figure = wavefront('figure');
+export var footer = wavefront('footer');
+export var form = wavefront('form');
 export var h1 = wavefront('h1');
 export var h2 = wavefront('h2');
 export var h3 = wavefront('h3');
 export var h4 = wavefront('h4');
 export var h5 = wavefront('h5');
 export var h6 = wavefront('h6');
-export var article = wavefront('article');
-export var section = wavefront('section');
 export var header = wavefront('header');
-export var footer = wavefront('footer');
-export var nav = wavefront('nav');
-export var a = wavefront('a');
-export var mark = wavefront('mark');
-export var aside = wavefront('aside');
-export var figure = wavefront('figure');
+export var hgroup = wavefront('hgroup');
+export var hr = wavefront('hr');
+export var html = wavefront('html');
+export var i = wavefront('i');
+export var iframe = wavefront('iframe');
 export var img = wavefront('img');
-export var figcaption = wavefront('figcaption');
+export var input = wavefront('input');
+export var ins = wavefront('ins');
+export var kbd = wavefront('kbd');
+export var keygen = wavefront('keygen');
+export var label = wavefront('label');
+export var legend = wavefront('legend');
+export var li = wavefront('li');
+export var link = wavefront('link');
+export var map = wavefront('map'); 
+export var mark = wavefront('mark');
+export var menu = wavefront('menu');
+export var meta = wavefront('meta');
+export var nav = wavefront('nav');
+export var noscript = wavefront('noscript');
+export var object = wavefront('object');
+export var ol = wavefront('ol');
+export var optgroup = wavefront('optgroup');
+export var option = wavefront('option');
+export var p = wavefront('p');
+export var param = wavefront('param');
+export var pre = wavefront('pre');
+export var progress = wavefront('progress');
+export var q = wavefront('q');
+export var rp = wavefront('rp');
+export var rt = wavefront('rt');
+export var ruby = wavefront('ruby');
+export var s = wavefront('s');
+export var samp = wavefront('samp');
+export var script = wavefront('script');
+export var section = wavefront('section');
+export var select = wavefront('select');
+export var small = wavefront('small');
+export var source = wavefront('source');
+export var span = wavefront('span');
+export var strong = wavefront('strong');
+export var style = wavefront('style');
+export var sub = wavefront('sub');
+export var sup = wavefront('sup');
+export var table = wavefront('table');
+export var tbody = wavefront('tbody');
+export var td = wavefront('td');
+export var textarea = wavefront('textarea');
+export var tfoot = wavefront('tfoot');
+export var th = wavefront('th');
+export var thead = wavefront('thead');
+export var title = wavefront('title');
+export var tr = wavefront('tr');
+export var ul = wavefront('ul');
+export var v = wavefront('var');
+export var video = wavefront('video');

@@ -20,7 +20,7 @@ import {
 // var dotenv =require('dotenv').config();
 
 window.WAVEFRONT_ENV = 'dev';
-
+__.polyfills();
 
 // Rules: Every attribute must have an equals sign:
 // var someElement = div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', {someOtherElements: 'wfewefwef'},{list1: 'wfewefwef',list2:'hytht',list4:'fwefw'}, 'Hello World')
