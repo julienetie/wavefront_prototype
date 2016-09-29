@@ -1,29 +1,20 @@
-This is a promising little ES6 project still in its prototyping phase.
-Wavefront is for in-depth and maintainable DOM manipulation and event handling. 
+![](http://oi66.tinypic.com/fmrlnc.jpg)
+ 
+A promising little ES6 project (working... but) still being prototyped, (don't use this it in production).
+Wavefront is a user interface creation library that...
+
+- Has a readable syntax for creating HTML nodes.
+- Directly replicates Markup for HTML, XML and SVG.
+- Dosen't require a transformer i.e. JSX 
+- Built with ES6 for use with ES6.
+- Clearly separates concerns for existing nodes, created nodes, DOM traversing, data binding, ordering and events/mutations. 
+- Has intuitive render management.
+- Compliments standard JavaScript methods (Not an eco system).
+
+Wavefront is a view/ UI library _(.e.g, jQuery, React)_ that enforces pre-creation over re-inserting and translation over destruction where feasible. Utilizing wavefront's methodology is likely to yield "practical" performance and memory consumption that rivals common DOM diffing algorithms.
 
 
-### Wavefront: 
-- Clean and readable HTML element creation using pure JavaScript. 
-- Manipulate the creation of nodes without limitations. 
-- Create nested and sibling elements with custom attributes.
-- No transformer is required. 
-- For use with ES6 modules.
-- Library separation of concerns produce high performance distributions.
-
-#### Pending
-- Create all HTML5 nodes (import all or select specific tag names)
-- Add string parameters as text. 
-- Add element, comment, document and processing instruction nodes.
-- Manipulate elements via a custom looping method. 
-
-### Future Modules 
-- Create: ^ For DOM creation.* 
-- Pre-order: Element traversing.
-- Reflex: Event delegation.
-- Forever: For continuous node creations (e.g. ajax infinite scroll, news feed list).
-- Mimetic-api: Integrations with Mimetic. 
-
-_Rough example:_ 
+_Example:_ 
 ```
     div(`class="container" id="some-id"`,
         div('',
@@ -44,7 +35,7 @@ _Rough example:_
         )
     );
 ```
-Will generate:
+_Will generate:_
 ```
 <div class="container" id="some-id">
     <div>
@@ -67,3 +58,4 @@ Will generate:
     </div>
 </div>
 ```
+MIT License - 2016 - Julien Etienne 
