@@ -17,19 +17,25 @@ Wavefront is a view/ UI library _(.e.g, jQuery, React)_ that enforces pre-creati
 
 _Example:_ 
 ```
-    div(`class="container" id="some-id"`,
-        div('',
-            div('id="some-id"',
-                div('id="some-id"',
-                    div('id="some-id"',
-                        div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', { someOtherElements: 'wfewefwef' }, { list1: 'wfewefwef', list2: 'hytht', list4: 'fwefw' }, 'Hello World')
+    div(`@class="container" id="some-id1"`,
+        span(
+            div('@class="some-class"'
+                ul(
+                    li('@id="some-id2" data-attribute=" some data"',
+                        a('@href="http://google.com" contenteditable="" name="bob"', 
+                            'Hello World!'
+                        )
                     )
                 )
-            ),
-            div('id="some-id"',
-                div('id="some-id"',
-                    div('id="some-id"',
-                        div('class="container" id="some-id" data-attribute=" some data" contenteditable="" name="bob"', { someOtherElements: 'wfewefwef' }, { list1: 'wfewefwef', list2: 'hytht', list4: 'fwefw' }, 'Hello World')
+            )
+        ),    
+        span(
+            div('@class="some-class"'
+                ul(
+                    li('@id="some-id3" data-attribute=" some data"',
+                        a('@href="http://facebook.com" contenteditable="" name="bob"', 
+                            'How are you?'
+                        )
                     )
                 )
             )
@@ -38,25 +44,29 @@ _Example:_
 ```
 _Will generate:_
 ```
-<div class="container" id="some-id">
-    <div>
-        <div id="some-id">
-            <div id="some-id">
-                <div id="some-id">
-                    <div class="container" contenteditable="" data-attribute=
-                    "some data" id="some-id"></div>
-                </div>
-            </div>
+<div class="container" id="some-id1">
+    <span>
+        <div class="some-class">
+            <ul>
+                <li id="some-id2" data-attribute="some data">
+                    <a contenteditable=""  href="http://google.com" id="some-id">
+                      Hello World! 
+                    </a>
+                </li>
+            </ul>
         </div>
-        <div id="some-id">
-            <div id="some-id">
-                <div id="some-id">
-                    <div class="container" contenteditable="" data-attribute=
-                    "some data" id="some-id"></div>
-                </div>
-            </div>
+    </span>
+    <span>
+        <div class="some-class">
+            <ul>
+                <li id="some-id3" data-attribute="some data">
+                    <a contenteditable=""  href="http://facebook.com" id="some-id">
+                      How are you?
+                    </a>
+                </li>
+            </ul>
         </div>
-    </div>
+    </span>
 </div>
 ```
 MIT License - 2016 - Julien Etienne 
