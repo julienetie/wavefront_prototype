@@ -21,11 +21,12 @@ export function __() {
 
 }
 
-__.track = (value, _tag) => {
+__.track = function(interfaceName, value, _tag) {
     if (_tag === undefined) {
         throw new Error(`Please define the _tag for ${value}`);
     };
     return {
+        interfaceName,
         _tag,
         value
     }
@@ -55,27 +56,148 @@ __.data = {}
 
 __._dynamicStore = {};
 
+__._elementStore = {};
+
+__._createNewInterface = (tree, selector, interfaceName) => {
+    let treeLength = tree.length;
+    let el;
+    let createdElement;
+    let type;
+    let newNode;
+    let attrMsg;
+    let elTypeof;
+    let hasChildren;
+    let selectorName = false;
+
+    // Create the element store for the interface.
+    if (!__.hasOwnProperty(interfaceName)) {
+        __[interfaceName] = {};
+    }
+
+    // var fragment = document.createDocumentFragment();
+    for (let i = 0; i < treeLength; i++) {
+        el = tree[i];
+        type = el[0];
+        attrMsg = el[1];
+        elTypeof = typeof el;
+        hasChildren = !!(el[3] ? el[3].constructor === [].constructor : false);
+        switch (elTypeof) {
+            case 'string':
+                // Text node
+                newNode = document.createTextNode(el);
+                break;
+            case 'object':
+                parseNode();
+                break;
+            case 'function':
+                // 
+                break;
+        }
+
+        function toCamel(string){
+            return string.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
+        }
+        
+
+
+        // Create element
+        function parseNode() {
+            switch (type) {
+                case 'text':
+                    // Text node
+                    newNode = document.createTextNode(attrMsg);
+                    break;
+                case 'comment':
+                    // Comment node
+                    newNode = document.createComment(attrMsg);
+                    break;
+                default:
+                    // Element node
+                    newNode = createElement(type, attrMsg);
+            }
+        }
+
+
+
+        function createElement(tagName, attributes) {
+            // Create element node.
+            let element = document.createElement(tagName);
+            let attr;
+            // Apply attributes.
+            if (attributes) {
+                for (attr in attributes) {
+                    // data-* , accept-charset, http-equiv keys must be strings.
+                    // Styles are defined using template strings.
+                    if (attr !== 'wave') {
+                        element.setAttribute(attr, attributes[attr]);
+                    }
+                    switch (attr) {
+                        case 'wave':
+                            selectorName = selectorName ? false : attributes.wave;
+                            break;
+                        case 'id':
+                            selectorName = selectorName ? false : attributes.id;
+                            break;
+                        case 'class':
+                            selectorName = selectorName ? false : attributes.class.split(" ")[0];
+                            break;
+                    }
+                }
+            }
+            return element;
+        }
+
+        // Add node to elemeent store.
+        if(selectorName){
+          __[interfaceName][toCamel(selectorName)] = newNode;  
+        }
+        
+
+        if (hasChildren) {
+            // console.log('Yes has children', el[3].length)
+            __._createNewInterface(el[3], newNode, interfaceName);
+        }
+        selector.appendChild(newNode);
+
+    }
+
+    // var HTMLInterface = document.querySelector(selector);
+    // selector.appendChild(fragment)
+    // console.log(HTMLInterface.children)
+}
+
+
+__.renderTree = function _renderTree(interfaceName, selector) {
+    let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
+    if (_renderTree.prototype[interfaceName]) {
+        //
+    } else {
+        _renderTree.prototype[interfaceName] = true;
+        __._createNewInterface(currentVirtualTree, selector, interfaceName);
+    }
+}
+
 __._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, interfaceName) {
     if (_regDynInt.prototype.once) {
 
     } else {
+        __.data[interfaceName]['name'] = interfaceName;
         __._dynamicStore[interfaceName] = {
-            lastVirtualTree: interFace.apply(dynamicScope, [__.data[interfaceName]]),
-            currentVirtualTree: () => {
-                return interFace.apply(dynamicScope, [__.data[interfaceName]]);
-            }
+                lastVirtualTree: interFace.apply(dynamicScope, [__.data[interfaceName]]),
+                currentVirtualTree: () => {
+                    return interFace.apply(dynamicScope, [__.data[interfaceName]]);
+                }
 
-        }
-        console.log('once', __._dynamicStore[interfaceName])
+            }
+            // console.log('once', __._dynamicStore[interfaceName].currentVirtualTree())
         _regDynInt.prototype.once = true;
     }
 }
 
 
-window.d = __._dynamicStore;
-__.updateInterface = function(interfaceName, data) {
+// __.updateInterface = function(interfaceName, data) {
 
-}
+// }
 
 
 __.dynamic = function(interfaceName, interFace) {
@@ -91,21 +213,21 @@ var assembly = (tagName) => {
         let children = [];
         let attributes = {};
         let stringChild;
-        let tracker = {}
-            // nodes return as a waveArrayNode
-            // entered text converts to a waveArrayNode
-            // Attributes are passed as objects
+        let tracker = {};
+        // nodes return as a waveArrayNode
+        // entered text converts to a waveArrayNode
+        // Attributes are passed as objects
 
         var item;
         for (let i = 0; i < args.length; i++) {
             item = args[i];
             if (item.hasOwnProperty('_tag')) {
-                tracker.value = item.value;
-                tracker._tag = item._tag;
+                tracker = Object.assign(tracker, item);
                 tracker.canUpdate = true;
                 item = item.value;
             } else {
                 tracker.canUpdate = false;
+                item = item;
             }
 
             //Check if text node
@@ -353,7 +475,19 @@ var assembly = (tagName) => {
 
         // var wave = createElement(tagName, attributes, childWavefrontNodes);
         // String, object, array of arrays
-        return [tagName, attributes, tracker, children];
+        var node = [tagName, attributes, tracker, children];
+
+
+        // if(!__._dynamicRegister[tracker.interfaceName]){
+        //     __._dynamicRegister[tracker.interfaceName] = {}
+        // }
+
+        // if(tracker.canUpdate){
+        // __._dynamicRegister[tracker.interfaceName][tagName + '_' + tracker._tag] = node;       
+        // }
+
+        // console.log(__._dynamicRegister[tracker.interfaceName])
+        return node;
     };
 }
 

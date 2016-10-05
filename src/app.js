@@ -56,35 +56,44 @@ __.polyfills();
 // // console.log('__', __, 'div', div, 'li', li);
 
 
-/****DATA *****/
+/*
+ * ./data/
+ */
 __.data.testPage = {
-    _image: {
-        src: 'http://www.windowsdevbootcamp.com/Images/JennMar.jpg',
-        width: 85,
-        height: 85,
-        alt: 'Jennifer Marsman'
-    },
-    _articleSection2: 'This is the second article. These articles could be blog posts, etc.',
-    _article1Header: 'Article #1h1'
-}
-/****DATA *****/
+        _image: {
+            src: 'https://www.google.co.uk/logos/doodles/2016/100th-anniversary-of-completion-of-the-trans-siberian-railway-6269398706814976-vacta.gif',
+            width: 85,
+            height: 85,
+            alt: 'Jennifer Marsman'
+        },
+        _articleSection2: 'This is the second article. These articles could be blog posts, etc.',
+        _article1Header: 'Article #1h1'
+    }
+    /****DATA *****/
 
 
-
-__.dynamic('testPage', ({ _image, _articleSection2, _article1Header }) => {
-
+/*
+ * ./interface/dynamic/*
+ */
+__.dynamic('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
     /**
      * Tracking:: (Variables that are allowed to change)
      */
-    let image = __.track(_image, 'dImage');
-    let articleSection2 = __.track(_articleSection2, 'vArticle');
-    let article1Header = __.track(_article1Header, 'vArticle');
+     let red = 'red';
+
+    let image = __.track(name, _image, 'dImage');
+    let articleSection2 = __.track(name, _articleSection2, 'vArticle');
+    let article1Header = __.track(name, _article1Header, 'vArticle');
+    
     /*__________________________________________________*/
-    return [header(
-            h1('_Header in h1'),
+    return [
+        header({ class: 'red', 'data-hello': 'World!', style: `background: ${red}; height:auto` },
+            h1('Header in h1'),
             comment('This is a comment'),
-            h2('_Subheader in h2'),
+            h2('Subheader in h2'),
         ),
+        comment('YEa yea yea yYAAAA whatever'),
+        'This is crazy',
         nav(
             ul(
                 li(a({ href: 'http://google.com', class: 'some-class' }, 'Menu Option 1a')),
@@ -94,7 +103,7 @@ __.dynamic('testPage', ({ _image, _articleSection2, _article1Header }) => {
         ),
         section(
             article(
-                header(
+                header( {wave:'juliensHeader'},
                     h1(article1Header)
                 ),
                 section(
@@ -107,7 +116,7 @@ __.dynamic('testPage', ({ _image, _articleSection2, _article1Header }) => {
                 header(
                     h1('Article #2h1')
                 ),
-                section(
+                section({id:'whatsUpJack'},
                     articleSection2
                 ),
             )
@@ -130,3 +139,11 @@ __.dynamic('testPage', ({ _image, _articleSection2, _article1Header }) => {
     ];
     /*__________________________________________________*/
 });
+
+
+/*
+ * ./render/*
+ */
+ var HTMLInterface = document.querySelector('.main-section');
+__.renderTree('testPage', HTMLInterface);
+    console.log(__.testPage.juliensHeader);
