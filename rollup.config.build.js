@@ -7,3 +7,5 @@ export default {
     format: 'umd',
     dest: 'dist/app.js'
 };
+
+

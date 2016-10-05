@@ -47,13 +47,16 @@
     "mocha-sinon": "^1.1.5",
     "rollup": "^0.36.0",
     "rollup-plugin-babel": "^2.3.9",
+    "rollup-plugin-commonjs": "^5.0.4",
     "rollup-plugin-multi-entry": "^2.0.1",
+    "rollup-plugin-node-resolve": "^2.0.0",
     "rollup-watch": "^2.5.0",
     "sinon": "^1.17.3",
     "source-map-support": "^0.4.0"
   },
   "dependencies": {
     "dotenv": "^2.0.0",
+    "incremental-dom": "^0.5.1",
     "lodash": "^4.16.2",
     "lodash-es": "^4.16.2"
   }

@@ -1,5 +1,11 @@
 import classList from './polyfills/class-list';
-
+import { 
+    patch, 
+    elementOpen, 
+    elementClose, 
+    elementVoid, 
+    text 
+} from '../libs/incremental-dom-es6';
 // const waveFront = () => {
 //     window.addEventListener('load', function() {
 //         if (window.WAVEFRONT_ENV === 'dev') {
