@@ -1,6 +1,6 @@
 <p align="center"><img src="http://oi66.tinypic.com/fmrlnc.jpg" ></p>
 <p>&nbsp;</p>
-An agile UI creation library for speed and maintainability
+An agile UI creation library for speed and maintainability. *Alpha: No ready for production*
 
 - Has a pure javascript syntax that doesn't require a transformer i.e. JSX  
 - Creates interfaces based on markup (HTML, XML and SVG).
