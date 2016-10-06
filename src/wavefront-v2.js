@@ -1,4 +1,5 @@
 import classList from './polyfills/class-list';
+import contains from './utils';
 import {
     patch,
     elementOpen,
@@ -129,12 +130,32 @@ store.staticRegistry = [];
 store.dynamicRegistry = [];
 store.statelessRegistry = [];
 
-
-const registerInterface = (interfaceName, registryType)=>{
+/**
+ * Registers the interface and it's state.
+ * @param {string} interfaceName - Name of the new interface
+ * @param {string} registryType - dynamicRegistry | statelessRegistry | staticRegistry
+ */
+const registerInterface = (interfaceName, registryType) => {
     let registry = store[registryType];
 
-    if(registry.indexOf(interfaceName) === -1){
-        registry.push(interfaceName);
+    if (contains(interfaceName, registry)) {
+        let record;
+
+        switch (registryType) {
+            case 'dynamicRegistry':
+                record = {};
+                break;
+            case 'statelessRegistry':
+                record = {
+                    name: interfaceName,
+                    rendered: false
+                }
+                break;
+            case 'staticRegistry':
+                record = {};
+                break;
+        }
+        registry.push(record);
     }
 }
 
@@ -242,15 +263,18 @@ __._createNewInterface = (tree, selector, interfaceName) => {
 }
 
 
-__.render = function _renderTree(interfaceName, selector) {
+function render(interfaceName, selector) {
     let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
-    if (_renderTree.prototype[interfaceName]) {
-        //
-    } else {
-        _renderTree.prototype[interfaceName] = true;
-        console.log('new interface created')
-        __._createNewInterface(currentVirtualTree, selector, interfaceName);
-    }
+    // if (_renderTree.prototype[interfaceName]) {
+    //     //
+    // } else {
+    //     _renderTree.prototype[interfaceName] = true;
+
+
+
+    console.log('new interface created')
+    __._createNewInterface(currentVirtualTree, selector, interfaceName);
+    // }
 }
 
 __._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, interfaceName) {
@@ -279,13 +303,13 @@ __.dynamic = function(interfaceName, interFace) {
 
 __.static = (interfaceName, interFace) => {
     registerInterface(interfaceName, 'staticRegistry');
-    __._registerDynamicInterface(interFace, this, interfaceName) 
+    __._registerDynamicInterface(interFace, this, interfaceName)
 };
 
 
 __.stateless = (interfaceName, interFace) => {
     registerInterface(interfaceName, 'statelessRegistry');
-    __._registerDynamicInterface(interFace, this, interfaceName)    
+    __._registerDynamicInterface(interFace, this, interfaceName)
 };
 
 var assembly = (tagName) => {
@@ -331,6 +355,9 @@ var assembly = (tagName) => {
         return node;
     };
 }
+
+
+__.render = render;
 
 
 export var a = assembly('a');

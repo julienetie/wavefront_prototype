@@ -223,6 +223,15 @@ let classList = () => {
 };
 
 /**
+ * Finds value in an array 
+ * @param {Array} haystack - The array to search.
+ * @param {*} needle - The value to look for
+ */
+const contains = (haystack, needle) => {
+  return haystack.indexOf(needle) === -1;
+};
+
+/**
  * @license
  * Copyright 2015 The Incremental DOM Authors. All Rights Reserved.
  *
@@ -1195,6 +1204,7 @@ var _this = undefined;
 
 let store = {};
 
+console.log(contains);
 function __(interfaceNamewaveName) {
     let props = {};
     var elementPropertyBlacklist = ['setAttribute', 'setAttributeNS', 'removeAttribute', 'removeAttributeNS', 'setAttributeNode', 'setAttributeNodeNS', 'removeAttributeNode', 'getElementsByTagName', 'getElementsByTagNameNS', 'getElementsByClassName', 'insertAdjacentElement', 'insertAdjacentText', 'insertAdjacentHTML', 'createShadowRoot', 'getDestinationInsertionPoints', 'remove', 'querySelector', 'querySelectorAll', 'attachShadow', 'cloneNode', 'innerHTML', 'insertBefore', 'appendChild', 'replaceChild', 'removeChild', 'addEventListener', ''];
@@ -1269,11 +1279,32 @@ store.staticRegistry = [];
 store.dynamicRegistry = [];
 store.statelessRegistry = [];
 
+/**
+ * Registers the interface and it's state.
+ * @param {string} interfaceName - Name of the new interface
+ * @param {string} registryType - dynamicRegistry | statelessRegistry | staticRegistry
+ */
 const registerInterface = (interfaceName, registryType) => {
     let registry = store[registryType];
 
     if (registry.indexOf(interfaceName) === -1) {
-        registry.push(interfaceName);
+        let record;
+
+        switch (registryType) {
+            case 'dynamicRegistry':
+                record = {};
+                break;
+            case 'statelessRegistry':
+                record = {
+                    name: interfaceName,
+                    rendered: false
+                };
+                break;
+            case 'staticRegistry':
+                record = {};
+                break;
+        }
+        registry.push(record);
     }
 };
 
@@ -1375,16 +1406,18 @@ __._createNewInterface = (tree, selector, interfaceName) => {
     }
 };
 
-__.render = function _renderTree(interfaceName, selector) {
+function render(interfaceName, selector) {
     let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
-    if (_renderTree.prototype[interfaceName]) {
-        //
-    } else {
-        _renderTree.prototype[interfaceName] = true;
-        console.log('new interface created');
-        __._createNewInterface(currentVirtualTree, selector, interfaceName);
-    }
-};
+    // if (_renderTree.prototype[interfaceName]) {
+    //     //
+    // } else {
+    //     _renderTree.prototype[interfaceName] = true;
+
+
+    console.log('new interface created');
+    __._createNewInterface(currentVirtualTree, selector, interfaceName);
+    // }
+}
 
 __._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, interfaceName) {
     if (_regDynInt.prototype.once) {} else {
@@ -1459,6 +1492,8 @@ var assembly = tagName => {
         return node;
     };
 };
+
+__.render = render;
 
 var a = assembly('a');
 
@@ -1585,7 +1620,7 @@ __.model.testPage = {
 /*
  * ./interface/dynamic/*
  */
-__.static('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
+__.stateless('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
     /**
      * Tracking:: (Variables that are allowed to change)
      */

@@ -42,7 +42,7 @@ __.model.testPage = {
 /*
  * ./interface/dynamic/*
  */
-__.static('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
+__.stateless('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
     /**
      * Tracking:: (Variables that are allowed to change)
      */
