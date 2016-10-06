@@ -1192,7 +1192,18 @@ var importNode = importNode;
 // waveFront();
 
 
-function __() {}
+function __(interfaceNamewaveName) {
+    let nameParts = interfaceNamewaveName.split(':');
+    var el = __[nameParts[0]][nameParts[1]];
+    return {
+        on: function (event, handler, bubbling) {
+            el.addEventListener(event, handler, bubbling);
+            console.log('done', el, event, handler, bubbling);
+        }
+    };
+}
+
+window.__ = __;
 
 __.track = function (interfaceName, value, _tag) {
     if (_tag === undefined) {
@@ -1225,6 +1236,7 @@ __.polyfills = (...args) => {
         // List of polyfills.    
     }
 };
+
 __.data = {};
 
 __._dynamicStore = {};
@@ -1309,9 +1321,6 @@ __._createNewInterface = (tree, selector, interfaceName) => {
                         case 'id':
                             selectorName = selectorName ? false : attributes$$1.id;
                             break;
-                        case 'class':
-                            selectorName = selectorName ? false : attributes$$1.class.split(" ")[0];
-                            break;
                     }
                 }
             }
@@ -1321,6 +1330,7 @@ __._createNewInterface = (tree, selector, interfaceName) => {
         // Add node to elemeent store.
         if (selectorName) {
             __[interfaceName][toCamel(selectorName)] = newNode;
+            selectorName = false;
         }
 
         if (hasChildren) {
@@ -1341,6 +1351,7 @@ __.renderTree = function _renderTree(interfaceName, selector) {
         //
     } else {
         _renderTree.prototype[interfaceName] = true;
+        console.log('new interface created');
         __._createNewInterface(currentVirtualTree, selector, interfaceName);
     }
 };
@@ -1822,6 +1833,7 @@ __.dynamic('testPage', ({ _image, _articleSection2, _article1Header, name }) => 
     let image = __.track(name, _image, 'dImage');
     let articleSection2 = __.track(name, _articleSection2, 'vArticle');
     let article1Header = __.track(name, _article1Header, 'vArticle');
+
     /*__________________________________________________*/
     return [header({ class: 'red', 'data-hello': 'World!', style: `background: ${ red }; height:auto` }, h1('Header in h1'), comment('This is a comment'), h2('Subheader in h2')), comment('YEa yea yea yYAAAA whatever'), 'This is crazy', nav(ul(li(a({ href: 'http://google.com', class: 'some-class' }, 'Menu Option 1a')), li(a({ href: 'http://facebook.com', class: 'some-class' }, 'Menu Option 2a')), li(a({ href: 'http://youtube.com' }, 'Menu Option 3a')))), section(article(header({ wave: 'juliensHeader' }, h1(article1Header)), section('This is the first article. This is', mark('highlightedmark'), '.')), article(header(h1('Article #2h1')), section({ id: 'whatsUpJack' }, articleSection2))), aside(section(h1('Linksh1'), ul(li(a({ href: '#' }, 'Link 1a')), li(a({ href: '#' }, 'Link 2a')), li(a({ href: '#' }, 'Link 3a')))), figure(img(image), figcaption('Jennifer Marsman'))), footer('Footer - Copyright 2016')];
     /*__________________________________________________*/
@@ -1831,7 +1843,10 @@ __.dynamic('testPage', ({ _image, _articleSection2, _article1Header, name }) => 
  * ./render/*
  */
 var HTMLInterface = document.querySelector('.main-section');
-__.renderTree('testPage', HTMLInterface);
-console.log(__.testPage);
+window.test = function () {
+    __.renderTree('testPage', HTMLInterface);
+};
+
+window.__ = __;
 
 })));

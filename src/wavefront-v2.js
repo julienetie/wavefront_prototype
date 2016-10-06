@@ -17,9 +17,23 @@ import {
 // waveFront();
 
 
-export function __() {
 
+
+export function __(interfaceNamewaveName) {
+    let nameParts = interfaceNamewaveName.split(':');
+    var el = __[nameParts[0]][nameParts[1]];
+    return {
+        on: function(event, handler, bubbling) {
+            el.addEventListener(event, handler, bubbling)
+            console.log('done',el,event, handler, bubbling)
+        }
+    }
 }
+
+
+
+
+window.__ = __;
 
 __.track = function(interfaceName, value, _tag) {
     if (_tag === undefined) {
@@ -52,6 +66,8 @@ __.polyfills = (...args) => {
         // List of polyfills.    
     }
 }
+
+
 __.data = {}
 
 __._dynamicStore = {};
@@ -94,10 +110,12 @@ __._createNewInterface = (tree, selector, interfaceName) => {
                 break;
         }
 
-        function toCamel(string){
-            return string.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
+        function toCamel(string) {
+            return string.replace(/-([a-z])/g, function(g) {
+                return g[1].toUpperCase();
+            });
         }
-        
+
 
 
         // Create element
@@ -138,9 +156,6 @@ __._createNewInterface = (tree, selector, interfaceName) => {
                         case 'id':
                             selectorName = selectorName ? false : attributes.id;
                             break;
-                        case 'class':
-                            selectorName = selectorName ? false : attributes.class.split(" ")[0];
-                            break;
                     }
                 }
             }
@@ -148,10 +163,11 @@ __._createNewInterface = (tree, selector, interfaceName) => {
         }
 
         // Add node to elemeent store.
-        if(selectorName){
-          __[interfaceName][toCamel(selectorName)] = newNode;  
+        if (selectorName) {
+            __[interfaceName][toCamel(selectorName)] = newNode;
+            selectorName = false;
         }
-        
+
 
         if (hasChildren) {
             // console.log('Yes has children', el[3].length)
@@ -173,6 +189,7 @@ __.renderTree = function _renderTree(interfaceName, selector) {
         //
     } else {
         _renderTree.prototype[interfaceName] = true;
+        console.log('new interface created')
         __._createNewInterface(currentVirtualTree, selector, interfaceName);
     }
 }

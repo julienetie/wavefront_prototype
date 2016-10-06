@@ -84,7 +84,7 @@ __.dynamic('testPage', ({ _image, _articleSection2, _article1Header, name }) => 
     let image = __.track(name, _image, 'dImage');
     let articleSection2 = __.track(name, _articleSection2, 'vArticle');
     let article1Header = __.track(name, _article1Header, 'vArticle');
-    
+
     /*__________________________________________________*/
     return [
         header({ class: 'red', 'data-hello': 'World!', style: `background: ${red}; height:auto` },
@@ -145,5 +145,9 @@ __.dynamic('testPage', ({ _image, _articleSection2, _article1Header, name }) => 
  * ./render/*
  */
  var HTMLInterface = document.querySelector('.main-section');
+window.test = function(){
 __.renderTree('testPage', HTMLInterface);
-    console.log(__.testPage.juliensHeader);
+}
+
+
+window.__ = __;
