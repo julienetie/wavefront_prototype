@@ -1,6 +1,6 @@
 import classList from './polyfills/class-list';
 import { contains, once } from './utils';
-import {render, addInterfaceRenderMethod} from './render';
+import { render, addInterfaceRenderMethod } from './render';
 import {
     patch,
     elementOpen,
@@ -168,7 +168,7 @@ store.statelessRegistry = [];
 const registerInterface = (interfaceName, interfaceType) => {
     // let registry = store[ interfaceType + Registry];
     // Check if render interface types contains the given interface.
-        addInterfaceRenderMethod(interfaceName,interfaceType);
+    addInterfaceRenderMethod(interfaceName, interfaceType);
 
     // if (contains(interfaceName, registry)) {
     //     let record;
@@ -191,7 +191,7 @@ const registerInterface = (interfaceName, interfaceType) => {
     // }
 }
 
-__._createNewInterface = (tree, selector, interfaceName) => {
+export function renderBranches(tree, selector, interfaceName) {
     let treeLength = tree.length;
     let el;
     let createdElement;
@@ -288,7 +288,7 @@ __._createNewInterface = (tree, selector, interfaceName) => {
 
         if (hasChildren) {
             // console.log('Yes has children', el[3].length)
-            __._createNewInterface(el[3], newNode, interfaceName);
+            renderBranches(el[3], newNode, interfaceName);
         }
         selector.appendChild(newNode);
     }
@@ -309,7 +309,7 @@ __._createNewInterface = (tree, selector, interfaceName) => {
 
 
 //     console.log('new interface created')
-//     __._createNewInterface(currentVirtualTree, selector, interfaceName);
+//     renderBranches(currentVirtualTree, selector, interfaceName);
 //     // }
 // }
 
@@ -317,12 +317,12 @@ __._registerDynamicInterface = function(interFace, dynamicScope, interfaceName) 
     if (once('_registerDynamicInterface' + interfaceName)) {
         __.model[interfaceName]['name'] = interfaceName;
         __._dynamicStore[interfaceName] = {
-                lastVirtualTree: interFace.apply(dynamicScope, [__.model[interfaceName]]),
-                currentVirtualTree: () => {
-                    return interFace.apply(dynamicScope, [__.model[interfaceName]]);
-                }
-
+            lastVirtualTree: interFace.apply(dynamicScope, [__.model[interfaceName]]),
+            currentVirtualTree: () => {
+                return interFace.apply(dynamicScope, [__.model[interfaceName]]);
             }
+
+        }
     }
 }
 

@@ -1,4 +1,5 @@
 import { renderHasInterface, once } from './utils';
+import { renderBranches } from './wavefront-v2';
 let _render = {};
 
 const Render = {
@@ -8,18 +9,18 @@ const Render = {
     method2: function() {
         console.log('i am ' + this.tree);
     },
-    render(selector, interfaceName, interfaceType) {
+    renderUpdates(selector, interfaceName, interfaceType) {
+
+        // console.info('new interface Rendered')
+        // let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
+        //     console.log(selector, interfaceName, interfaceType)
+        // renderBranches(currentVirtualTree, selector, interfaceName);
+    },
+    initialRender(selector, interfaceName, interfaceType) {
         console.info('new interface Rendered')
         let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
-            console.log(selector, interfaceName, interfaceType)
-        __._createNewInterface(currentVirtualTree, selector, interfaceName);
-    },
-    renderOnce(selector, interfaceName, interfaceType) {
-        if (once('renderOnce')) {
-            console.info('new interface Rendered Once')
-            let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
-            __._createNewInterface(currentVirtualTree, selector, interfaceName);
-        }
+        console.log(selector, interfaceName, interfaceType)
+        renderBranches(currentVirtualTree, selector, interfaceName);
     }
 }
 
@@ -29,17 +30,30 @@ _render.stateless = Object.create(Render);
 _render.dynamic = Object.create(Render);
 
 export function addInterfaceRenderMethod(interfaceName, interfaceType) {
+    const fnName = 'addInterfaceRenderMethod';
+    let intitialRender;
     if (!renderHasInterface(interfaceName, interfaceType)) {
         _render[interfaceType][interfaceName] = function(selector) {
+            intitialRender = once(fnName + interfaceName);
             switch (interfaceType) {
                 case 'dynamic':
-                    this.render(selector, interfaceName, interfaceType);
+                    if (intitialRender) {
+                        this.initialRender(selector, interfaceName, interfaceType);
+                    } else {
+                        this.renderUpdates(selector, interfaceName, interfaceType);
+                    }
                     break;
                 case 'stateless':
-                    this.renderOnce(selector, interfaceName, interfaceType);
+                    if (intitialRender) {
+                        this.initialRender(selector, interfaceName, interfaceType);
+                    }
                     break;
                 case 'static':
-                    this.render(selector, interfaceName, interfaceType);
+                    if (intitialRender) {
+                        this.initialRender(selector, interfaceName, interfaceType);
+                    } else {
+                        this.renderUpdates(selector, interfaceName, interfaceType);
+                    }
                     break;
             }
         }
