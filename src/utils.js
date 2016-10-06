@@ -18,6 +18,7 @@ export const renderHasInterface = (interfaceName, interfaceType) => {
     return render[interfaceType].hasOwnProperty(interfaceName);
 }
 
+
 /**
  * Pass a condition once with a given reference.
  * @param {string} reference - A unique reference per conditon.

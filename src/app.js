@@ -42,7 +42,7 @@ __.model.testPage = {
 /*
  * ./interface/dynamic/*
  */
-__.stateless('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
+__.static('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
     /**
      * Tracking:: (Variables that are allowed to change)
      */
@@ -113,7 +113,7 @@ __.stateless('testPage', ({ _image, _articleSection2, _article1Header, name }) =
  */
  var HTMLInterface = document.querySelector('.main-section');
 window.test = function(){
-__.render.stateless.testPage(HTMLInterface);
+__.render.static.testPage(HTMLInterface);
 }
 
 
