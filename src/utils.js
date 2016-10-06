@@ -1,13 +1,37 @@
-
-
-
 /**
  * Finds value in an array 
  * @param {Array} haystack - The array to search.
  * @param {*} needle - The value to look for
  */
-const contains = (haystack, needle)=>{
-	return haystack.indexOf(needle) === -1;
+export const contains = (haystack, needle) => {
+    return haystack.indexOf(needle) === -1;
 }
 
-export default contains;
+
+/**
+ * Checks to see if the interface has been added
+ * as a render type method. 
+ * @param {string} interfaceType 
+ * @param {string} interfaceName
+ */
+export const renderHasInterface = (interfaceName, interfaceType) => {
+    return render[interfaceType].hasOwnProperty(interfaceName);
+}
+
+/**
+ * Pass a condition once with a given reference.
+ * @param {string} reference - A unique reference per conditon.
+ * @return {Boolean}
+ */
+export function once(reference) {
+    if (!once.prototype.references) {
+        once.prototype.references = {};
+    }
+    // Store reference if dosen't exist.
+    if (!once.prototype.references.hasOwnProperty(reference)) {
+        once.prototype.references[reference] = null;
+        return true;
+    } else {
+        return false;
+    }
+}

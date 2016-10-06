@@ -24,7 +24,7 @@ let store = {};
 //     this.method1();
 //     this.method2();
 // }
-addInterfaceRenderMethod('zookeeper','dynamic');
+
 
 window.render = render;
 // function MyClass(){
@@ -165,28 +165,30 @@ store.statelessRegistry = [];
  * @param {string} interfaceName - Name of the new interface
  * @param {string} registryType - dynamicRegistry | statelessRegistry | staticRegistry
  */
-const registerInterface = (interfaceName, registryType) => {
-    let registry = store[registryType];
+const registerInterface = (interfaceName, interfaceType) => {
+    // let registry = store[ interfaceType + Registry];
+    // Check if render interface types contains the given interface.
+        addInterfaceRenderMethod(interfaceName,interfaceType);
 
-    if (contains(interfaceName, registry)) {
-        let record;
+    // if (contains(interfaceName, registry)) {
+    //     let record;
 
-        switch (registryType) {
-            case 'dynamicRegistry':
-                record = {};
-                break;
-            case 'statelessRegistry':
-                record = {
-                    name: interfaceName,
-                    rendered: false
-                }
-                break;
-            case 'staticRegistry':
-                record = {};
-                break;
-        }
-        registry.push(record);
-    }
+    //     switch (registryType) {
+    //         case 'dynamicRegistry':
+    //             record = {};
+    //             break;
+    //         case 'statelessRegistry':
+    //             record = {
+    //                 name: interfaceName,
+    //                 rendered: false
+    //             }
+    //             break;
+    //         case 'staticRegistry':
+    //             record = {};
+    //             break;
+    //     }
+    //     registry.push(record);
+    // }
 }
 
 __._createNewInterface = (tree, selector, interfaceName) => {
@@ -330,19 +332,19 @@ __._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, inte
 
 
 __.dynamic = function(interfaceName, interFace) {
-    registerInterface(interfaceName, 'dynamicRegistry');
+    registerInterface(interfaceName, 'dynamic');
     __._registerDynamicInterface(interFace, this, interfaceName)
 };
 
 
 __.static = (interfaceName, interFace) => {
-    registerInterface(interfaceName, 'staticRegistry');
+    registerInterface(interfaceName, 'static');
     __._registerDynamicInterface(interFace, this, interfaceName)
 };
 
 
 __.stateless = (interfaceName, interFace) => {
-    registerInterface(interfaceName, 'statelessRegistry');
+    registerInterface(interfaceName, 'stateless');
     __._registerDynamicInterface(interFace, this, interfaceName)
 };
 
@@ -391,7 +393,7 @@ var assembly = (tagName) => {
 }
 
 
-// __.render = render;
+__.render = render;
 
 
 export var a = assembly('a');

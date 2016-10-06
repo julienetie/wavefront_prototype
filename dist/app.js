@@ -227,9 +227,35 @@ let classList = () => {
  * @param {Array} haystack - The array to search.
  * @param {*} needle - The value to look for
  */
-const contains = (haystack, needle) => {
-  return haystack.indexOf(needle) === -1;
+
+
+/**
+ * Checks to see if the interface has been added
+ * as a render type method. 
+ * @param {string} interfaceType 
+ * @param {string} interfaceName
+ */
+const renderHasInterface = (interfaceName, interfaceType) => {
+    return render[interfaceType].hasOwnProperty(interfaceName);
 };
+
+/**
+ * Pass a condition once with a given reference.
+ * @param {string} reference - A unique reference per conditon.
+ * @return {Boolean}
+ */
+function once(reference) {
+    if (!once.prototype.references) {
+        once.prototype.references = {};
+    }
+    // Store reference if dosen't exist.
+    if (!once.prototype.references.hasOwnProperty(reference)) {
+        once.prototype.references[reference] = null;
+        return true;
+    } else {
+        return false;
+    }
+}
 
 const Render = {
     method1: function () {
@@ -237,6 +263,13 @@ const Render = {
     },
     method2: function () {
         console.log('i am ' + this.tree);
+    },
+    renderOnce(selector, interfaceName, interfaceType) {
+        if (once('renderOnce')) {
+            console.info('new interface Rendered');
+            let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
+            __._createNewInterface(currentVirtualTree, selector, interfaceName);
+        }
     }
 };
 
@@ -247,16 +280,25 @@ _render.dynamic = Object.create(Render);
 ///need to generate 
 
 function addInterfaceRenderMethod(interfaceName, interfaceType) {
-    {
-        _render[interfaceType][interfaceName] = function () {
+    console.log(renderHasInterface(interfaceName, interfaceType));
+    // If no interface
+    if (!renderHasInterface(interfaceName, interfaceType)) {
+        _render[interfaceType][interfaceName] = function (selector) {
+            switch (interfaceType) {
+                case 'stateless':
+                    this.renderOnce(selector, interfaceName, interfaceType);
+                    break;
+            }
+
             this.method1();
             this.method2();
             console.log(interfaceName, interfaceType);
         };
+        console.info('new interface Added');
     }
 }
 
-let render = _render;
+let render$1 = _render;
 
 /**
  * @license
@@ -1219,25 +1261,13 @@ var importNode = importNode;
 
 var _this = undefined;
 
-// const waveFront = () => {
-//     window.addEventListener('load', function() {
-//         if (window.WAVEFRONT_ENV === 'dev') {
-//             console.log('%cWavefront%c::%cDEVELOPMENT MODE', 'color: #cc0000; font-size:1.1rem;', 'color: black; font-size:1rem;', 'color: darkblue; font-size:0.8rem;')
-//         }
-//     });
-// }
-
-// waveFront();
-
-let store = {};
-
 // render.dynamic['foo'] = function(){
 //     this.method1();
 //     this.method2();
 // }
-addInterfaceRenderMethod('zookeeper', 'dynamic');
 
-window.render = render;
+
+window.render = render$1;
 // function MyClass(){
 //     this.water = 'refreshing';
 // }
@@ -1261,12 +1291,12 @@ window.render = render;
 // }
 // var render = {}
 
-function __(interfaceNamewaveName) {
+function __$1(interfaceNamewaveName) {
     let props = {};
     var elementPropertyBlacklist = ['setAttribute', 'setAttributeNS', 'removeAttribute', 'removeAttributeNS', 'setAttributeNode', 'setAttributeNodeNS', 'removeAttributeNode', 'getElementsByTagName', 'getElementsByTagNameNS', 'getElementsByClassName', 'insertAdjacentElement', 'insertAdjacentText', 'insertAdjacentHTML', 'createShadowRoot', 'getDestinationInsertionPoints', 'remove', 'querySelector', 'querySelectorAll', 'attachShadow', 'cloneNode', 'innerHTML', 'insertBefore', 'appendChild', 'replaceChild', 'removeChild', 'addEventListener', ''];
     if (interfaceNamewaveName.indexOf(':') >= 0) {
         let nameParts = interfaceNamewaveName.split(':');
-        let element = __._elementStore[nameParts[0]][nameParts[1]];
+        let element = __$1._elementStore[nameParts[0]][nameParts[1]];
         let property;
         let i;
         let blackListLength = elementPropertyBlacklist.length;
@@ -1291,9 +1321,9 @@ function __(interfaceNamewaveName) {
         }
 }
 
-window.__ = __;
+window.__ = __$1;
 
-__.track = function (interfaceName, value, _tag) {
+__$1.track = function (interfaceName, value, _tag) {
     if (_tag === undefined) {
         throw new Error(`Please define the _tag for ${ value }`);
     }
@@ -1304,7 +1334,7 @@ __.track = function (interfaceName, value, _tag) {
     };
 };
 
-__.append = (...args) => {
+__$1.append = (...args) => {
 
     let appendValues = Array.from(args);
     let parent = appendValues.pop();
@@ -1314,7 +1344,7 @@ __.append = (...args) => {
     }
 };
 
-__.polyfills = (...args) => {
+__$1.polyfills = (...args) => {
     if (args.length) {
         args.forEach(polyfill => {
             polyfill();
@@ -1325,46 +1355,44 @@ __.polyfills = (...args) => {
     }
 };
 
-__.model = {};
+__$1.model = {};
 
-__._dynamicStore = {};
+__$1._dynamicStore = {};
 
-__._elementStore = {};
-
-store.staticRegistry = [];
-store.dynamicRegistry = [];
-store.statelessRegistry = [];
+__$1._elementStore = {};
 
 /**
  * Registers the interface and it's state.
  * @param {string} interfaceName - Name of the new interface
  * @param {string} registryType - dynamicRegistry | statelessRegistry | staticRegistry
  */
-const registerInterface = (interfaceName, registryType) => {
-    let registry = store[registryType];
+const registerInterface = (interfaceName, interfaceType) => {
+    // let registry = store[ interfaceType + Registry];
+    // Check if render interface types contains the given interface.
+    addInterfaceRenderMethod(interfaceName, interfaceType);
 
-    if (contains(interfaceName, registry)) {
-        let record;
+    // if (contains(interfaceName, registry)) {
+    //     let record;
 
-        switch (registryType) {
-            case 'dynamicRegistry':
-                record = {};
-                break;
-            case 'statelessRegistry':
-                record = {
-                    name: interfaceName,
-                    rendered: false
-                };
-                break;
-            case 'staticRegistry':
-                record = {};
-                break;
-        }
-        registry.push(record);
-    }
+    //     switch (registryType) {
+    //         case 'dynamicRegistry':
+    //             record = {};
+    //             break;
+    //         case 'statelessRegistry':
+    //             record = {
+    //                 name: interfaceName,
+    //                 rendered: false
+    //             }
+    //             break;
+    //         case 'staticRegistry':
+    //             record = {};
+    //             break;
+    //     }
+    //     registry.push(record);
+    // }
 };
 
-__._createNewInterface = (tree, selector, interfaceName) => {
+__$1._createNewInterface = (tree, selector, interfaceName) => {
     let treeLength = tree.length;
     let el;
     let createdElement;
@@ -1376,8 +1404,8 @@ __._createNewInterface = (tree, selector, interfaceName) => {
     let selectorName = false;
 
     // Create the element store for the interface.
-    if (!__._elementStore.hasOwnProperty(interfaceName)) {
-        __._elementStore[interfaceName] = {};
+    if (!__$1._elementStore.hasOwnProperty(interfaceName)) {
+        __$1._elementStore[interfaceName] = {};
     }
 
     // var fragment = document.createDocumentFragment();
@@ -1450,13 +1478,13 @@ __._createNewInterface = (tree, selector, interfaceName) => {
 
         // Add node to elemeent store.
         if (selectorName) {
-            __._elementStore[interfaceName][toCamel(selectorName)] = newNode;
+            __$1._elementStore[interfaceName][toCamel(selectorName)] = newNode;
             selectorName = false;
         }
 
         if (hasChildren) {
             // console.log('Yes has children', el[3].length)
-            __._createNewInterface(el[3], newNode, interfaceName);
+            __$1._createNewInterface(el[3], newNode, interfaceName);
         }
         selector.appendChild(newNode);
     }
@@ -1477,13 +1505,13 @@ __._createNewInterface = (tree, selector, interfaceName) => {
 //     // }
 // }
 
-__._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, interfaceName) {
+__$1._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, interfaceName) {
     if (_regDynInt.prototype.once) {} else {
-        __.model[interfaceName]['name'] = interfaceName;
-        __._dynamicStore[interfaceName] = {
-            lastVirtualTree: interFace.apply(dynamicScope, [__.model[interfaceName]]),
+        __$1.model[interfaceName]['name'] = interfaceName;
+        __$1._dynamicStore[interfaceName] = {
+            lastVirtualTree: interFace.apply(dynamicScope, [__$1.model[interfaceName]]),
             currentVirtualTree: () => {
-                return interFace.apply(dynamicScope, [__.model[interfaceName]]);
+                return interFace.apply(dynamicScope, [__$1.model[interfaceName]]);
             }
 
         };
@@ -1492,19 +1520,19 @@ __._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, inte
     }
 };
 
-__.dynamic = function (interfaceName, interFace) {
-    registerInterface(interfaceName, 'dynamicRegistry');
-    __._registerDynamicInterface(interFace, this, interfaceName);
+__$1.dynamic = function (interfaceName, interFace) {
+    registerInterface(interfaceName, 'dynamic');
+    __$1._registerDynamicInterface(interFace, this, interfaceName);
 };
 
-__.static = (interfaceName, interFace) => {
-    registerInterface(interfaceName, 'staticRegistry');
-    __._registerDynamicInterface(interFace, _this, interfaceName);
+__$1.static = (interfaceName, interFace) => {
+    registerInterface(interfaceName, 'static');
+    __$1._registerDynamicInterface(interFace, _this, interfaceName);
 };
 
-__.stateless = (interfaceName, interFace) => {
-    registerInterface(interfaceName, 'statelessRegistry');
-    __._registerDynamicInterface(interFace, _this, interfaceName);
+__$1.stateless = (interfaceName, interFace) => {
+    registerInterface(interfaceName, 'stateless');
+    __$1._registerDynamicInterface(interFace, _this, interfaceName);
 };
 
 var assembly = tagName => {
@@ -1551,8 +1579,7 @@ var assembly = tagName => {
     };
 };
 
-// __.render = render;
-
+__$1.render = render$1;
 
 var a = assembly('a');
 
@@ -1659,12 +1686,12 @@ var comment = message => {
 };
 
 // window.WAVEFRONT_ENV = 'dev';
-__.polyfills();
+__$1.polyfills();
 
 /*
  * ./data/
  */
-__.model.testPage = {
+__$1.model.testPage = {
     _image: {
         src: 'https://www.google.co.uk/logos/doodles/2016/100th-anniversary-of-completion-of-the-trans-siberian-railway-6269398706814976-vacta.gif',
         width: 85,
@@ -1679,15 +1706,15 @@ __.model.testPage = {
 /*
  * ./interface/dynamic/*
  */
-__.stateless('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
+__$1.stateless('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
     /**
      * Tracking:: (Variables that are allowed to change)
      */
     let red = 'red';
 
-    let image = __.track(name, _image, 'dImage');
-    let articleSection2 = __.track(name, _articleSection2, 'vArticle');
-    let article1Header = __.track(name, _article1Header, 'vArticle');
+    let image = __$1.track(name, _image, 'dImage');
+    let articleSection2 = __$1.track(name, _articleSection2, 'vArticle');
+    let article1Header = __$1.track(name, _article1Header, 'vArticle');
 
     /*__________________________________________________*/
     return [header({ class: 'red', 'data-hello': 'World!', style: `background: ${ red }; height:auto` }, h1('Header in h1'), comment('This is a comment'), h2('Subheader in h2')), comment('YEa yea yea yYAAAA whatever'), 'This is crazy', nav(ul(li(a({ href: 'http://google.com', class: 'some-class' }, 'Menu Option 1a')), li(a({ href: 'http://facebook.com', class: 'some-class' }, 'Menu Option 2a')), li(a({ href: 'http://youtube.com' }, 'Menu Option 3a')))), section(article(header({ wave: 'juliensHeader' }, h1(article1Header)), section('This is the first article. This is', mark('highlightedmark'), '.')), article(header(h1('Article #2h1')), section({ id: 'whatsUpJack' }, articleSection2))), aside(section(h1('Linksh1'), ul(li(a({ href: '#' }, 'Link 1a')), li(a({ href: '#' }, 'Link 2a')), li(a({ href: '#' }, 'Link 3a')))), figure(img(image), figcaption('Jennifer Marsman'))), footer('Footer - Copyright 2016')];
@@ -1699,9 +1726,9 @@ __.stateless('testPage', ({ _image, _articleSection2, _article1Header, name }) =
  */
 var HTMLInterface = document.querySelector('.main-section');
 window.test = function () {
-    // __.render('testPage', HTMLInterface);
+    __$1.render.stateless.testPage(HTMLInterface);
 };
 
-window.__ = __;
+window.__ = __$1;
 
 })));
