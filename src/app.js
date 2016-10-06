@@ -42,12 +42,11 @@ __.model.testPage = {
 /*
  * ./interface/dynamic/*
  */
-__.stateless('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
+__.dynamic('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
     /**
      * Tracking:: (Variables that are allowed to change)
      */
-     let red = 'red';
-
+    let red = 'red';
     let image = __.track(name, _image, 'dImage');
     let articleSection2 = __.track(name, _articleSection2, 'vArticle');
     let article1Header = __.track(name, _article1Header, 'vArticle');
@@ -70,7 +69,7 @@ __.stateless('testPage', ({ _image, _articleSection2, _article1Header, name }) =
         ),
         section(
             article(
-                header( {wave:'juliensHeader'},
+                header({ wave: 'juliensHeader' },
                     h1(article1Header)
                 ),
                 section(
@@ -83,7 +82,7 @@ __.stateless('testPage', ({ _image, _articleSection2, _article1Header, name }) =
                 header(
                     h1('Article #2h1')
                 ),
-                section({id:'whatsUpJack'},
+                section({ id: 'whatsUpJack' },
                     articleSection2
                 ),
             )
@@ -111,9 +110,9 @@ __.stateless('testPage', ({ _image, _articleSection2, _article1Header, name }) =
 /*
  * ./render/*
  */
- var HTMLInterface = document.querySelector('.main-section');
-window.test = function(){
-__.render.stateless.testPage(HTMLInterface);
+var HTMLInterface = document.querySelector('.main-section');
+window.test = function() {
+    __.render.dynamic.testPage(HTMLInterface);
 }
 
 

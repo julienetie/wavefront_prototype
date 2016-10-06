@@ -1,4 +1,5 @@
 import { renderHasInterface, once } from './utils';
+let _render = {};
 
 const Render = {
     method1: function() {
@@ -8,9 +9,9 @@ const Render = {
         console.log('i am ' + this.tree);
     },
     render(selector, interfaceName, interfaceType) {
-            console.info('new interface Rendered')
-            let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
-            __._createNewInterface(currentVirtualTree, selector, interfaceName);
+        console.info('new interface Rendered')
+        let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
+        __._createNewInterface(currentVirtualTree, selector, interfaceName);
     },
     renderOnce(selector, interfaceName, interfaceType) {
         if (once('renderOnce')) {
@@ -22,18 +23,17 @@ const Render = {
 }
 
 
-let _render = {};
 _render.static = Object.create(Render);
 _render.stateless = Object.create(Render);
 _render.dynamic = Object.create(Render);
-///need to generate 
 
 export function addInterfaceRenderMethod(interfaceName, interfaceType) {
-    console.log(renderHasInterface(interfaceName, interfaceType))
-        // If no interface
     if (!renderHasInterface(interfaceName, interfaceType)) {
         _render[interfaceType][interfaceName] = function(selector) {
             switch (interfaceType) {
+                case 'dynamic':
+                    this.render(selector, interfaceName, interfaceType);
+                    break;
                 case 'stateless':
                     this.renderOnce(selector, interfaceName, interfaceType);
                     break;
@@ -41,11 +41,6 @@ export function addInterfaceRenderMethod(interfaceName, interfaceType) {
                     this.render(selector, interfaceName, interfaceType);
                     break;
             }
-
-
-            // this.method1();
-            // this.method2();
-            // console.log(interfaceName, interfaceType)
         }
         console.info('new interface Added')
     }

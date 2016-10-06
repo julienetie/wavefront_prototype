@@ -257,6 +257,8 @@ function once(reference) {
     }
 }
 
+let _render = {};
+
 const Render = {
     method1: function () {
         this.tree = 'green';
@@ -278,18 +280,17 @@ const Render = {
     }
 };
 
-let _render = {};
 _render.static = Object.create(Render);
 _render.stateless = Object.create(Render);
 _render.dynamic = Object.create(Render);
-///need to generate 
 
 function addInterfaceRenderMethod(interfaceName, interfaceType) {
-    console.log(renderHasInterface(interfaceName, interfaceType));
-    // If no interface
     if (!renderHasInterface(interfaceName, interfaceType)) {
         _render[interfaceType][interfaceName] = function (selector) {
             switch (interfaceType) {
+                case 'dynamic':
+                    this.render(selector, interfaceName, interfaceType);
+                    break;
                 case 'stateless':
                     this.renderOnce(selector, interfaceName, interfaceType);
                     break;
@@ -297,10 +298,6 @@ function addInterfaceRenderMethod(interfaceName, interfaceType) {
                     this.render(selector, interfaceName, interfaceType);
                     break;
             }
-
-            // this.method1();
-            // this.method2();
-            // console.log(interfaceName, interfaceType)
         };
         console.info('new interface Added');
     }
@@ -1714,12 +1711,11 @@ __$1.model.testPage = {
 /*
  * ./interface/dynamic/*
  */
-__$1.stateless('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
+__$1.dynamic('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
     /**
      * Tracking:: (Variables that are allowed to change)
      */
     let red = 'red';
-
     let image = __$1.track(name, _image, 'dImage');
     let articleSection2 = __$1.track(name, _articleSection2, 'vArticle');
     let article1Header = __$1.track(name, _article1Header, 'vArticle');
@@ -1734,7 +1730,7 @@ __$1.stateless('testPage', ({ _image, _articleSection2, _article1Header, name })
  */
 var HTMLInterface = document.querySelector('.main-section');
 window.test = function () {
-    __$1.render.stateless.testPage(HTMLInterface);
+    __$1.render.dynamic.testPage(HTMLInterface);
 };
 
 window.__ = __$1;
