@@ -1,5 +1,6 @@
 import classList from './polyfills/class-list';
 import contains from './utils';
+import {render, addInterfaceRenderMethod} from './render';
 import {
     patch,
     elementOpen,
@@ -19,6 +20,35 @@ import {
 
 let store = {};
 
+// render.dynamic['foo'] = function(){
+//     this.method1();
+//     this.method2();
+// }
+addInterfaceRenderMethod('zookeeper','dynamic');
+
+window.render = render;
+// function MyClass(){
+//     this.water = 'refreshing';
+// }
+// MyClass.prototype = {
+
+//     method1: ()=>{
+//         console.log('method1',this.water)
+//     },
+//     method2: ()=>{
+//         console.log('method2',this.water)
+//     }
+// }
+
+
+// render.dynamic = MyClass.prototype
+// render.stateless = MyClass.prototype
+// render.static = MyClass.prototype
+
+// render.stateless['face'] = ()=>{
+//     console.log(this)
+// }
+// var render = {}
 
 export function __(interfaceNamewaveName) {
     let props = {};
@@ -263,19 +293,23 @@ __._createNewInterface = (tree, selector, interfaceName) => {
 }
 
 
-function render(interfaceName, selector) {
-    let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
-    // if (_renderTree.prototype[interfaceName]) {
-    //     //
-    // } else {
-    //     _renderTree.prototype[interfaceName] = true;
+
+
+// function render(interfaceName, selector) {
+
+
+//     let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
+//     // if (_renderTree.prototype[interfaceName]) {
+//     //     //
+//     // } else {
+//     //     _renderTree.prototype[interfaceName] = true;
 
 
 
-    console.log('new interface created')
-    __._createNewInterface(currentVirtualTree, selector, interfaceName);
-    // }
-}
+//     console.log('new interface created')
+//     __._createNewInterface(currentVirtualTree, selector, interfaceName);
+//     // }
+// }
 
 __._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, interfaceName) {
     if (_regDynInt.prototype.once) {
@@ -357,7 +391,7 @@ var assembly = (tagName) => {
 }
 
 
-__.render = render;
+// __.render = render;
 
 
 export var a = assembly('a');

@@ -231,6 +231,33 @@ const contains = (haystack, needle) => {
   return haystack.indexOf(needle) === -1;
 };
 
+const Render = {
+    method1: function () {
+        this.tree = 'green';
+    },
+    method2: function () {
+        console.log('i am ' + this.tree);
+    }
+};
+
+let _render = {};
+_render.static = Object.create(Render);
+_render.stateless = Object.create(Render);
+_render.dynamic = Object.create(Render);
+///need to generate 
+
+function addInterfaceRenderMethod(interfaceName, interfaceType) {
+    {
+        _render[interfaceType][interfaceName] = function () {
+            this.method1();
+            this.method2();
+            console.log(interfaceName, interfaceType);
+        };
+    }
+}
+
+let render = _render;
+
 /**
  * @license
  * Copyright 2015 The Incremental DOM Authors. All Rights Reserved.
@@ -1204,7 +1231,36 @@ var _this = undefined;
 
 let store = {};
 
-console.log(contains);
+// render.dynamic['foo'] = function(){
+//     this.method1();
+//     this.method2();
+// }
+addInterfaceRenderMethod('zookeeper', 'dynamic');
+
+window.render = render;
+// function MyClass(){
+//     this.water = 'refreshing';
+// }
+// MyClass.prototype = {
+
+//     method1: ()=>{
+//         console.log('method1',this.water)
+//     },
+//     method2: ()=>{
+//         console.log('method2',this.water)
+//     }
+// }
+
+
+// render.dynamic = MyClass.prototype
+// render.stateless = MyClass.prototype
+// render.static = MyClass.prototype
+
+// render.stateless['face'] = ()=>{
+//     console.log(this)
+// }
+// var render = {}
+
 function __(interfaceNamewaveName) {
     let props = {};
     var elementPropertyBlacklist = ['setAttribute', 'setAttributeNS', 'removeAttribute', 'removeAttributeNS', 'setAttributeNode', 'setAttributeNodeNS', 'removeAttributeNode', 'getElementsByTagName', 'getElementsByTagNameNS', 'getElementsByClassName', 'insertAdjacentElement', 'insertAdjacentText', 'insertAdjacentHTML', 'createShadowRoot', 'getDestinationInsertionPoints', 'remove', 'querySelector', 'querySelectorAll', 'attachShadow', 'cloneNode', 'innerHTML', 'insertBefore', 'appendChild', 'replaceChild', 'removeChild', 'addEventListener', ''];
@@ -1287,7 +1343,7 @@ store.statelessRegistry = [];
 const registerInterface = (interfaceName, registryType) => {
     let registry = store[registryType];
 
-    if (registry.indexOf(interfaceName) === -1) {
+    if (contains(interfaceName, registry)) {
         let record;
 
         switch (registryType) {
@@ -1406,18 +1462,20 @@ __._createNewInterface = (tree, selector, interfaceName) => {
     }
 };
 
-function render(interfaceName, selector) {
-    let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
-    // if (_renderTree.prototype[interfaceName]) {
-    //     //
-    // } else {
-    //     _renderTree.prototype[interfaceName] = true;
+// function render(interfaceName, selector) {
 
 
-    console.log('new interface created');
-    __._createNewInterface(currentVirtualTree, selector, interfaceName);
-    // }
-}
+//     let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
+//     // if (_renderTree.prototype[interfaceName]) {
+//     //     //
+//     // } else {
+//     //     _renderTree.prototype[interfaceName] = true;
+
+
+//     console.log('new interface created')
+//     __._createNewInterface(currentVirtualTree, selector, interfaceName);
+//     // }
+// }
 
 __._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, interfaceName) {
     if (_regDynInt.prototype.once) {} else {
@@ -1493,7 +1551,8 @@ var assembly = tagName => {
     };
 };
 
-__.render = render;
+// __.render = render;
+
 
 var a = assembly('a');
 
@@ -1640,7 +1699,7 @@ __.stateless('testPage', ({ _image, _articleSection2, _article1Header, name }) =
  */
 var HTMLInterface = document.querySelector('.main-section');
 window.test = function () {
-    __.render('testPage', HTMLInterface);
+    // __.render('testPage', HTMLInterface);
 };
 
 window.__ = __;
