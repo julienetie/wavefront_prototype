@@ -1181,6 +1181,8 @@ var applyProp = applyProp;
 var notifications = notifications;
 var importNode = importNode;
 
+var _this = undefined;
+
 // const waveFront = () => {
 //     window.addEventListener('load', function() {
 //         if (window.WAVEFRONT_ENV === 'dev') {
@@ -1191,10 +1193,11 @@ var importNode = importNode;
 
 // waveFront();
 
+let store = {};
 
 function __(interfaceNamewaveName) {
     let props = {};
-    var elementPropertyBlacklist = ['setAttribute', 'setAttributeNS', 'removeAttribute', 'removeAttributeNS', 'setAttributeNode', 'setAttributeNodeNS', 'removeAttributeNode', 'getElementsByTagName', 'getElementsByTagNameNS', 'getElementsByClassName', 'insertAdjacentElement', 'insertAdjacentText', 'insertAdjacentHTML', 'createShadowRoot', 'getDestinationInsertionPoints', 'remove', 'querySelector', 'querySelectorAll', 'attachShadow', 'cloneNode', 'innerHTML', 'insertBefore', 'appendChild', 'replaceChild', 'removeChild'];
+    var elementPropertyBlacklist = ['setAttribute', 'setAttributeNS', 'removeAttribute', 'removeAttributeNS', 'setAttributeNode', 'setAttributeNodeNS', 'removeAttributeNode', 'getElementsByTagName', 'getElementsByTagNameNS', 'getElementsByClassName', 'insertAdjacentElement', 'insertAdjacentText', 'insertAdjacentHTML', 'createShadowRoot', 'getDestinationInsertionPoints', 'remove', 'querySelector', 'querySelectorAll', 'attachShadow', 'cloneNode', 'innerHTML', 'insertBefore', 'appendChild', 'replaceChild', 'removeChild', 'addEventListener', ''];
     if (interfaceNamewaveName.indexOf(':') >= 0) {
         let nameParts = interfaceNamewaveName.split(':');
         let element = __._elementStore[nameParts[0]][nameParts[1]];
@@ -1261,6 +1264,18 @@ __.model = {};
 __._dynamicStore = {};
 
 __._elementStore = {};
+
+store.staticRegistry = [];
+store.dynamicRegistry = [];
+store.statelessRegistry = [];
+
+const registerInterface = (interfaceName, registryType) => {
+    let registry = store[registryType];
+
+    if (registry.indexOf(interfaceName) === -1) {
+        registry.push(interfaceName);
+    }
+};
 
 __._createNewInterface = (tree, selector, interfaceName) => {
     let treeLength = tree.length;
@@ -1360,7 +1375,7 @@ __._createNewInterface = (tree, selector, interfaceName) => {
     }
 };
 
-__.renderTree = function _renderTree(interfaceName, selector) {
+__.render = function _renderTree(interfaceName, selector) {
     let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
     if (_renderTree.prototype[interfaceName]) {
         //
@@ -1386,17 +1401,20 @@ __._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, inte
     }
 };
 
-// __.updateInterface = function(interfaceName, data) {
-
-// }
-
-
 __.dynamic = function (interfaceName, interFace) {
-    // Called once to set the inital state.
+    registerInterface(interfaceName, 'dynamicRegistry');
     __._registerDynamicInterface(interFace, this, interfaceName);
 };
-__.static = () => {};
-__.stateless = () => {};
+
+__.static = (interfaceName, interFace) => {
+    registerInterface(interfaceName, 'staticRegistry');
+    __._registerDynamicInterface(interFace, _this, interfaceName);
+};
+
+__.stateless = (interfaceName, interFace) => {
+    registerInterface(interfaceName, 'statelessRegistry');
+    __._registerDynamicInterface(interFace, _this, interfaceName);
+};
 
 var assembly = tagName => {
     return (...args) => {
@@ -1567,7 +1585,7 @@ __.model.testPage = {
 /*
  * ./interface/dynamic/*
  */
-__.dynamic('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
+__.static('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
     /**
      * Tracking:: (Variables that are allowed to change)
      */
@@ -1587,7 +1605,7 @@ __.dynamic('testPage', ({ _image, _articleSection2, _article1Header, name }) => 
  */
 var HTMLInterface = document.querySelector('.main-section');
 window.test = function () {
-    __.renderTree('testPage', HTMLInterface);
+    __.render('testPage', HTMLInterface);
 };
 
 window.__ = __;

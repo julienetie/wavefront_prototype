@@ -16,7 +16,7 @@ import {
 
 // waveFront();
 
-
+let store = {};
 
 
 export function __(interfaceNamewaveName) {
@@ -124,6 +124,19 @@ __.model = {}
 __._dynamicStore = {};
 
 __._elementStore = {};
+
+store.staticRegistry = [];
+store.dynamicRegistry = [];
+store.statelessRegistry = [];
+
+
+const registerInterface = (interfaceName, registryType)=>{
+    let registry = store[registryType];
+
+    if(registry.indexOf(interfaceName) === -1){
+        registry.push(interfaceName);
+    }
+}
 
 __._createNewInterface = (tree, selector, interfaceName) => {
     let treeLength = tree.length;
@@ -259,13 +272,19 @@ __._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, inte
 
 
 __.dynamic = function(interfaceName, interFace) {
-    // Called once to set the inital state.
+    registerInterface(interfaceName, 'dynamicRegistry');
     __._registerDynamicInterface(interFace, this, interfaceName)
 };
+
+
 __.static = (interfaceName, interFace) => {
+    registerInterface(interfaceName, 'staticRegistry');
     __._registerDynamicInterface(interFace, this, interfaceName) 
 };
+
+
 __.stateless = (interfaceName, interFace) => {
+    registerInterface(interfaceName, 'statelessRegistry');
     __._registerDynamicInterface(interFace, this, interfaceName)    
 };
 
