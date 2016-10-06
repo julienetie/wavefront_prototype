@@ -1,5 +1,5 @@
 import classList from './polyfills/class-list';
-import contains from './utils';
+import { contains, once } from './utils';
 import {render, addInterfaceRenderMethod} from './render';
 import {
     patch,
@@ -313,10 +313,8 @@ __._createNewInterface = (tree, selector, interfaceName) => {
 //     // }
 // }
 
-__._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, interfaceName) {
-    if (_regDynInt.prototype.once) {
-
-    } else {
+__._registerDynamicInterface = function(interFace, dynamicScope, interfaceName) {
+    if (once('_registerDynamicInterface' + interfaceName)) {
         __.model[interfaceName]['name'] = interfaceName;
         __._dynamicStore[interfaceName] = {
                 lastVirtualTree: interFace.apply(dynamicScope, [__.model[interfaceName]]),
@@ -325,8 +323,6 @@ __._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, inte
                 }
 
             }
-            // console.log('once', __._dynamicStore[interfaceName].currentVirtualTree())
-        _regDynInt.prototype.once = true;
     }
 }
 

@@ -11,6 +11,7 @@ const Render = {
     render(selector, interfaceName, interfaceType) {
         console.info('new interface Rendered')
         let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
+            console.log(selector, interfaceName, interfaceType)
         __._createNewInterface(currentVirtualTree, selector, interfaceName);
     },
     renderOnce(selector, interfaceName, interfaceType) {
@@ -43,6 +44,7 @@ export function addInterfaceRenderMethod(interfaceName, interfaceType) {
             }
         }
         console.info('new interface Added')
+        window.d = __._dynamicStore;
     }
 }
 

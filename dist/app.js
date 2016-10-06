@@ -269,6 +269,7 @@ const Render = {
     render(selector, interfaceName, interfaceType) {
         console.info('new interface Rendered');
         let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
+        console.log(selector, interfaceName, interfaceType);
         __._createNewInterface(currentVirtualTree, selector, interfaceName);
     },
     renderOnce(selector, interfaceName, interfaceType) {
@@ -300,6 +301,7 @@ function addInterfaceRenderMethod(interfaceName, interfaceType) {
             }
         };
         console.info('new interface Added');
+        window.d = __._dynamicStore;
     }
 }
 
@@ -1510,8 +1512,8 @@ __$1._createNewInterface = (tree, selector, interfaceName) => {
 //     // }
 // }
 
-__$1._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, interfaceName) {
-    if (_regDynInt.prototype.once) {} else {
+__$1._registerDynamicInterface = function (interFace, dynamicScope, interfaceName) {
+    if (once('_registerDynamicInterface' + interfaceName)) {
         __$1.model[interfaceName]['name'] = interfaceName;
         __$1._dynamicStore[interfaceName] = {
             lastVirtualTree: interFace.apply(dynamicScope, [__$1.model[interfaceName]]),
@@ -1520,8 +1522,6 @@ __$1._registerDynamicInterface = function _regDynInt(interFace, dynamicScope, in
             }
 
         };
-        // console.log('once', __._dynamicStore[interfaceName].currentVirtualTree())
-        _regDynInt.prototype.once = true;
     }
 };
 
@@ -1706,6 +1706,16 @@ __$1.model.testPage = {
     _articleSection2: 'This is the second article. These articles could be blog posts, etc.',
     _article1Header: 'Article #1h1'
 };
+__$1.model.otherPage = {
+    _image: {
+        src: 'https://www.google.co.uk/logos/doodles/2016/100th-anniversary-of-completion-of-the-trans-siberian-railway-6269398706814976-vacta.gif',
+        width: 85,
+        height: 85,
+        alt: 'Jennifer Marsman'
+    },
+    _articleSection2: 'This is the second article. These articles could be blog posts, etc.',
+    _article1Header: 'Article #1h1'
+};
 /****DATA *****/
 
 /*
@@ -1726,11 +1736,30 @@ __$1.dynamic('testPage', ({ _image, _articleSection2, _article1Header, name }) =
 });
 
 /*
+ * ./interface/dynamic/*
+ */
+__$1.dynamic('otherPage', ({ _image, _articleSection2, _article1Header, name }) => {
+    /**
+     * Tracking:: (Variables that are allowed to change)
+     */
+    let red = 'red';
+    let image = __$1.track(name, _image, 'dImage');
+    let articleSection2 = __$1.track(name, _articleSection2, 'vArticle');
+    let article1Header = __$1.track(name, _article1Header, 'vArticle');
+
+    /*__________________________________________________*/
+    return [header({ class: 'red', 'data-hello': 'World!', style: `background: yellow; height:auto` }, h1('This is another interface'), comment('This is a comment'), h2('Subheader in h2')), comment('YEa yea yea yYAAAA whatever'), 'This is another interface', nav(ul(li(a({ href: 'http://google.com', class: 'some-class' }, 'Menu Option 1a')), li(a({ href: 'http://facebook.com', class: 'some-class' }, 'Menu Option 2a')), li(a({ href: 'http://youtube.com' }, 'Menu Option 3a')))), section(article(header({ wave: 'juliensHeader' }, h1(article1Header)), section('This is another interface', mark('highlightedmark'), '.')), article(header(h1('This is another interface')), section({ id: 'whatsUpJack' }, articleSection2))), aside(section(h1('Linksh1'), ul(li(a({ href: '#' }, 'Link 1a')), li(a({ href: '#' }, 'Link 2a')), li(a({ href: '#' }, 'Link 3a')))), figure(img(image), figcaption('Jennifer Marsman'))), footer('Footer - Copyright 2016')];
+    /*__________________________________________________*/
+});
+
+/*
  * ./render/*
  */
-var HTMLInterface = document.querySelector('.main-section');
+var HTMLInterface1 = document.querySelector('.main-section');
+var HTMLInterface2 = document.querySelector('.other-section');
 window.test = function () {
-    __$1.render.dynamic.testPage(HTMLInterface);
+    __$1.render.dynamic.testPage(HTMLInterface1);
+    __$1.render.dynamic.otherPage(HTMLInterface2);
 };
 
 window.__ = __$1;
