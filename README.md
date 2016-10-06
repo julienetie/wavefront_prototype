@@ -35,7 +35,7 @@ UI development on the web can mostly be broken down into:
 
 
 _Example:_ 
-```
+```javascript
     div({class: 'container'. id: 'some-id1'},
         span(
             div({class: 'some-class'},
@@ -62,7 +62,7 @@ _Example:_
     );
 ```
 _Will produce:_
-```
+```html
 <div class="container" id="some-id1">
     <span>
         <div class="some-class">
