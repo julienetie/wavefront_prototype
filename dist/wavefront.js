@@ -1,9 +1,3 @@
-(function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-    (factory());
-}(this, (function () { 'use strict';
-
 let classList = () => {
 
     /*
@@ -49,7 +43,6 @@ let classList = () => {
                     return -1;
                 }
                 // Vendors: please allow content code to instantiate DOMExceptions
-
 
                 ,
                     DOMEx = function (type, message) {
@@ -232,11 +225,14 @@ const getChildIndex = node => {
     return [].indexOf.call(node.parentNode.children, node);
 };
 
+
+
 /**
  * Finds value in an array 
  * @param {Array} haystack - The array to search.
  * @param {*} needle - The value to look for
  */
+
 
 /**
  * Checks to see if the interface has been added
@@ -837,95 +833,117 @@ const assembly = tagName => {
 wave.render = render$1;
 
 const a = assembly('a');
+const abbr = assembly('abbr');
+const address = assembly('address');
+const area = assembly('area');
 const article = assembly('article');
 const aside = assembly('aside');
+const audio = assembly('audio');
+const b = assembly('b');
+const base = assembly('base');
+const bdi = assembly('bdi');
+const bdo = assembly('bdo');
+const blockquote = assembly('blockquote');
+const body = assembly('body');
+const br = assembly('br');
+const button = assembly('button');
+const canvas = assembly('canvas');
+const caption = assembly('caption');
+const cite = assembly('cite');
+const code = assembly('code');
+const col = assembly('col');
+const colgroup = assembly('colgroup');
+const command = assembly('command');
+const dd = assembly('dd');
+const del = assembly('del');
+const dfn = assembly('dfn');
+const div = assembly('div');
+const dl = assembly('dl');
+const doctype = assembly('doctype');
+const dt = assembly('dt');
+const em = assembly('em');
+const embed = assembly('embed');
+const fieldset = assembly('fieldset');
 const figcaption = assembly('figcaption');
 const figure = assembly('figure');
 const footer = assembly('footer');
+const form = assembly('form');
 const h1 = assembly('h1');
 const h2 = assembly('h2');
+const h3 = assembly('h3');
+const h4 = assembly('h4');
+const h5 = assembly('h5');
+const h6 = assembly('h6');
 const header = assembly('header');
+const hgroup = assembly('hgroup');
+const hr = assembly('hr');
+const html = assembly('html');
+const i = assembly('i');
+const iframe = assembly('iframe');
 const img = assembly('img');
+const input = assembly('input');
+const ins = assembly('ins');
+const kbd = assembly('kbd');
+const keygen = assembly('keygen');
+const label = assembly('label');
+const legend = assembly('legend');
 const li = assembly('li');
+const link = assembly('link');
+const map = assembly('map');
 const mark = assembly('mark');
+const menu = assembly('menu');
+const meta = assembly('meta');
 const nav = assembly('nav');
+const noscript = assembly('noscript');
+const object = assembly('object');
+const ol = assembly('ol');
+const optgroup = assembly('optgroup');
+const option = assembly('option');
+const p = assembly('p');
+const param = assembly('param');
+const pre = assembly('pre');
+const progress = assembly('progress');
+const q = assembly('q');
+const rp = assembly('rp');
+const rt = assembly('rt');
+const ruby = assembly('ruby');
+const s = assembly('s');
+const samp = assembly('samp');
+const script = assembly('script');
 const section = assembly('section');
+const select = assembly('select');
+const small = assembly('small');
+const source = assembly('source');
+const span = assembly('span');
+const strong = assembly('strong');
+const style = assembly('style');
+const sub = assembly('sub');
+const sup = assembly('sup');
+const table = assembly('table');
+const tbody = assembly('tbody');
+const td = assembly('td');
+const textarea = assembly('textarea');
+const tfoot = assembly('tfoot');
+const th = assembly('th');
+const thead = assembly('thead');
+const title = assembly('title');
+const tr = assembly('tr');
 const ul = assembly('ul');
+const v = assembly('var');
+const video = assembly('video');
+
 const comment = message => {
     return ['comment', message];
 };
+const text = message => {
+    return ['text', message];
+};
+const loop = () => {
+    // Takes an object, array or JSON and loops though,
+    // Return the elements/ nodes to make up a list.
+    // you can nest loops.
+};
+
 const __$1 = wave;
 
-__$1.polyfills();
-
-/*
- * ./data/
- */
-__$1.model.testPage = {
-    _image: {
-        src: 'https://www.google.co.uk/logos/doodles/2016/100th-anniversary-of-completion-of-the-trans-siberian-railway-6269398706814976-vacta.gif',
-        width: 85,
-        height: 85,
-        alt: 'Jennifer Marsman'
-    },
-    _articleSection2: 'This is the second article. These articles could be blog posts, etc.',
-    _article1Header: 'Article #1h1'
-};
-__$1.model.otherPage = {
-    _image: {
-        src: 'https://www.google.co.uk/logos/doodles/2016/100th-anniversary-of-completion-of-the-trans-siberian-railway-6269398706814976-vacta.gif',
-        width: 85,
-        height: 85,
-        alt: 'Jennifer Marsman'
-    },
-    _articleSection2: 'This is the second article. These articles could be blog posts, etc.',
-    _article1Header: 'Article #1h1'
-};
-/****DATA *****/
-
-/*
- * ./interface/dynamic/*
- */
-__$1.dynamic('testPage', ({ _image, _articleSection2, _article1Header, name }) => {
-    /**
-     * Tracking:: (Variables that are allowed to change)
-     */
-    let red = 'red';
-    let image = __$1.track(name, _image, 'dImage');
-    let articleSection2 = __$1.track(name, _articleSection2, 'vArticle');
-    let article1Header = __$1.track(name, _article1Header, 'vArticle');
-
-    /*__________________________________________________*/
-    return [header({ class: 'red', 'data-hello': 'World!', style: `background: ${ red }; height:auto` }, h1('Header in h1'), comment('This is a comment'), h2('Subheader in h2')), comment('YEa yea yea yYAAAA whatever'), 'This is crazy', nav(ul(li(a({ href: 'http://google.com', class: 'some-class' }, 'Menu Option 1a')), li(a({ href: 'http://facebook.com', class: 'some-class' }, 'Menu Option 2a')), li(a({ href: 'http://youtube.com' }, 'Menu Option 3a')))), section(article(header({ wave: 'juliensHeader' }, h1(article1Header)), section('This is the first article. This is', mark('highlightedmark'), '.')), article(header(h1('Article #2h1')), section({ id: 'whatsUpJack' }, articleSection2))), aside(section(h1('Linksh1'), ul(li(a({ href: '#' }, 'Link 1a')), li(a({ href: '#' }, 'Link 2a')), li(a({ href: '#' }, 'Link 3a')))), figure(img(image), figcaption('Jennifer Marsman'))), footer('Footer - Copyright 2016')];
-    /*__________________________________________________*/
-});
-
-/*
- * ./interface/dynamic/*
- */
-__$1.dynamic('otherPage', ({ _image, _articleSection2, _article1Header, name }) => {
-    /**
-     * Tracking:: (Variables that are allowed to change)
-     */
-    let red = 'red';
-    let image = __$1.track(name, _image, 'dImage');
-    let articleSection2 = __$1.track(name, _articleSection2, 'vArticle');
-    let article1Header = __$1.track(name, _article1Header, 'vArticle');
-
-    /*__________________________________________________*/
-    return [header({ class: 'red', 'data-hello': 'World!', style: `background: yellow; height:auto` }, h1('This is another interface'), comment('This is a comment'), h2('Subheader in h2')), comment('YEa yea yea yYAAAA whatever'), 'This is another interface', nav(ul(li(a({ href: 'http://google.com', class: 'some-class' }, 'Menu Option 1a')), li(a({ href: 'http://facebook.com', class: 'some-class' }, 'Menu Option 2a')), li(a({ href: 'http://youtube.com' }, 'Menu Option 3a')))), section(article(header({ wave: 'juliensHeader' }, h1(article1Header)), section('This is another interface', mark('highlightedmark'), '.')), article(header(h1('This is another interface')), section({ id: 'whatsUpJack' }, articleSection2))), aside(section(h1('Linksh1'), ul(li(a({ href: '#' }, 'Link 1a')), li(a({ href: '#' }, 'Link 2a')), li(a({ href: '#' }, 'Link 3a')))), figure(img(image), figcaption('Jennifer Marsman'))), footer('Footer - Copyright 2016')];
-    /*__________________________________________________*/
-});
-
-/*
- * ./render/*
- */
-var HTMLInterface1 = document.querySelector('.main-section');
-var HTMLInterface2 = document.querySelector('.other-section');
-
-__$1.render.dynamic.testPage(HTMLInterface1);
-__$1.render.dynamic.otherPage(HTMLInterface2);
-
-window.__ = __$1;
-
-})));
+export { a, abbr, address, area, article, aside, audio, b, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, v, video, comment, text, loop, __$1 as __ };

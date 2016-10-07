@@ -15,9 +15,8 @@ import {
     img,
     figcaption,
     footer,
-
     comment
-} from './wavefront-v2';
+} from '../dist/wavefront';
 
 
 // window.WAVEFRONT_ENV = 'dev';

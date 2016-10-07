@@ -17,7 +17,7 @@ let store = {};
 window.render = render;
 
 
-export function __(interfaceNamewaveName) {
+export function wave(interfaceNamewaveName) {
     let props = {};
     var elementPropertyBlacklist = [
         'setAttribute',
@@ -50,7 +50,7 @@ export function __(interfaceNamewaveName) {
     ];
     if (interfaceNamewaveName.indexOf(':') >= 0) {
         let nameParts = interfaceNamewaveName.split(':');
-        let element = __._elementStore[nameParts[0]][nameParts[1]];
+        let element = wave._elementStore[nameParts[0]][nameParts[1]];
         let property;
         let i;
         let blackListLength = elementPropertyBlacklist.length;
@@ -74,9 +74,9 @@ export function __(interfaceNamewaveName) {
 
 
 
-window.__ = __;
+window.__ = wave;
 
-__.track = function(interfaceName, value, _tag) {
+wave.track = function(interfaceName, value, _tag) {
     if (_tag === undefined) {
         throw new Error(`Please define the _tag for ${value}`);
     };
@@ -87,7 +87,7 @@ __.track = function(interfaceName, value, _tag) {
     }
 }
 
-__.append = (...args) => {
+wave.append = (...args) => {
 
     let appendValues = Array.from(args);
     let parent = appendValues.pop();
@@ -97,7 +97,7 @@ __.append = (...args) => {
     }
 }
 
-__.polyfills = (...args) => {
+wave.polyfills = (...args) => {
     if (args.length) {
         args.forEach((polyfill) => {
             polyfill();
@@ -109,11 +109,11 @@ __.polyfills = (...args) => {
 }
 
 
-__.model = {}
+wave.model = {}
 
-__._dynamicStore = {};
+wave._dynamicStore = {};
 
-__._elementStore = {};
+wave._elementStore = {};
 
 store.staticRegistry = [];
 store.dynamicRegistry = [];
@@ -128,7 +128,6 @@ const registerInterface = (interfaceName, interfaceType) => {
     // let registry = store[ interfaceType + Registry];
     // Check if render interface types contains the given interface.
     addInterfaceRenderMethod(interfaceName, interfaceType);
-
     // if (contains(interfaceName, registry)) {
     //     let record;
 
@@ -162,8 +161,8 @@ export function renderBranches(tree, selector, interfaceName) {
     let selectorName = false;
 
     // Create the element store for the interface.
-    if (!__._elementStore.hasOwnProperty(interfaceName)) {
-        __._elementStore[interfaceName] = {};
+    if (!wave._elementStore.hasOwnProperty(interfaceName)) {
+        wave._elementStore[interfaceName] = {};
     }
 
     // var fragment = document.createDocumentFragment();
@@ -240,7 +239,7 @@ export function renderBranches(tree, selector, interfaceName) {
 
         // Add node to elemeent store.
         if (selectorName) {
-            __._elementStore[interfaceName][toCamel(selectorName)] = newNode;
+            wave._elementStore[interfaceName][toCamel(selectorName)] = newNode;
             selectorName = false;
         }
 
@@ -253,13 +252,13 @@ export function renderBranches(tree, selector, interfaceName) {
     }
 }
 
-__._registerDynamicInterface = function(interFace, dynamicScope, interfaceName) {
+wave._registerDynamicInterface = function(interFace, dynamicScope, interfaceName) {
     if (once('_registerDynamicInterface' + interfaceName)) {
-        __.model[interfaceName]['name'] = interfaceName;
-        __._dynamicStore[interfaceName] = {
-            lastVirtualTree: interFace.apply(dynamicScope, [__.model[interfaceName]]),
+        wave.model[interfaceName]['name'] = interfaceName;
+        wave._dynamicStore[interfaceName] = {
+            lastVirtualTree: interFace.apply(dynamicScope, [wave.model[interfaceName]]),
             currentVirtualTree: () => {
-                return interFace.apply(dynamicScope, [__.model[interfaceName]]);
+                return interFace.apply(dynamicScope, [wave.model[interfaceName]]);
             }
 
         }
@@ -267,24 +266,24 @@ __._registerDynamicInterface = function(interFace, dynamicScope, interfaceName) 
 }
 
 
-__.dynamic = function(interfaceName, interFace) {
+wave.dynamic = function(interfaceName, interFace) {
     registerInterface(interfaceName, 'dynamic');
-    __._registerDynamicInterface(interFace, this, interfaceName)
+    wave._registerDynamicInterface(interFace, this, interfaceName)
 };
 
 
-__.static = (interfaceName, interFace) => {
+wave.static = (interfaceName, interFace) => {
     registerInterface(interfaceName, 'static');
-    __._registerDynamicInterface(interFace, this, interfaceName)
+    wave._registerDynamicInterface(interFace, this, interfaceName)
 };
 
 
-__.stateless = (interfaceName, interFace) => {
+wave.stateless = (interfaceName, interFace) => {
     registerInterface(interfaceName, 'stateless');
-    __._registerDynamicInterface(interFace, this, interfaceName)
+    wave._registerDynamicInterface(interFace, this, interfaceName)
 };
 
-var assembly = (tagName) => {
+export const assembly = (tagName) => {
     return (...args) => {
 
         let children = [];
@@ -329,117 +328,5 @@ var assembly = (tagName) => {
 }
 
 
-__.render = render;
+wave.render = render;
 
-
-export const a = assembly('a');
-export const abbr = assembly('abbr');
-export const address = assembly('address');
-export const area = assembly('area');
-export const article = assembly('article');
-export const aside = assembly('aside');
-export const audio = assembly('audio');
-export const b = assembly('b');
-export const base = assembly('base');
-export const bdi = assembly('bdi');
-export const bdo = assembly('bdo');
-export const blockquote = assembly('blockquote');
-export const body = assembly('body');
-export const br = assembly('br');
-export const button = assembly('button');
-export const canvas = assembly('canvas');
-export const caption = assembly('caption');
-export const cite = assembly('cite');
-export const code = assembly('code');
-export const col = assembly('col');
-export const colgroup = assembly('colgroup');
-export const command = assembly('command');
-export const dd = assembly('dd');
-export const del = assembly('del');
-export const dfn = assembly('dfn');
-export const div = assembly('div');
-export const dl = assembly('dl');
-export const doctype = assembly('doctype');
-export const dt = assembly('dt');
-export const em = assembly('em');
-export const embed = assembly('embed');
-export const fieldset = assembly('fieldset');
-export const figcaption = assembly('figcaption');
-export const figure = assembly('figure');
-export const footer = assembly('footer');
-export const form = assembly('form');
-export const h1 = assembly('h1');
-export const h2 = assembly('h2');
-export const h3 = assembly('h3');
-export const h4 = assembly('h4');
-export const h5 = assembly('h5');
-export const h6 = assembly('h6');
-export const header = assembly('header');
-export const hgroup = assembly('hgroup');
-export const hr = assembly('hr');
-export const html = assembly('html');
-export const i = assembly('i');
-export const iframe = assembly('iframe');
-export const img = assembly('img');
-export const input = assembly('input');
-export const ins = assembly('ins');
-export const kbd = assembly('kbd');
-export const keygen = assembly('keygen');
-export const label = assembly('label');
-export const legend = assembly('legend');
-export const li = assembly('li');
-export const link = assembly('link');
-export const map = assembly('map');
-export const mark = assembly('mark');
-export const menu = assembly('menu');
-export const meta = assembly('meta');
-export const nav = assembly('nav');
-export const noscript = assembly('noscript');
-export const object = assembly('object');
-export const ol = assembly('ol');
-export const optgroup = assembly('optgroup');
-export const option = assembly('option');
-export const p = assembly('p');
-export const param = assembly('param');
-export const pre = assembly('pre');
-export const progress = assembly('progress');
-export const q = assembly('q');
-export const rp = assembly('rp');
-export const rt = assembly('rt');
-export const ruby = assembly('ruby');
-export const s = assembly('s');
-export const samp = assembly('samp');
-export const script = assembly('script');
-export const section = assembly('section');
-export const select = assembly('select');
-export const small = assembly('small');
-export const source = assembly('source');
-export const span = assembly('span');
-export const strong = assembly('strong');
-export const style = assembly('style');
-export const sub = assembly('sub');
-export const sup = assembly('sup');
-export const table = assembly('table');
-export const tbody = assembly('tbody');
-export const td = assembly('td');
-export const textarea = assembly('textarea');
-export const tfoot = assembly('tfoot');
-export const th = assembly('th');
-export const thead = assembly('thead');
-export const title = assembly('title');
-export const tr = assembly('tr');
-export const ul = assembly('ul');
-export const v = assembly('var');
-export const video = assembly('video');
-
-export const comment = (message) => {
-    return ['comment', message];
-};
-export const text = (message) => {
-    return ['text', message];
-};
-export const loop = () => {
-    // Takes an object, array or JSON and loops though,
-    // Return the elements/ nodes to make up a list.
-    // you can nest loops.
-};

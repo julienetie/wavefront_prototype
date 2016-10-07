@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "pretest": "rollup -c rollup.config.test.js",
-    "build": "rollup -c rollup.config.build.js",
-    "watch": "rollup -c rollup.config.build.js --watch",
+    "app": "concurrently \"rollup -c rollup.config.wavefront.js\" \"rollup -c rollup.config.prototype.js\"",
+    "wave": "rollup -c rollup.config.wavefront.js",
+    "watch": "concurrently \"rollup -c rollup.config.wavefront.js --watch\" \"rollup -c rollup.config.prototype.js --watch\"",
     "test": "mocha test/bundle.js"
   },
   "keywords": [
@@ -56,6 +57,7 @@
     "source-map-support": "^0.4.0"
   },
   "dependencies": {
+    "concurrently": "^3.1.0",
     "dotenv": "^2.0.0",
     "incremental-dom": "^0.5.1",
     "lodash": "^4.16.2",

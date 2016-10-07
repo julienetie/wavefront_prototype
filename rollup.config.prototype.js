@@ -1,7 +1,7 @@
 import babel from 'rollup-plugin-babel';
 
 export default {
-    moduleName: 'plow',
+    moduleName: 'app',
     entry: 'src/app.js',
     plugins: [babel()],
     format: 'umd',
