@@ -223,6 +223,17 @@ let classList = () => {
 };
 
 /**
+ * Get index of child node.
+ * @param {Node} 
+ * @return {Number}
+ */
+const getChildIndex = node => {
+    return [].indexOf.call(node.parentNode.children, node);
+};
+
+
+
+/**
  * Finds value in an array 
  * @param {Array} haystack - The array to search.
  * @param {*} needle - The value to look for
@@ -257,6 +268,241 @@ function once(reference) {
     }
 }
 
+function renderBranches$1(tree, selector, interfaceName) {
+    let treeLength = tree.length;
+    let el;
+    let createdElement;
+    let type;
+    let newNode;
+    let attrMsg;
+    let elTypeof;
+    let hasChildren;
+    let selectorName = false;
+
+    // Create the element store for the interface.
+    if (!__._elementStore.hasOwnProperty(interfaceName)) {
+        __._elementStore[interfaceName] = {};
+    }
+
+    // var fragment = document.createDocumentFragment();
+    for (let i = 0; i < treeLength; i++) {
+        el = tree[i];
+        type = el[0];
+        attrMsg = el[1];
+        elTypeof = typeof el;
+        hasChildren = !!(el[3] ? el[3].constructor === [].constructor : false);
+        switch (elTypeof) {
+            case 'string':
+                // Text node
+                newNode = document.createTextNode(el);
+                break;
+            case 'object':
+                parseNode();
+                break;
+            case 'function':
+                // 
+                break;
+        }
+
+        function toCamel(string) {
+            return string.replace(/-([a-z])/g, function (g) {
+                return g[1].toUpperCase();
+            });
+        }
+
+        // Create element
+        function parseNode() {
+            switch (type) {
+                case 'text':
+                    // Text node
+                    newNode = document.createTextNode(attrMsg);
+                    break;
+                case 'comment':
+                    // Comment node
+                    newNode = document.createComment(attrMsg);
+                    break;
+                default:
+                    // Element node
+                    newNode = createElement(type, attrMsg);
+            }
+        }
+
+        function createElement(tagName, attributes) {
+            // Create element node.
+            let element = document.createElement(tagName);
+            let attr;
+            // Apply attributes.
+            if (attributes) {
+                for (attr in attributes) {
+                    // data-* , accept-charset, http-equiv keys must be strings.
+                    // Styles are defined using template strings.
+                    if (attr !== 'wave') {
+                        element.setAttribute(attr, attributes[attr]);
+                    }
+                    switch (attr) {
+                        case 'wave':
+                            selectorName = selectorName ? false : attributes.wave;
+                            break;
+                        case 'id':
+                            selectorName = selectorName ? false : attributes.id;
+                            break;
+                    }
+                }
+            }
+            return element;
+        }
+
+        // Add node to elemeent store.
+        if (selectorName) {
+            __._elementStore[interfaceName][toCamel(selectorName)] = newNode;
+            selectorName = false;
+        }
+
+        if (hasChildren) {
+            // console.log('Yes has children', el[3].length)
+            renderBranches$1(el[3], newNode, interfaceName);
+        }
+        selector.appendChild(newNode);
+    }
+}
+
+function renderVariables(tree, selector, interfaceName) {
+    var container = selector.parentNode;
+    function recursive(tree, $, interfaceName) {
+
+        const name = 'renderVariables';
+        let treeLength = tree.length;
+        let el;
+        let createdElement;
+        let type;
+        let newNode;
+        let attrMsg;
+        let elTypeof;
+        let hasChildren;
+        let selectorName = false;
+
+        // Create the element store for the interface.
+        if (!__._elementStore.hasOwnProperty(interfaceName)) {
+            __._elementStore[interfaceName] = {};
+        }
+
+        // if (!renderVariables.prototype.count) {
+        //     console.log('once')
+        //     renderVariables.prototype.count = true;
+        //     return selector;
+        // }
+
+
+        // var fragment = document.createDocumentFragment();
+        for (let i = 0; i < treeLength; i++) {
+            el = tree[i];
+            type = el[0];
+            attrMsg = el[1];
+            elTypeof = typeof el;
+            hasChildren = !!(el[3] ? el[3].constructor === [].constructor : false);
+            switch (elTypeof) {
+                case 'string':
+                    // Text node
+                    newNode = document.createTextNode(el);
+                    break;
+                case 'object':
+                    parseNode();
+                    break;
+                case 'function':
+                    // 
+                    break;
+            }
+
+            function toCamel(string) {
+                return string.replace(/-([a-z])/g, function (g) {
+                    return g[1].toUpperCase();
+                });
+            }
+
+            // Create element
+            function parseNode() {
+                switch (type) {
+                    case 'text':
+                        // Text node
+                        newNode = document.createTextNode(attrMsg);
+                        break;
+                    case 'comment':
+                        // Comment node
+                        newNode = document.createComment(attrMsg);
+                        break;
+                    default:
+                        // Element node
+                        newNode = createElement(type, attrMsg);
+                }
+            }
+
+            function createElement(tagName, attributes) {
+                // Create element node.
+                let element = document.createElement(tagName);
+                let attr;
+                // Apply attributes.
+                if (attributes) {
+                    for (attr in attributes) {
+                        // data-* , accept-charset, http-equiv keys must be strings.
+                        // Styles are defined using template strings.
+                        if (attr !== 'wave') {
+                            element.setAttribute(attr, attributes[attr]);
+                        }
+                        switch (attr) {
+                            case 'wave':
+                                selectorName = selectorName ? false : attributes.wave;
+                                break;
+                            case 'id':
+                                selectorName = selectorName ? false : attributes.id;
+                                break;
+                        }
+                    }
+                }
+                return element;
+            }
+
+            // Add node to elemeent store.
+            if (selectorName) {
+                __._elementStore[interfaceName][toCamel(selectorName)] = newNode;
+                selectorName = false;
+            }
+
+            $.appendChild(newNode);
+
+            if (hasChildren) {
+                // console.log('Yes has children', el[3].length)
+                recursive(el[3], newNode, interfaceName);
+            }
+        }
+    }
+
+    if (!renderVariables.prototype.containerIndex) {
+        renderVariables.prototype.containerIndex = {};
+    }
+    if (!renderVariables.prototype.containerIndex.interfaceName) {
+        renderVariables.prototype.containerIndex.interfaceName = getChildIndex(selector);
+    }
+
+    // console.log('parent is ', container)
+    // var d = document.createElement('div');
+    var clonedParent = selector.cloneNode(false);
+    recursive(tree, clonedParent, interfaceName);
+
+    var oldParent = document.body.childNodes[renderVariables.prototype.containerIndex.interfaceName];
+
+    document.body.replaceChild(clonedParent, oldParent);
+
+    // if(document.body.contains(d)){
+    //     console.log('new')
+    //     document.body.replaceChild(d,d)
+    // }else{
+    //      console.log('replace updated')
+    //     document.body.replaceChild(d,selector) 
+    // }
+
+    // console.log(d)
+}
+
 let _render = {};
 
 const Render = {
@@ -267,17 +513,17 @@ const Render = {
         console.log('i am ' + this.tree);
     },
     renderUpdates(selector, interfaceName, interfaceType) {
-
-        // console.info('new interface Rendered')
+        // console.info('New updates Rendered')
         // let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
-        //     console.log(selector, interfaceName, interfaceType)
-        // renderBranches(currentVirtualTree, selector, interfaceName);
+        // let updatedTree = renderVariables(currentVirtualTree, selector, interfaceName);
+        // renderVariables.prototype.count = false;
+
+        // console.log(updatedTree);
     },
     initialRender(selector, interfaceName, interfaceType) {
-        console.info('new interface Rendered');
+        console.info('New interface Rendered');
         let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
-        console.log(selector, interfaceName, interfaceType);
-        renderBranches(currentVirtualTree, selector, interfaceName);
+        renderBranches$1(currentVirtualTree, selector, interfaceName);
     }
 };
 
@@ -322,7 +568,6 @@ let render$1 = _render;
 
 var _this = undefined;
 
-// TESTING.
 window.render = render$1;
 
 function __$1(interfaceNamewaveName) {
@@ -390,11 +635,6 @@ __$1._dynamicStore = {};
 
 __$1._elementStore = {};
 
-/**
- * Registers the interface and it's state.
- * @param {string} interfaceName - Name of the new interface
- * @param {string} registryType - dynamicRegistry | statelessRegistry | staticRegistry
- */
 const registerInterface = (interfaceName, interfaceType) => {
     // let registry = store[ interfaceType + Registry];
     // Check if render interface types contains the given interface.
@@ -764,10 +1004,9 @@ __$1.dynamic('otherPage', ({ _image, _articleSection2, _article1Header, name }) 
  */
 var HTMLInterface1 = document.querySelector('.main-section');
 var HTMLInterface2 = document.querySelector('.other-section');
-window.test = function () {
-    __$1.render.dynamic.testPage(HTMLInterface1);
-    __$1.render.dynamic.otherPage(HTMLInterface2);
-};
+
+__$1.render.dynamic.testPage(HTMLInterface1);
+__$1.render.dynamic.otherPage(HTMLInterface2);
 
 window.__ = __$1;
 

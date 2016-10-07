@@ -1,4 +1,19 @@
 /**
+ * Get index of child node.
+ * @param {Node} 
+ * @return {Number}
+ */
+export const getChildIndex = (node) => {
+    return [].indexOf.call(node.parentNode.children, node);
+}
+
+
+export const isElement = (element) => {
+    return element instanceof Element;
+}
+
+
+/**
  * Finds value in an array 
  * @param {Array} haystack - The array to search.
  * @param {*} needle - The value to look for

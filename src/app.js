@@ -190,10 +190,10 @@ __.dynamic('otherPage', ({ _image, _articleSection2, _article1Header, name }) =>
  */
 var HTMLInterface1 = document.querySelector('.main-section');
 var HTMLInterface2 = document.querySelector('.other-section');
-window.test = function() {
-    __.render.dynamic.testPage(HTMLInterface1);
-    __.render.dynamic.otherPage(HTMLInterface2);
-}
+
+__.render.dynamic.testPage(HTMLInterface1);
+__.render.dynamic.otherPage(HTMLInterface2);
+
 
 
 window.__ = __;

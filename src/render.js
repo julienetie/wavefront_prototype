@@ -1,5 +1,6 @@
 import { renderHasInterface, once } from './utils';
-import { renderBranches } from './wavefront-v2';
+import { renderBranches } from './render-branches';
+import { renderVariables } from './render-variables';
 let _render = {};
 
 const Render = {
@@ -10,16 +11,16 @@ const Render = {
         console.log('i am ' + this.tree);
     },
     renderUpdates(selector, interfaceName, interfaceType) {
-
-        // console.info('new interface Rendered')
+        // console.info('New updates Rendered')
         // let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
-        //     console.log(selector, interfaceName, interfaceType)
-        // renderBranches(currentVirtualTree, selector, interfaceName);
+        // let updatedTree = renderVariables(currentVirtualTree, selector, interfaceName);
+        // renderVariables.prototype.count = false;
+
+        // console.log(updatedTree);
     },
     initialRender(selector, interfaceName, interfaceType) {
-        console.info('new interface Rendered')
+        console.info('New interface Rendered')
         let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
-        console.log(selector, interfaceName, interfaceType)
         renderBranches(currentVirtualTree, selector, interfaceName);
     }
 }

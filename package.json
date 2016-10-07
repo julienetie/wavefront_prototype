@@ -6,6 +6,7 @@
   "scripts": {
     "pretest": "rollup -c rollup.config.test.js",
     "build": "rollup -c rollup.config.build.js",
+    "watch": "rollup -c rollup.config.build.js --watch",
     "test": "mocha test/bundle.js"
   },
   "keywords": [
