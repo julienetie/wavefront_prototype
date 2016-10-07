@@ -111,7 +111,7 @@ wave.polyfills = (...args) => {
 
 wave.model = {}
 
-wave._dynamicStore = {};
+wave.dynamicStore = {};
 
 wave._elementStore = {};
 
@@ -255,7 +255,7 @@ export function renderBranches(tree, selector, interfaceName) {
 wave._registerDynamicInterface = function(interFace, dynamicScope, interfaceName) {
     if (once('_registerDynamicInterface' + interfaceName)) {
         wave.model[interfaceName]['name'] = interfaceName;
-        wave._dynamicStore[interfaceName] = {
+        wave.dynamicStore[interfaceName] = {
             lastVirtualTree: interFace.apply(dynamicScope, [wave.model[interfaceName]]),
             currentVirtualTree: () => {
                 return interFace.apply(dynamicScope, [wave.model[interfaceName]]);

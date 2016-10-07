@@ -1,4 +1,4 @@
-import { wave, assembly } from './core.js';
+import { wave, assembly } from './core';
 
 export const a = assembly('a');
 export const abbr = assembly('abbr');
@@ -111,5 +111,5 @@ export const loop = () => {
     // Return the elements/ nodes to make up a list.
     // you can nest loops.
 };
- 
+
 export const __ = wave;

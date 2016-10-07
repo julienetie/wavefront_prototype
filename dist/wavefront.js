@@ -221,9 +221,7 @@ let classList = () => {
  * @param {Node} 
  * @return {Number}
  */
-const getChildIndex = node => {
-    return [].indexOf.call(node.parentNode.children, node);
-};
+
 
 
 
@@ -360,205 +358,66 @@ function renderBranches$1(tree, selector, interfaceName) {
     }
 }
 
-function renderVariables(tree, selector, interfaceName) {
-    var container = selector.parentNode;
-    function recursive(tree, $, interfaceName) {
-
-        const name = 'renderVariables';
-        let treeLength = tree.length;
-        let el;
-        let createdElement;
-        let type;
-        let newNode;
-        let attrMsg;
-        let elTypeof;
-        let hasChildren;
-        let selectorName = false;
-
-        // Create the element store for the interface.
-        if (!__._elementStore.hasOwnProperty(interfaceName)) {
-            __._elementStore[interfaceName] = {};
-        }
-
-        // if (!renderVariables.prototype.count) {
-        //     console.log('once')
-        //     renderVariables.prototype.count = true;
-        //     return selector;
-        // }
-
-
-        // var fragment = document.createDocumentFragment();
-        for (let i = 0; i < treeLength; i++) {
-            el = tree[i];
-            type = el[0];
-            attrMsg = el[1];
-            elTypeof = typeof el;
-            hasChildren = !!(el[3] ? el[3].constructor === [].constructor : false);
-            switch (elTypeof) {
-                case 'string':
-                    // Text node
-                    newNode = document.createTextNode(el);
-                    break;
-                case 'object':
-                    parseNode();
-                    break;
-                case 'function':
-                    // 
-                    break;
-            }
-
-            function toCamel(string) {
-                return string.replace(/-([a-z])/g, function (g) {
-                    return g[1].toUpperCase();
-                });
-            }
-
-            // Create element
-            function parseNode() {
-                switch (type) {
-                    case 'text':
-                        // Text node
-                        newNode = document.createTextNode(attrMsg);
-                        break;
-                    case 'comment':
-                        // Comment node
-                        newNode = document.createComment(attrMsg);
-                        break;
-                    default:
-                        // Element node
-                        newNode = createElement(type, attrMsg);
-                }
-            }
-
-            function createElement(tagName, attributes) {
-                // Create element node.
-                let element = document.createElement(tagName);
-                let attr;
-                // Apply attributes.
-                if (attributes) {
-                    for (attr in attributes) {
-                        // data-* , accept-charset, http-equiv keys must be strings.
-                        // Styles are defined using template strings.
-                        if (attr !== 'wave') {
-                            element.setAttribute(attr, attributes[attr]);
-                        }
-                        switch (attr) {
-                            case 'wave':
-                                selectorName = selectorName ? false : attributes.wave;
-                                break;
-                            case 'id':
-                                selectorName = selectorName ? false : attributes.id;
-                                break;
-                        }
-                    }
-                }
-                return element;
-            }
-
-            // Add node to elemeent store.
-            if (selectorName) {
-                __._elementStore[interfaceName][toCamel(selectorName)] = newNode;
-                selectorName = false;
-            }
-
-            $.appendChild(newNode);
-
-            if (hasChildren) {
-                // console.log('Yes has children', el[3].length)
-                recursive(el[3], newNode, interfaceName);
-            }
-        }
-    }
-
-    if (!renderVariables.prototype.containerIndex) {
-        renderVariables.prototype.containerIndex = {};
-    }
-    if (!renderVariables.prototype.containerIndex.interfaceName) {
-        renderVariables.prototype.containerIndex.interfaceName = getChildIndex(selector);
-    }
-
-    // console.log('parent is ', container)
-    // var d = document.createElement('div');
-    var clonedParent = selector.cloneNode(false);
-    recursive(tree, clonedParent, interfaceName);
-
-    var oldParent = document.body.childNodes[renderVariables.prototype.containerIndex.interfaceName];
-
-    document.body.replaceChild(clonedParent, oldParent);
-
-    // if(document.body.contains(d)){
-    //     console.log('new')
-    //     document.body.replaceChild(d,d)
-    // }else{
-    //      console.log('replace updated')
-    //     document.body.replaceChild(d,selector) 
-    // }
-
-    // console.log(d)
-}
-
-let _render = {};
+const render$1 = {};
 
 const Render = {
-    method1: function () {
-        this.tree = 'green';
-    },
-    method2: function () {
-        console.log('i am ' + this.tree);
-    },
-    renderUpdates(selector, interfaceName, interfaceType) {
-        // console.info('New updates Rendered')
-        // let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
-        // let updatedTree = renderVariables(currentVirtualTree, selector, interfaceName);
-        // renderVariables.prototype.count = false;
+  method1() {
+    this.tree = 'green';
+  },
+  method2() {
+    // console.log('i am ' + this.tree);
+  },
+  // renderUpdates(selector, interfaceName, interfaceType) {
+  //   // console.info('New updates Rendered')
+  //   // let currentVirtualTree = wave.dynamicStore[interfaceName].currentVirtualTree();
+  //   // let updatedTree = renderVariables(currentVirtualTree, selector, interfaceName);
+  //   // renderVariables.prototype.count = false;
 
-        // console.log(updatedTree);
-    },
-    initialRender(selector, interfaceName, interfaceType) {
-        console.info('New interface Rendered');
-        let currentVirtualTree = __._dynamicStore[interfaceName].currentVirtualTree();
-        renderBranches$1(currentVirtualTree, selector, interfaceName);
-    }
+  //   // console.log(updatedTree);
+  // },
+  initialRender(selector, interfaceName) {
+    // console.info('New interface Rendered')
+    const currentVirtualTree = wave.dynamicStore[interfaceName].currentVirtualTree();
+    renderBranches$1(currentVirtualTree, selector, interfaceName);
+  }
 };
 
-_render.static = Object.create(Render);
-_render.stateless = Object.create(Render);
-_render.dynamic = Object.create(Render);
+render$1.static = Object.create(Render);
+render$1.stateless = Object.create(Render);
+render$1.dynamic = Object.create(Render);
 
 function addInterfaceRenderMethod(interfaceName, interfaceType) {
-    const fnName = 'addInterfaceRenderMethod';
-    let intitialRender;
-    if (!renderHasInterface(interfaceName, interfaceType)) {
-        _render[interfaceType][interfaceName] = function (selector) {
-            intitialRender = once(fnName + interfaceName);
-            switch (interfaceType) {
-                case 'dynamic':
-                    if (intitialRender) {
-                        this.initialRender(selector, interfaceName, interfaceType);
-                    } else {
-                        this.renderUpdates(selector, interfaceName, interfaceType);
-                    }
-                    break;
-                case 'stateless':
-                    if (intitialRender) {
-                        this.initialRender(selector, interfaceName, interfaceType);
-                    }
-                    break;
-                case 'static':
-                    if (intitialRender) {
-                        this.initialRender(selector, interfaceName, interfaceType);
-                    } else {
-                        this.renderUpdates(selector, interfaceName, interfaceType);
-                    }
-                    break;
-            }
-        };
-        console.info('new interface Added');
-        window.d = __._dynamicStore;
-    }
-}
+  const fnName = 'addInterfaceRenderMethod';
+  let intitialRender;
 
-let render$1 = _render;
+  if (!renderHasInterface(interfaceName, interfaceType)) {
+    render$1[interfaceType][interfaceName] = function (selector) {
+      intitialRender = once(fnName + interfaceName);
+      switch (interfaceType) {
+        case 'dynamic':
+          if (intitialRender) {
+            this.initialRender(selector, interfaceName, interfaceType);
+          } else {
+            this.renderUpdates(selector, interfaceName, interfaceType);
+          }
+          break;
+        case 'stateless':
+          if (intitialRender) {
+            this.initialRender(selector, interfaceName, interfaceType);
+          }
+          break;
+        case 'static':
+          if (intitialRender) {
+            this.initialRender(selector, interfaceName, interfaceType);
+          } else {
+            this.renderUpdates(selector, interfaceName, interfaceType);
+          }
+          break;
+      }
+    };
+    // console.info('new interface Added')
+  }
+}
 
 var _this = undefined;
 
@@ -626,7 +485,7 @@ wave.polyfills = (...args) => {
 
 wave.model = {};
 
-wave._dynamicStore = {};
+wave.dynamicStore = {};
 
 wave._elementStore = {};
 
@@ -761,7 +620,7 @@ function renderBranches(tree, selector, interfaceName) {
 wave._registerDynamicInterface = function (interFace, dynamicScope, interfaceName) {
     if (once('_registerDynamicInterface' + interfaceName)) {
         wave.model[interfaceName]['name'] = interfaceName;
-        wave._dynamicStore[interfaceName] = {
+        wave.dynamicStore[interfaceName] = {
             lastVirtualTree: interFace.apply(dynamicScope, [wave.model[interfaceName]]),
             currentVirtualTree: () => {
                 return interFace.apply(dynamicScope, [wave.model[interfaceName]]);
