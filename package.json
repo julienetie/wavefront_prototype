@@ -1,7 +1,7 @@
 {
-  "name": "Wavefront",
+  "name": "wavefront",
   "version": "0.0.1",
-  "description": "A User Interface library unlike React",
+  "description": "A Powerful UI development Interface",
   "main": "index.js",
   "scripts": {
     "pretest": "rollup -c rollup.config.test.js",
