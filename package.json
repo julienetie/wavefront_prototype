@@ -1,0 +1,29 @@
+{
+    "name": "hypertext",
+    "version": "0.0.1",
+    "main": "index.js",
+    "author": "Julien Etienne",
+    "license": "MIT",
+    "scripts": {
+        "watch": "concurrently \"rollup -c ./rollup/config.umd.js -w\" \"rollup -c ./rollup/config.es.js -w\"",
+        "build": "rollup -c ./rollup/config.umd.js && rollup -c ./rollup/config.es.js",
+        "copy-vnode": "cp ./node_modules/snabbdom/vnode.js ./libs/",
+        "remove-exports-vnode": "sed -i '/export/c\\' ./libs/vnode.js",
+        "remove-sourcemap-vnode": "sed -i '/sourceMappingURL/c\\' ./libs/vnode.js",
+        "add-es6-export-vnode": "echo \"export default vnode;\" >> ./libs/vnode.js",
+        "vnode": "yarn copy-vnode && yarn remove-exports-vnode && yarn remove-sourcemap-vnode && yarn add-es6-export-vnode"
+    },
+    "devDependencies": {
+        "babel-preset-es2015-rollup": "^3.0.0",
+        "babel-register": "^6.24.1",
+        "chai": "^3.5.0",
+        "concurrently": "^3.4.0",
+        "mocha": "^3.2.0",
+        "rollup-plugin-babel": "^2.6.1",
+        "rollup-plugin-multi-entry": "^2.0.1",
+        "rollup-plugin-node-resolve": "^2.0.0",
+        "rollup-watch": "^2.5.0",
+        "snabbdom": "^0.6.7"
+    },
+    "dependencies": {}
+}
