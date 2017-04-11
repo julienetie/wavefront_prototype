@@ -1,10 +1,9 @@
 {
     "name": "hypertext",
     "version": "1.1.1",
-    "main": "index.js",
+    "main": "dist/hypertext.js",
     "author": "Julien Etienne",
     "description": "HTML n JavaScript Notation for Snabbdom",
-    "main": "dist/hypertext.js",
     "jsnext:main": "dist/hypertext.es.js",
     "license": "MIT",
     "bugs": {
@@ -14,20 +13,17 @@
         "watch": "concurrently \"rollup -c ./rollup/config.umd.js -w\" \"rollup -c ./rollup/config.es.js -w\"",
         "build": "rollup -c ./rollup/config.umd.js && rollup -c ./rollup/config.es.js && cp ./libs/eventlisteners.js ./dist/eventlisteners.es.js",
         "example1": "rollup -c ./rollup/config.example1.js -w",
-
         "copy-vnode": "cp ./node_modules/snabbdom/vnode.js ./libs/",
         "remove-exports-vnode": "sed -i '/export/c\\' ./libs/vnode.js",
         "remove-sourcemap-vnode": "sed -i '/sourceMappingURL/c\\' ./libs/vnode.js",
         "add-es6-export-vnode": "echo \"export default vnode;\" >> ./libs/vnode.js",
         "vnode": "yarn copy-vnode && yarn remove-exports-vnode && yarn remove-sourcemap-vnode && yarn add-es6-export-vnode",
-
         "copy-events": "cp ./node_modules/snabbdom/modules/eventlisteners.js ./libs/",
         "replace-events1": "sed -i \"/exports.eventListenersModule = {/c\\const eventListenersModule = {\" ./libs/eventlisteners.js",
         "replace-events2": "sed -i '/Object.defineProperty(exports/c\\' ./libs/eventlisteners.js",
         "replace-events3": "sed -i '/exports.eventListenersModule/c\\' ./libs/eventlisteners.js",
         "replace-events4": "sed -i '/sourceMappingURL/c\\export default eventListenersModule;' ./libs/eventlisteners.js",
         "eventlisteners": "yarn copy-events && yarn replace-events1 && yarn replace-events2 && yarn replace-events3 && yarn replace-events4",
-
         "patch": "yarn vnode && yarn eventlisteners"
     },
     "keywords": [
@@ -48,6 +44,7 @@
         "babel-register": "^6.24.1",
         "chai": "^3.5.0",
         "concurrently": "^3.4.0",
+        "mimetic": "^0.6.0",
         "mocha": "^3.2.0",
         "rollup-plugin-babel": "^2.6.1",
         "rollup-plugin-commonjs": "^8.0.2",
