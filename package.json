@@ -1,13 +1,13 @@
 {
-    "name": "hypertext",
-    "version": "1.1.1",
-    "main": "dist/hypertext.js",
+    "name": "wavefront",
+    "version": "0.0.2",
+    "main": "dist/wavefront.js",
     "author": "Julien Etienne",
-    "description": "HTML n JavaScript Notation for Snabbdom",
-    "jsnext:main": "dist/hypertext.es.js",
+    "description": "A Better JavaScript View Layer",
+    "jsnext:main": "dist/wavefront.es.js",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/julienetie/hypertext/issues"
+        "url": "https://github.com/julienetie/wavefront/issues"
     },
     "scripts": {
         "watch": "concurrently \"rollup -c ./rollup/config.umd.js -w\" \"rollup -c ./rollup/config.es.js -w\"",
@@ -56,6 +56,6 @@
     "dependencies": {},
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/julienetie/hypertext.git"
+        "url": "git+https://github.com/julienetie/wavefront.git"
     }
 }

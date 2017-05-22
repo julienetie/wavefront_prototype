@@ -1,4 +1,4 @@
-import display from './view';
+	import display from './view';
 
 const controller = (LCDDisplayContent) =>
     display(LCDDisplayContent);
