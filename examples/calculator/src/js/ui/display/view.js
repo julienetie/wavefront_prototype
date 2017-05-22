@@ -1,4 +1,4 @@
-import { div } from '../../../../../../dist/hypertext.es.js';
+import { div } from '../../../../../../dist/wavefront.es.js';
 
 const display = (LCDDisplayContent = 0) =>
     div({ class: 'display' }, [

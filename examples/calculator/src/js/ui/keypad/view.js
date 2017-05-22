@@ -1,4 +1,4 @@
-import { div, span, sup } from '../../../../../../dist/hypertext.es.js';
+import { div, span, sup } from '../../../../../../dist/wavefront.es.js';
 
 const keypad = (clearButton) =>
     div({ class: 'keypad' }, [

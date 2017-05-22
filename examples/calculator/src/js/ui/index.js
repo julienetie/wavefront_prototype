@@ -3,7 +3,7 @@ import footer from './footer/controller';
 import display from './display/controller';
 import keypad from './keypad/controller';
 import render from '../render';
-import { div } from '../../../../../dist/hypertext.es.js';
+import { div } from '../../../../../dist/wavefront.es.js';
 
 let oldVnode;
 let newVnode

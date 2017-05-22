@@ -1,4 +1,4 @@
-import { footer, small } from '../../../../../../dist/hypertext.es.js';
+import { footer, small } from '../../../../../../dist/wavefront.es.js';
 
 const footerSection = (copyrightAuthor, license, year) =>
     footer({ class: 'footer' }, [

@@ -2,7 +2,7 @@ import babel from 'rollup-plugin-babel';
 import nodeResolve from 'rollup-plugin-node-resolve';
 
 export default {
-    moduleName: 'mimetic',
+    moduleName: 'wavefront',
     entry: './src/index.js',
     plugins: [babel({
             babelrc: false,
@@ -14,5 +14,5 @@ export default {
         })
     ],
     format: 'umd',
-    dest: './dist/hypertext.js'
+    dest: './dist/wavefront.js'
 };
