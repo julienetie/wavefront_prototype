@@ -194,6 +194,14 @@ function isPrimitive(s) {
 
 
 
+// function isEmpty(obj) {
+//     for (var key in obj) {
+//         if (obj.hasOwnProperty(key))
+//             return false;
+//     }
+//     return true;
+// }
+
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
     if (sel !== 'foreignObject' && children !== undefined) {
@@ -205,12 +213,18 @@ function addNS(data, children, sel) {
         }
     }
 }
+var attributeType = ['event', 'e', 'props', 'p', 'style', '$', 'dataset', 'd', 'href', 'placeholder', 'autofocus', 'type', 'for', 'checked', 'value'];
+// const identifiers = ['class', '.', 'id', '#'];
+// const event = ['event', 'e'];
+// const prop = ['prop', 'p'];
+// const style = ['style', '$'];
+// const data = ['dataSet', 'd'];
 
 var assembly = function assembly(tagName) {
     return function inner() {
         var sel = '' + tagName;
         var selectorName = tagName;
-        var attributes = {};
+        var attributes = { attrs: {}, props: {} };
         var item = void 0;
         var textNode = void 0;
         var childNodes = [];
@@ -229,23 +243,95 @@ var assembly = function assembly(tagName) {
 
             // Check if item is a plane object = attribute.
             if (isItemObject && !isItemVnode) {
-                console.log('attributes', item);
-                if (item.hasOwnProperty('id')) {
+                var isSelector = false;
+                var attrKeys = Object.keys(item);
+
+                // if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
+                if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
                     selectorName += '#' + item.id;
+                    isSelector = true;
                 }
-                if (item.hasOwnProperty('class') || item.hasOwnProperty('_')) {
+                if (item.hasOwnProperty('class') || item.hasOwnProperty('.')) {
                     selectorName += '.' + item.class;
+                    isSelector = true;
                 }
 
-                for (var property in item) {
-                    if (property !== 'class' && property !== 'id' && property !== '_') {
-                        if (property === 'event') {
-                            attributes.on = item.event;
+                attrKeys.forEach(function (key) {
+                    // console.log(key)
+                    if (['id', '#', 'class', '.'].indexOf(key) < 0) {
+                        if (attributeType.indexOf(key) >= 0) {
+                            switch (key) {
+                                case 'e':
+                                case 'event':
+                                    attributes.on = item[key];
+                                    break;
+                                case 'p':
+                                    attributes.props = item[key];
+                                    break;
+                                case '$':
+                                    attributes.style = item[key];
+                                    break;
+                                case 'd':
+                                    attributes.dataset = item[key];
+                                    break;
+                                case 'href':
+                                case 'placeholder':
+                                case 'autofocus':
+                                case 'type':
+                                case 'checked':
+                                case 'value':
+                                    attributes.props[key] = item[key];
+                                    break;
+                                case 'for':
+                                    attributes.props.htmlFor = item[key];
+                                default:
+                                    attributes[key] = item[key];
+                            }
                         } else {
-                            attributes[property] = item[property];
+                            // console.log('considered attribute', key);
+                            attributes.attrs[key] = item[key];
                         }
                     }
-                }
+                });
+                console.log('attributes', attributes);
+                // if (attributeHas(attrKeys, ['style', '$'])) {
+                //     attributes.style = item.style;
+                // } else
+
+                // if (attributeHas(attrKeys, ['event', 'e'])) {
+                //     attributes.on = item.event;
+                // } else
+
+                // if (attributeHas(attrKeys, ['props', 'p'])) {
+                //     attributes.props = item.props;
+                // } else
+
+                // if (attributeHas(attrKeys, ['dataset', 'd'])) {
+                //     attributes.dataset = item.dataset;
+                // } else {
+                //     console.log()
+                // // console.log(i)
+                //     // if (!isSelector) {
+                //     //     // console.log('not selector',item)
+                //     //    for (let property in item) {
+                //     //     attributes.attrs[property] = item[property];
+                //     //     }
+                //     // }
+                // }
+
+                // for (let property in item) {
+                // if()
+
+                // if (property !== 'class' && property !== 'id' && property !== '_') {
+                //     if (property === 'event') {
+                //         attributes.on = item.event;
+                //     } else {
+                //         attributes[property] = item[property];
+                //     }
+                // }
+
+
+                // }
                 continue;
             }
 

@@ -1,11 +1,14 @@
-import h from 'snabbdom/h';
+import { footer, p, a } from '../../../../../dist/wavefront.es.js';
 
-const info = () => {
-    return h('footer.info', [
-        h('p', ['Double-click to edit a todo']),
-        h('p', ['Created by ', h('a', { param: { href: 'https://github.com/julienetie' } }, ['Julien Etienne'])]),
-        h('p', ['Part of', h('a', { param: { href: 'http://todomvc.com' } })])
-    ]);
-}
-
-export default info;
+export default () =>
+footer({ class: 'info' },
+    p('Double-click to edit a todo'),
+    p('Created by ',
+        a({ href: 'https://github.com/julienetie' },
+            'Julien Etienne'
+        )
+    ),
+    p('Part of',
+        a({ href: 'http://todomvc.com' })
+    )
+);

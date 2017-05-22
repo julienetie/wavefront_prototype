@@ -263,6 +263,14 @@ function isPrimitive(s) {
     return typeof s === 'string' || typeof s === 'number';
 }
 
+// function isEmpty(obj) {
+//     for (var key in obj) {
+//         if (obj.hasOwnProperty(key))
+//             return false;
+//     }
+//     return true;
+// }
+
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
     if (sel !== 'foreignObject' && children !== undefined) {
@@ -274,12 +282,18 @@ function addNS(data, children, sel) {
         }
     }
 }
+var attributeType = ['event', 'e', 'props', 'p', 'style', '$', 'dataset', 'd', 'href', 'placeholder', 'autofocus', 'type', 'for', 'checked', 'value'];
+// const identifiers = ['class', '.', 'id', '#'];
+// const event = ['event', 'e'];
+// const prop = ['prop', 'p'];
+// const style = ['style', '$'];
+// const data = ['dataSet', 'd'];
 
 var assembly = function assembly(tagName) {
     return function inner() {
         var sel = '' + tagName;
         var selectorName = tagName;
-        var attributes = {};
+        var attributes = { attrs: {}, props: {} };
         var item = void 0;
         var textNode = void 0;
         var childNodes = [];
@@ -298,23 +312,95 @@ var assembly = function assembly(tagName) {
 
             // Check if item is a plane object = attribute.
             if (isItemObject && !isItemVnode) {
-                console.log('attributes', item);
-                if (item.hasOwnProperty('id')) {
+                var isSelector = false;
+                var attrKeys = Object.keys(item);
+
+                // if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
+                if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
                     selectorName += '#' + item.id;
+                    isSelector = true;
                 }
-                if (item.hasOwnProperty('class') || item.hasOwnProperty('_')) {
+                if (item.hasOwnProperty('class') || item.hasOwnProperty('.')) {
                     selectorName += '.' + item.class;
+                    isSelector = true;
                 }
 
-                for (var property in item) {
-                    if (property !== 'class' && property !== 'id' && property !== '_') {
-                        if (property === 'event') {
-                            attributes.on = item.event;
+                attrKeys.forEach(function (key) {
+                    // console.log(key)
+                    if (['id', '#', 'class', '.'].indexOf(key) < 0) {
+                        if (attributeType.indexOf(key) >= 0) {
+                            switch (key) {
+                                case 'e':
+                                case 'event':
+                                    attributes.on = item[key];
+                                    break;
+                                case 'p':
+                                    attributes.props = item[key];
+                                    break;
+                                case '$':
+                                    attributes.style = item[key];
+                                    break;
+                                case 'd':
+                                    attributes.dataset = item[key];
+                                    break;
+                                case 'href':
+                                case 'placeholder':
+                                case 'autofocus':
+                                case 'type':
+                                case 'checked':
+                                case 'value':
+                                    attributes.props[key] = item[key];
+                                    break;
+                                case 'for':
+                                    attributes.props.htmlFor = item[key];
+                                default:
+                                    attributes[key] = item[key];
+                            }
                         } else {
-                            attributes[property] = item[property];
+                            // console.log('considered attribute', key);
+                            attributes.attrs[key] = item[key];
                         }
                     }
-                }
+                });
+                console.log('attributes', attributes);
+                // if (attributeHas(attrKeys, ['style', '$'])) {
+                //     attributes.style = item.style;
+                // } else
+
+                // if (attributeHas(attrKeys, ['event', 'e'])) {
+                //     attributes.on = item.event;
+                // } else
+
+                // if (attributeHas(attrKeys, ['props', 'p'])) {
+                //     attributes.props = item.props;
+                // } else
+
+                // if (attributeHas(attrKeys, ['dataset', 'd'])) {
+                //     attributes.dataset = item.dataset;
+                // } else {
+                //     console.log()
+                // // console.log(i)
+                //     // if (!isSelector) {
+                //     //     // console.log('not selector',item)
+                //     //    for (let property in item) {
+                //     //     attributes.attrs[property] = item[property];
+                //     //     }
+                //     // }
+                // }
+
+                // for (let property in item) {
+                // if()
+
+                // if (property !== 'class' && property !== 'id' && property !== '_') {
+                //     if (property === 'event') {
+                //         attributes.on = item.event;
+                //     } else {
+                //         attributes[property] = item[property];
+                //     }
+                // }
+
+
+                // }
                 continue;
             }
 
@@ -352,7 +438,9 @@ var footer = assembly('footer');
 var h1 = assembly('h1');
 var header = assembly('header');
 var input = assembly('input');
+var label = assembly('label');
 var li = assembly('li');
+var p = assembly('p');
 var section = assembly('section');
 var span = assembly('span');
 var strong = assembly('strong');
@@ -384,38 +472,6 @@ function addNS$1(data, children, sel) {
   }
 }
 
-var h = function h(sel, b, c) {
-  var data = {},
-      children,
-      text,
-      i;
-  if (c !== undefined) {
-    data = b;
-    if (is.array(c)) {
-      children = c;
-    } else if (is.primitive(c)) {
-      text = c;
-    }
-  } else if (b !== undefined) {
-    if (is.array(b)) {
-      children = b;
-    } else if (is.primitive(b)) {
-      text = b;
-    } else {
-      data = b;
-    }
-  }
-  if (is.array(children)) {
-    for (i = 0; i < children.length; ++i) {
-      if (is.primitive(children[i])) children[i] = VNode(undefined, undefined, undefined, children[i]);
-    }
-  }
-  if (sel[0] === 's' && sel[1] === 'v' && sel[2] === 'g') {
-    addNS$1(data, children, sel);
-  }
-  return VNode(sel, data, children, text, undefined);
-};
-
 /** 
  * Footer.
  * @param ...
@@ -425,8 +481,11 @@ var footer$2 = (function (_ref) {
         all = _ref.all,
         active = _ref.active,
         completed = _ref.completed;
-    return footer({ class: 'footer' }, span({ class: 'todo-count' }, strong(itemsLeft), ' items left'), ul({ class: 'filters' }, li(a({ class: 'selected', props: { href: '#/' }, on: all }, 'All')), li(a({ props: { href: '#/active' }, on: active }, 'Active')), li(a({ props: { href: '#/completed' }, on: completed }, 'Completed'))), button({ class: 'clear-completed' }, 'Clear completed'));
+    return footer({ class: 'footer' }, span({ class: 'todo-count', style: { background: 'red' } }, strong(itemsLeft), ' items left'), ul({ class: 'filters' }, li(a({ class: 'selected', href: '#/', event: all }, 'All')), li(a({ href: '#/active', event: active }, 'Active')), li(a({ href: '#/completed', event: completed }, 'Completed'))), button({ class: 'clear-completed' }, 'Clear completed'));
 });
+
+// style 
+// href
 
 function createElement(tagName) {
   return document.createElement(tagName);
@@ -1080,9 +1139,9 @@ var controller = function controller() {
     return footer$2(props);
 };
 
-var info$1 = function info$1() {
-    return h('footer.info', [h('p', ['Double-click to edit a todo']), h('p', ['Created by ', h('a', { param: { href: 'https://github.com/julienetie' } }, ['Julien Etienne'])]), h('p', ['Part of', h('a', { param: { href: 'http://todomvc.com' } })])]);
-};
+var info$1 = (function () {
+    return footer({ class: 'info' }, p('Double-click to edit a todo'), p('Created by ', a({ href: 'https://github.com/julienetie' }, 'Julien Etienne')), p('Part of', a({ href: 'http://todomvc.com' })));
+});
 
 var controller$1 = function controller$1(cmd, data) {
 	var props = '';
@@ -1095,10 +1154,11 @@ var controller$1 = function controller$1(cmd, data) {
  */
 var header$2 = (function (_ref) {
     var returnKey = _ref.returnKey;
-    return header({ class: 'header' }, [h1({}, ['todos']), input({
+    return header({ class: 'header' }, [h1('todos'), input({
         class: 'new-todo',
-        props: { placeholder: 'What needs to be done?', autofocus: 'autofocus' },
-        on: returnKey
+        placeholder: 'What needs to be done?',
+        autofocus: 'autofocus',
+        event: returnKey
     })]);
 });
 
@@ -1120,7 +1180,13 @@ var controller$2 = function controller$2(cmd, data) {
     return header$2(props$3);
 };
 
-var todoItem = function todoItem(_ref) {
+var mainSection$1 = (function (_ref) {
+    var todoList = _ref.todoList,
+        toggleAllAsCompleted = _ref.toggleAllAsCompleted;
+    return section({ class: 'main' }, input({ class: 'toggle-all', type: 'checkbox', event: toggleAllAsCompleted }), label({ for: 'toggle-all' }, 'Mark all as complete'), ul({ class: 'todo-list' }, todoList));
+});
+
+var todoItem$1 = (function (_ref) {
     var value = _ref.value,
         toggleComplete = _ref.toggleComplete,
         editing = _ref.editing,
@@ -1128,16 +1194,8 @@ var todoItem = function todoItem(_ref) {
         removeTodo = _ref.removeTodo,
         editTodo = _ref.editTodo,
         saveTodo = _ref.saveTodo;
-
-    return h('li' + completed + editing, { on: editTodo }, [h('div.view', [h('input.toggle', { props: { type: 'checkbox', checked: !!completed }, on: toggleComplete }), h('label', value), h('button.destroy', { on: removeTodo })]), h('input.edit', { props: { value: value }, on: saveTodo })]);
-};
-
-var mainSection$1 = function mainSection$1(_ref) {
-    var todoList = _ref.todoList,
-        toggleAllAsCompleted = _ref.toggleAllAsCompleted;
-
-    return h('section.main', [h('input.toggle-all', { props: { type: 'checkbox' }, on: toggleAllAsCompleted }), h('label', { props: { htmlFor: 'toggle-all' } }, 'Mark all as complete'), h('ul.todo-list', todoList)]);
-};
+    return li({ class: '' + completed + editing, event: editTodo }, div({ class: 'view' }, input({ class: 'toggle', type: 'checkbox', checked: !!completed, event: toggleComplete }), label(value), button({ class: 'destroy', event: removeTodo })), input({ class: 'edit', value: value, event: saveTodo }));
+});
 
 var props$5 = {};
 
@@ -1195,7 +1253,7 @@ var controller$4 = function controller$4(completed, value, ignore, editing, inde
     props$5.editing = editing;
     props$5.editTodo = editTodo(index);
     props$5.saveTodo = saveTodo(index, value);
-    return todoItem(props$5);
+    return todoItem$1(props$5);
 };
 
 var todoItems = o$1('todos');

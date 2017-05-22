@@ -1,14 +1,11 @@
-import h from 'snabbdom/h';
+import { li, div, input, label, button } from '../../../../../dist/wavefront.es.js';
 
-const todoItem = ({ value, toggleComplete, editing, completed, removeTodo, editTodo, saveTodo }) => {
-    return h(`li${completed}${editing}`, { on: editTodo }, [
-        h('div.view', [
-            h('input.toggle', { props: { type: 'checkbox', checked: !!completed }, on: toggleComplete }),
-            h('label', value),
-            h('button.destroy', { on: removeTodo })
-        ]),
-        h('input.edit', { props: { value: value }, on: saveTodo })
-    ]);
-}
-
-export default todoItem;
+export default ({ value, toggleComplete, editing, completed, removeTodo, editTodo, saveTodo }) =>
+li({ class: `${completed}${editing}`, event: editTodo },
+    div({ class: 'view' },
+        input({ class: 'toggle', type: 'checkbox', checked: !!completed, event: toggleComplete }),
+        label(value),
+        button({ class: 'destroy', event: removeTodo })
+    ),
+    input({ class: 'edit', value: value, event: saveTodo })
+);

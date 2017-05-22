@@ -1,12 +1,8 @@
-import h from 'snabbdom/h';
-import todoItem from '../todo-item/view';
+import { section, input, label, ul } from '../../../../../dist/wavefront.es.js';
 
-const mainSection = ({ todoList, toggleAllAsCompleted }) => {
-    return h('section.main', [
-        h('input.toggle-all', { props: { type: 'checkbox' }, on: toggleAllAsCompleted }),
-        h('label', { props: { htmlFor: 'toggle-all' } }, 'Mark all as complete'),
-        h('ul.todo-list', todoList)
-    ]);
-}
-
-export default mainSection;
+export default ({ todoList, toggleAllAsCompleted }) =>
+section({ class: 'main' },
+    input({ class: 'toggle-all', type: 'checkbox', event: toggleAllAsCompleted }),
+    label({ for: 'toggle-all' }, 'Mark all as complete'),
+    ul({ class: 'todo-list' }, todoList)
+);

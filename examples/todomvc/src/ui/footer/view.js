@@ -5,14 +5,16 @@ import { footer, span, strong, ul, li, a, button } from '../../../../../dist/wav
  */
 export default ({ itemsLeft, all, active, completed }) =>
 footer({ class: 'footer' },
-    span({ class: 'todo-count' },
-        strong(itemsLeft),
-        ' items left'
-    ),
+    span({ class: 'todo-count', style: { background: 'red' } },
+        strong(itemsLeft), ' items left'),
     ul({ class: 'filters' },
-        li(a({ class: 'selected', props: { href: '#/' }, on: all }, 'All')),
-        li(a({ props: { href: '#/active' }, on: active }, 'Active')),
-        li(a({ props: { href: '#/completed' }, on: completed }, 'Completed'))
+        li(a({ class: 'selected', href: '#/', event: all }, 'All')),
+        li(a({ href: '#/active', event: active }, 'Active')),
+        li(a({ href: '#/completed', event: completed }, 'Completed'))
     ),
     button({ class: 'clear-completed' }, 'Clear completed')
 );
+
+
+// style 
+// href
