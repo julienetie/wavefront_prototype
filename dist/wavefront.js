@@ -16,13 +16,183 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var toConsumableArray = function (arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  } else {
+    return Array.from(arr);
+  }
+};
+
+/**
+ * @license
+ * lodash (Custom Build) <https://lodash.com/>
+ * Build: `lodash include="isPlainObject" -o isPlainObject.js`
+ * Copyright jQuery Foundation and other contributors <https://jquery.org/>
+ * Released under MIT license <https://lodash.com/license>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ */
+// ;(function() {
+
+/** Used as the semantic version number. */
+var objectTag = '[object Object]';
+
+/** Detect free variable `global` from Node.js. */
+var freeGlobal = (typeof global === 'undefined' ? 'undefined' : _typeof(global)) == 'object' && global && global.Object === Object && global;
+
+/** Detect free variable `self`. */
+var freeSelf = (typeof self === 'undefined' ? 'undefined' : _typeof(self)) == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root = freeGlobal || freeSelf || Function('return this')();
+
+/** Detect free variable `exports`. */
+function overArg(func, transform) {
+  return function (arg) {
+    return func(transform(arg));
+  };
+}
+
+/*--------------------------------------------------------------------------*/
+
+/** Used for built-in method references. */
+var funcProto = Function.prototype;
+var objectProto = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString = funcProto.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Used to infer the `Object` constructor. */
+var objectCtorString = funcToString.call(Object);
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objectToString = objectProto.toString;
+
+/** Built-in value references. */
+var getPrototype = overArg(Object.getPrototypeOf, Object);
+
+/** Used to lookup unminified function names. */
+function isObjectLike(value) {
+  return value != null && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) == 'object';
+}
+
+/**
+ * Checks if `value` is a plain object, that is, an object created by the
+ * `Object` constructor or one with a `[[Prototype]]` of `null`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.8.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a plain object, else `false`.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ * }
+ *
+ * _.isPlainObject(new Foo);
+ * // => false
+ *
+ * _.isPlainObject([1, 2, 3]);
+ * // => false
+ *
+ * _.isPlainObject({ 'x': 0, 'y': 0 });
+ * // => true
+ *
+ * _.isPlainObject(Object.create(null));
+ * // => true
+ */
+function isPlainObject(value) {
+  if (!isObjectLike(value) || objectToString.call(value) != objectTag) {
+    return false;
+  }
+  var proto = getPrototype(value);
+  if (proto === null) {
+    return true;
+  }
+  var Ctor = hasOwnProperty.call(proto, 'constructor') && proto.constructor;
+  return typeof Ctor == 'function' && Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString;
+}
+
+/*------------------------------------------------------------------------*/
+
+// Add methods that return unwrapped values in chain sequences.
+
+console.log('vnode', vnode);
+
 function isPrimitive(s) {
     return typeof s === 'string' || typeof s === 'number';
 }
 
-function isObject(val) {
-    return val != null && (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object' && Array.isArray(val) === false;
-}
+
+
+
 
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
@@ -37,53 +207,72 @@ function addNS(data, children, sel) {
 }
 
 var assembly = function assembly(tagName) {
-    return function inner(props, b) {
+    return function inner() {
         var sel = '' + tagName;
         var selectorName = tagName;
-        var d = {};
+        var attributes = {};
+        var item = void 0;
+        var textNode = void 0;
+        var childNodes = [];
+        var i = void 0;
+        var children = void 0;
+        var text = void 0;
 
-        if (isObject(props)) {
-            if (props.hasOwnProperty('id')) {
-                selectorName += '#' + props.id;
-            }
-            if (props.hasOwnProperty('class') || props.hasOwnProperty('_')) {
-                selectorName += '.' + props.class;
-            }
+        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+        }
 
-            for (var prop in props) {
-                if (prop !== 'class' && prop !== 'id' && prop !== '_') {
-                    if (prop === 'event') {
-                        d.on = props.event;
-                    } else {
-                        d[prop] = props[prop];
+        for (i = 0; i < args.length; i++) {
+            item = args[i] || {};
+            var isItemObject = isPlainObject(item);
+            var isItemVnode = item.hasOwnProperty('sel');
+
+            // Check if item is a plane object = attribute.
+            if (isItemObject && !isItemVnode) {
+                console.log('attributes', item);
+                if (item.hasOwnProperty('id')) {
+                    selectorName += '#' + item.id;
+                }
+                if (item.hasOwnProperty('class') || item.hasOwnProperty('_')) {
+                    selectorName += '.' + item.class;
+                }
+
+                for (var property in item) {
+                    if (property !== 'class' && property !== 'id' && property !== '_') {
+                        if (property === 'event') {
+                            attributes.on = item.event;
+                        } else {
+                            attributes[property] = item[property];
+                        }
                     }
                 }
+                continue;
             }
-        } else {
-            throw new Error('Props is not an object');
+
+            // Check if item is an array = group of child elements.
+            if (Array.isArray(item)) {
+                childNodes = [].concat(toConsumableArray(childNodes), toConsumableArray(item));
+                continue;
+            }
+
+            // check if item is not an object, array or function = child element.
+            if (isItemObject && isItemVnode || isPrimitive) {
+                childNodes.push(item);
+                continue;
+            }
         }
 
-        var children, text, i;
-        if (b !== undefined) {
-            if (Array.isArray(b)) {
-                children = b;
-            } else if (isPrimitive(b)) {
-                text = b;
-            } else if (b && b.sel) {
-                children = [b];
+        for (i = 0; i < childNodes.length; ++i) {
+            if (isPrimitive(childNodes[i])) {
+                childNodes[i] = vnode(undefined, undefined, undefined, childNodes[i]);
             }
         }
 
-        if (Array.isArray(children)) {
-            for (i = 0; i < children.length; ++i) {
-                if (isPrimitive(children[i])) children[i] = vnode(undefined, undefined, undefined, children[i]);
-            }
-        }
         if (selectorName[0] === 's' && selectorName[1] === 'v' && selectorName[2] === 'g' && (selectorName.length === 3 || selectorName[3] === '.' || selectorName[3] === '#')) {
-            addNS(d, children, selectorName);
+            addNS(attributes, childNodes, selectorName);
         }
 
-        return vnode(selectorName, d, children, text, undefined);
+        return vnode(selectorName, attributes, childNodes, text, undefined);
     };
 };
 
@@ -94,7 +283,7 @@ var area = assembly('area');
 var article = assembly('article');
 var aside = assembly('aside');
 var audio = assembly('audio');
-var b = assembly('b');
+var childNodes = assembly('childNodes');
 var base = assembly('base');
 var bdi = assembly('bdi');
 var bdo = assembly('bdo');
@@ -194,7 +383,7 @@ exports.area = area;
 exports.article = article;
 exports.aside = aside;
 exports.audio = audio;
-exports.b = b;
+exports.childNodes = childNodes;
 exports.base = base;
 exports.bdi = bdi;
 exports.bdo = bdo;

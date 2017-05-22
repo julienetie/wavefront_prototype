@@ -4,7 +4,361 @@
 	(factory());
 }(this, (function () { 'use strict';
 
-var vnode = function (sel, data, children, text, elm) {
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+  return typeof obj;
+} : function (obj) {
+  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var get = function get(object, property, receiver) {
+  if (object === null) object = Function.prototype;
+  var desc = Object.getOwnPropertyDescriptor(object, property);
+
+  if (desc === undefined) {
+    var parent = Object.getPrototypeOf(object);
+
+    if (parent === null) {
+      return undefined;
+    } else {
+      return get(parent, property, receiver);
+    }
+  } else if ("value" in desc) {
+    return desc.value;
+  } else {
+    var getter = desc.get;
+
+    if (getter === undefined) {
+      return undefined;
+    }
+
+    return getter.call(receiver);
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var set = function set(object, property, value, receiver) {
+  var desc = Object.getOwnPropertyDescriptor(object, property);
+
+  if (desc === undefined) {
+    var parent = Object.getPrototypeOf(object);
+
+    if (parent !== null) {
+      set(parent, property, value, receiver);
+    }
+  } else if ("value" in desc && desc.writable) {
+    desc.value = value;
+  } else {
+    var setter = desc.set;
+
+    if (setter !== undefined) {
+      setter.call(receiver, value);
+    }
+  }
+
+  return value;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var toConsumableArray = function (arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  } else {
+    return Array.from(arr);
+  }
+};
+
+function vnode(sel, data, children, text, elm) {
+    var key = data === undefined ? undefined : data.key;
+    return { sel: sel, data: data, children: children,
+        text: text, elm: elm, key: key };
+}
+
+/**
+ * @license
+ * lodash (Custom Build) <https://lodash.com/>
+ * Build: `lodash include="isPlainObject" -o isPlainObject.js`
+ * Copyright jQuery Foundation and other contributors <https://jquery.org/>
+ * Released under MIT license <https://lodash.com/license>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ */
+// ;(function() {
+
+/** Used as the semantic version number. */
+var objectTag = '[object Object]';
+
+/** Detect free variable `global` from Node.js. */
+var freeGlobal = (typeof global === 'undefined' ? 'undefined' : _typeof(global)) == 'object' && global && global.Object === Object && global;
+
+/** Detect free variable `self`. */
+var freeSelf = (typeof self === 'undefined' ? 'undefined' : _typeof(self)) == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root = freeGlobal || freeSelf || Function('return this')();
+
+/** Detect free variable `exports`. */
+function overArg(func, transform) {
+    return function (arg) {
+        return func(transform(arg));
+    };
+}
+
+/*--------------------------------------------------------------------------*/
+
+/** Used for built-in method references. */
+var funcProto = Function.prototype;
+var objectProto = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString = funcProto.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Used to infer the `Object` constructor. */
+var objectCtorString = funcToString.call(Object);
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objectToString = objectProto.toString;
+
+/** Built-in value references. */
+var getPrototype = overArg(Object.getPrototypeOf, Object);
+
+/** Used to lookup unminified function names. */
+function isObjectLike(value) {
+    return value != null && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) == 'object';
+}
+
+/**
+ * Checks if `value` is a plain object, that is, an object created by the
+ * `Object` constructor or one with a `[[Prototype]]` of `null`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.8.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a plain object, else `false`.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ * }
+ *
+ * _.isPlainObject(new Foo);
+ * // => false
+ *
+ * _.isPlainObject([1, 2, 3]);
+ * // => false
+ *
+ * _.isPlainObject({ 'x': 0, 'y': 0 });
+ * // => true
+ *
+ * _.isPlainObject(Object.create(null));
+ * // => true
+ */
+function isPlainObject(value) {
+    if (!isObjectLike(value) || objectToString.call(value) != objectTag) {
+        return false;
+    }
+    var proto = getPrototype(value);
+    if (proto === null) {
+        return true;
+    }
+    var Ctor = hasOwnProperty.call(proto, 'constructor') && proto.constructor;
+    return typeof Ctor == 'function' && Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString;
+}
+
+/*------------------------------------------------------------------------*/
+
+// Add methods that return unwrapped values in chain sequences.
+
+
+/*--------------------------------------------------------------------------*/
+
+//   // Some AMD build optimizers, like r.js, check for condition patterns like:
+//   if (typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
+//     // Expose Lodash on the global object to prevent errors when Lodash is
+//     // loaded by a script tag in the presence of an AMD loader.
+//     // See http://requirejs.org/docs/errors.html#mismatch for more details.
+//     // Use `_.noConflict` to remove Lodash from the global object.
+//     root._ = lodash;
+
+//     // Define as an anonymous module so, through path mapping, it can be
+//     // referenced as the "underscore" module.
+//     define(function() {
+//       return lodash;
+//     });
+//   }
+//   // Check for `exports` after `define` in case a build optimizer adds it.
+//   else if (freeModule) {
+//     // Export for Node.js.
+//     (freeModule.exports = lodash)._ = lodash;
+//     // Export for CommonJS support.
+//     freeExports._ = lodash;
+//   }
+//   else {
+//     // Export to the global object.
+//     root._ = lodash;
+//   }
+// }.call(this));
+
+console.log('vnode', vnode);
+
+function isPrimitive(s) {
+    return typeof s === 'string' || typeof s === 'number';
+}
+
+function addNS(data, children, sel) {
+    data.ns = 'http://www.w3.org/2000/svg';
+    if (sel !== 'foreignObject' && children !== undefined) {
+        for (var i = 0; i < children.length; ++i) {
+            var childData = children[i].data;
+            if (childData !== undefined) {
+                addNS(childData, children[i].children, children[i].sel);
+            }
+        }
+    }
+}
+
+var assembly = function assembly(tagName) {
+    return function inner() {
+        var sel = '' + tagName;
+        var selectorName = tagName;
+        var attributes = {};
+        var item = void 0;
+        var textNode = void 0;
+        var childNodes = [];
+        var i = void 0;
+        var children = void 0;
+        var text = void 0;
+
+        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+        }
+
+        for (i = 0; i < args.length; i++) {
+            item = args[i] || {};
+            var isItemObject = isPlainObject(item);
+            var isItemVnode = item.hasOwnProperty('sel');
+
+            // Check if item is a plane object = attribute.
+            if (isItemObject && !isItemVnode) {
+                console.log('attributes', item);
+                if (item.hasOwnProperty('id')) {
+                    selectorName += '#' + item.id;
+                }
+                if (item.hasOwnProperty('class') || item.hasOwnProperty('_')) {
+                    selectorName += '.' + item.class;
+                }
+
+                for (var property in item) {
+                    if (property !== 'class' && property !== 'id' && property !== '_') {
+                        if (property === 'event') {
+                            attributes.on = item.event;
+                        } else {
+                            attributes[property] = item[property];
+                        }
+                    }
+                }
+                continue;
+            }
+
+            // Check if item is an array = group of child elements.
+            if (Array.isArray(item)) {
+                childNodes = [].concat(toConsumableArray(childNodes), toConsumableArray(item));
+                continue;
+            }
+
+            // check if item is not an object, array or function = child element.
+            if (isItemObject && isItemVnode || isPrimitive) {
+                childNodes.push(item);
+                continue;
+            }
+        }
+
+        for (i = 0; i < childNodes.length; ++i) {
+            if (isPrimitive(childNodes[i])) {
+                childNodes[i] = vnode(undefined, undefined, undefined, childNodes[i]);
+            }
+        }
+
+        if (selectorName[0] === 's' && selectorName[1] === 'v' && selectorName[2] === 'g' && (selectorName.length === 3 || selectorName[3] === '.' || selectorName[3] === '#')) {
+            addNS(attributes, childNodes, selectorName);
+        }
+
+        return vnode(selectorName, attributes, childNodes, text, undefined);
+    };
+};
+
+var a = assembly('a');
+var button = assembly('button');
+var div = assembly('DIV');
+var footer = assembly('footer');
+var h1 = assembly('h1');
+var header = assembly('header');
+var input = assembly('input');
+var li = assembly('li');
+var section = assembly('section');
+var span = assembly('span');
+var strong = assembly('strong');
+var ul = assembly('ul');
+
+var vnode$1 = function (sel, data, children, text, elm) {
   var key = data === undefined ? undefined : data.key;
   return { sel: sel, data: data, children: children,
     text: text, elm: elm, key: key };
@@ -17,15 +371,15 @@ var is$1 = {
   }
 };
 
-var VNode = vnode;
+var VNode = vnode$1;
 var is = is$1;
 
-function addNS(data, children, sel) {
+function addNS$1(data, children, sel) {
   data.ns = 'http://www.w3.org/2000/svg';
 
   if (sel !== 'foreignObject' && children !== undefined) {
     for (var i = 0; i < children.length; ++i) {
-      addNS(children[i].data, children[i].children, children[i].sel);
+      addNS$1(children[i].data, children[i].children, children[i].sel);
     }
   }
 }
@@ -57,19 +411,22 @@ var h = function h(sel, b, c) {
     }
   }
   if (sel[0] === 's' && sel[1] === 'v' && sel[2] === 'g') {
-    addNS(data, children, sel);
+    addNS$1(data, children, sel);
   }
   return VNode(sel, data, children, text, undefined);
 };
 
-var footer$1 = function footer$1(_ref) {
+/** 
+ * Footer.
+ * @param ...
+ */
+var footer$2 = (function (_ref) {
     var itemsLeft = _ref.itemsLeft,
         all = _ref.all,
         active = _ref.active,
         completed = _ref.completed;
-
-    return h('footer.footer', [h('span.todo-count', [h('strong', itemsLeft), ' items left']), h('ul.filters', [h('li', [h('a.selected', { props: { href: '#/' }, on: all }, ['All'])]), h('li', [h('a', { props: { href: '#/active' }, on: active }, ['Active'])]), h('li', [h('a', { props: { href: '#/completed' }, on: completed }, ['Completed'])])]), h('button.clear-completed', ['Clear completed'])]);
-};
+    return footer({ class: 'footer' }, span({ class: 'todo-count' }, strong(itemsLeft), ' items left'), ul({ class: 'filters' }, li(a({ class: 'selected', props: { href: '#/' }, on: all }, 'All')), li(a({ props: { href: '#/active' }, on: active }, 'Active')), li(a({ props: { href: '#/completed' }, on: completed }, 'Completed'))), button({ class: 'clear-completed' }, 'Clear completed'));
+});
 
 function createElement(tagName) {
   return document.createElement(tagName);
@@ -124,7 +481,7 @@ var htmldomapi = {
   setTextContent: setTextContent
 };
 
-var VNode$1 = vnode;
+var VNode$1 = vnode$1;
 var is$3 = is$1;
 var domApi = htmldomapi;
 
@@ -183,18 +540,18 @@ function init(modules, api) {
     };
   }
 
-  function createElm(vnode$$1, insertedVnodeQueue) {
+  function createElm(vnode, insertedVnodeQueue) {
     var i,
-        data = vnode$$1.data;
+        data = vnode.data;
     if (isDef(data)) {
       if (isDef(i = data.hook) && isDef(i = i.init)) {
-        i(vnode$$1);
-        data = vnode$$1.data;
+        i(vnode);
+        data = vnode.data;
       }
     }
     var elm,
-        children = vnode$$1.children,
-        sel = vnode$$1.sel;
+        children = vnode.children,
+        sel = vnode.sel;
     if (isDef(sel)) {
       // Parse selector
       var hashIdx = sel.indexOf('#');
@@ -202,27 +559,27 @@ function init(modules, api) {
       var hash = hashIdx > 0 ? hashIdx : sel.length;
       var dot = dotIdx > 0 ? dotIdx : sel.length;
       var tag = hashIdx !== -1 || dotIdx !== -1 ? sel.slice(0, Math.min(hash, dot)) : sel;
-      elm = vnode$$1.elm = isDef(data) && isDef(i = data.ns) ? api.createElementNS(i, tag) : api.createElement(tag);
+      elm = vnode.elm = isDef(data) && isDef(i = data.ns) ? api.createElementNS(i, tag) : api.createElement(tag);
       if (hash < dot) elm.id = sel.slice(hash + 1, dot);
       if (dotIdx > 0) elm.className = sel.slice(dot + 1).replace(/\./g, ' ');
       if (is$3.array(children)) {
         for (i = 0; i < children.length; ++i) {
           api.appendChild(elm, createElm(children[i], insertedVnodeQueue));
         }
-      } else if (is$3.primitive(vnode$$1.text)) {
-        api.appendChild(elm, api.createTextNode(vnode$$1.text));
+      } else if (is$3.primitive(vnode.text)) {
+        api.appendChild(elm, api.createTextNode(vnode.text));
       }
       for (i = 0; i < cbs.create.length; ++i) {
-        cbs.create[i](emptyNode, vnode$$1);
-      }i = vnode$$1.data.hook; // Reuse variable
+        cbs.create[i](emptyNode, vnode);
+      }i = vnode.data.hook; // Reuse variable
       if (isDef(i)) {
-        if (i.create) i.create(emptyNode, vnode$$1);
-        if (i.insert) insertedVnodeQueue.push(vnode$$1);
+        if (i.create) i.create(emptyNode, vnode);
+        if (i.insert) insertedVnodeQueue.push(vnode);
       }
     } else {
-      elm = vnode$$1.elm = api.createTextNode(vnode$$1.text);
+      elm = vnode.elm = api.createTextNode(vnode.text);
     }
-    return vnode$$1.elm;
+    return vnode.elm;
   }
 
   function addVnodes(parentElm, before, vnodes, startIdx, endIdx, insertedVnodeQueue) {
@@ -231,17 +588,17 @@ function init(modules, api) {
     }
   }
 
-  function invokeDestroyHook(vnode$$1) {
+  function invokeDestroyHook(vnode) {
     var i,
         j,
-        data = vnode$$1.data;
+        data = vnode.data;
     if (isDef(data)) {
-      if (isDef(i = data.hook) && isDef(i = i.destroy)) i(vnode$$1);
+      if (isDef(i = data.hook) && isDef(i = i.destroy)) i(vnode);
       for (i = 0; i < cbs.destroy.length; ++i) {
-        cbs.destroy[i](vnode$$1);
-      }if (isDef(i = vnode$$1.children)) {
-        for (j = 0; j < vnode$$1.children.length; ++j) {
-          invokeDestroyHook(vnode$$1.children[j]);
+        cbs.destroy[i](vnode);
+      }if (isDef(i = vnode.children)) {
+        for (j = 0; j < vnode.children.length; ++j) {
+          invokeDestroyHook(vnode.children[j]);
         }
       }
     }
@@ -333,29 +690,29 @@ function init(modules, api) {
     }
   }
 
-  function patchVnode(oldVnode, vnode$$1, insertedVnodeQueue) {
+  function patchVnode(oldVnode, vnode, insertedVnodeQueue) {
     var i, hook;
-    if (isDef(i = vnode$$1.data) && isDef(hook = i.hook) && isDef(i = hook.prepatch)) {
-      i(oldVnode, vnode$$1);
+    if (isDef(i = vnode.data) && isDef(hook = i.hook) && isDef(i = hook.prepatch)) {
+      i(oldVnode, vnode);
     }
-    var elm = vnode$$1.elm = oldVnode.elm,
+    var elm = vnode.elm = oldVnode.elm,
         oldCh = oldVnode.children,
-        ch = vnode$$1.children;
-    if (oldVnode === vnode$$1) return;
-    if (!sameVnode(oldVnode, vnode$$1)) {
+        ch = vnode.children;
+    if (oldVnode === vnode) return;
+    if (!sameVnode(oldVnode, vnode)) {
       var parentElm = api.parentNode(oldVnode.elm);
-      elm = createElm(vnode$$1, insertedVnodeQueue);
+      elm = createElm(vnode, insertedVnodeQueue);
       api.insertBefore(parentElm, elm, oldVnode.elm);
       removeVnodes(parentElm, [oldVnode], 0, 0);
       return;
     }
-    if (isDef(vnode$$1.data)) {
+    if (isDef(vnode.data)) {
       for (i = 0; i < cbs.update.length; ++i) {
-        cbs.update[i](oldVnode, vnode$$1);
-      }i = vnode$$1.data.hook;
-      if (isDef(i) && isDef(i = i.update)) i(oldVnode, vnode$$1);
+        cbs.update[i](oldVnode, vnode);
+      }i = vnode.data.hook;
+      if (isDef(i) && isDef(i = i.update)) i(oldVnode, vnode);
     }
-    if (isUndef(vnode$$1.text)) {
+    if (isUndef(vnode.text)) {
       if (isDef(oldCh) && isDef(ch)) {
         if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue);
       } else if (isDef(ch)) {
@@ -366,15 +723,15 @@ function init(modules, api) {
       } else if (isDef(oldVnode.text)) {
         api.setTextContent(elm, '');
       }
-    } else if (oldVnode.text !== vnode$$1.text) {
-      api.setTextContent(elm, vnode$$1.text);
+    } else if (oldVnode.text !== vnode.text) {
+      api.setTextContent(elm, vnode.text);
     }
     if (isDef(hook) && isDef(i = hook.postpatch)) {
-      i(oldVnode, vnode$$1);
+      i(oldVnode, vnode);
     }
   }
 
-  return function (oldVnode, vnode$$1) {
+  return function (oldVnode, vnode) {
     var i, elm, parent;
     var insertedVnodeQueue = [];
     for (i = 0; i < cbs.pre.length; ++i) {
@@ -383,16 +740,16 @@ function init(modules, api) {
       oldVnode = emptyNodeAt(oldVnode);
     }
 
-    if (sameVnode(oldVnode, vnode$$1)) {
-      patchVnode(oldVnode, vnode$$1, insertedVnodeQueue);
+    if (sameVnode(oldVnode, vnode)) {
+      patchVnode(oldVnode, vnode, insertedVnodeQueue);
     } else {
       elm = oldVnode.elm;
       parent = api.parentNode(elm);
 
-      createElm(vnode$$1, insertedVnodeQueue);
+      createElm(vnode, insertedVnodeQueue);
 
       if (parent !== null) {
-        api.insertBefore(parent, vnode$$1.elm, api.nextSibling(elm));
+        api.insertBefore(parent, vnode.elm, api.nextSibling(elm));
         removeVnodes(parent, [oldVnode], 0, 0);
       }
     }
@@ -402,7 +759,7 @@ function init(modules, api) {
     }
     for (i = 0; i < cbs.post.length; ++i) {
       cbs.post[i]();
-    }return vnode$$1;
+    }return vnode;
   };
 }
 
@@ -548,120 +905,7 @@ function applyRemoveStyle(vnode, rm) {
   });
 }
 
-var style = { create: updateStyle, update: updateStyle, destroy: applyDestroyStyle, remove: applyRemoveStyle };
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var get = function get(object, property, receiver) {
-  if (object === null) object = Function.prototype;
-  var desc = Object.getOwnPropertyDescriptor(object, property);
-
-  if (desc === undefined) {
-    var parent = Object.getPrototypeOf(object);
-
-    if (parent === null) {
-      return undefined;
-    } else {
-      return get(parent, property, receiver);
-    }
-  } else if ("value" in desc) {
-    return desc.value;
-  } else {
-    var getter = desc.get;
-
-    if (getter === undefined) {
-      return undefined;
-    }
-
-    return getter.call(receiver);
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var set = function set(object, property, value, receiver) {
-  var desc = Object.getOwnPropertyDescriptor(object, property);
-
-  if (desc === undefined) {
-    var parent = Object.getPrototypeOf(object);
-
-    if (parent !== null) {
-      set(parent, property, value, receiver);
-    }
-  } else if ("value" in desc && desc.writable) {
-    desc.value = value;
-  } else {
-    var setter = desc.set;
-
-    if (setter !== undefined) {
-      setter.call(receiver, value);
-    }
-  }
-
-  return value;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var toConsumableArray = function (arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  } else {
-    return Array.from(arr);
-  }
-};
+var style$1 = { create: updateStyle, update: updateStyle, destroy: applyDestroyStyle, remove: applyRemoveStyle };
 
 function invokeHandler(handler, vnode, event) {
   if (typeof handler === "function") {
@@ -767,7 +1011,7 @@ var eventlisteners = {
 
 // Render 
 
-var patch = snabbdom.init([_class, props$1, style, eventlisteners]);
+var patch = snabbdom.init([_class, props$1, style$1, eventlisteners]);
 
 var render = function render(container, vNode, oldVnode) {
     if (!oldVnode) {
@@ -833,7 +1077,7 @@ var controller = function controller() {
     props.all = toggleView('all');
     props.active = toggleView('active');
     props.completed = toggleView('completed');
-    return footer$1(props);
+    return footer$2(props);
 };
 
 var info$1 = function info$1() {
@@ -845,14 +1089,18 @@ var controller$1 = function controller$1(cmd, data) {
 	return info$1(props);
 };
 
-var header$1 = function header$1(_ref) {
+/**
+ * Header.
+ * @param...
+ */
+var header$2 = (function (_ref) {
     var returnKey = _ref.returnKey;
-
-    return h('header.header', [h('h1', ['todos']), h('input.new-todo', {
+    return header({ class: 'header' }, [h1({}, ['todos']), input({
+        class: 'new-todo',
         props: { placeholder: 'What needs to be done?', autofocus: 'autofocus' },
         on: returnKey
     })]);
-};
+});
 
 var returnKey = {
     keypress: function keypress(e) {
@@ -869,7 +1117,7 @@ var props$3 = {
 };
 
 var controller$2 = function controller$2(cmd, data) {
-    return header$1(props$3);
+    return header$2(props$3);
 };
 
 var todoItem = function todoItem(_ref) {
@@ -1048,12 +1296,30 @@ var controller$3 = function controller$3(cmd, data) {
     return mainSection$1(props$4);
 };
 
+// import document from './document/controller';
 var oldVnode = void 0;
 
 var todoApp = document.getElementById('root');
+console.log(document);
 
 var interfaces = function interfaces(cmd, data) {
-    var newVNode = h('div', [h('section.todoapp', [controller$2(), controller$3(cmd, data), controller()]), controller$1(cmd, data)]);
+
+    /**
+     * 
+     */
+    // document();
+
+    var newVNode = div({}, [section({ class: 'todoapp' }, [controller$2(), controller$3(cmd, data), controller()]), controller$1(cmd, data)]);
+
+    // const newVNode = h('div', [
+
+    //     h('section.todoapp', [
+    //         header(),
+    //         mainSection(cmd, data),
+    //         footer()
+    //     ]),
+    //     info(cmd, data)
+    // ]);
 
     render(todoApp, newVNode, oldVnode);
 

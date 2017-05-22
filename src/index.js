@@ -1,5 +1,7 @@
 import vnode from '../libs/vnode';
+import isPlaneObject from '../libs/is-plane-object';
 
+console.log('vnode', vnode)
 
 function isPrimitive(s) {
     return typeof s === 'string' || typeof s === 'number';
@@ -10,6 +12,22 @@ function isObject(val) {
     return val != null && typeof val === 'object' && Array.isArray(val) === false;
 };
 
+
+function isArray(val) {
+    return val != null && typeof val === 'object' && Array.isArray(val) === false;
+};
+
+// function isEmpty(obj) {
+//     for (var key in obj) {
+//         if (obj.hasOwnProperty(key))
+//             return false;
+//     }
+//     return true;
+// }
+
+function isFunction(value) {
+    return typeof value === 'function';
+}
 
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
@@ -24,61 +42,74 @@ function addNS(data, children, sel) {
 }
 
 const assembly = (tagName) => {
-    return function inner(props, b) {
+    return function inner(...args) {
         let sel = `${tagName}`;
         let selectorName = tagName;
-        let d = {};
+        let attributes = {};
+        let item;
+        let textNode;
+        let childNodes = [];
+        let i;
+        let children;
+        let text;
 
 
-        if (isObject(props)) {
-            if (props.hasOwnProperty('id')) {
-                selectorName += '#' + props.id;
-            }
-            if (props.hasOwnProperty('class') || props.hasOwnProperty('_')) {
-                selectorName += '.' + props.class;
-            }
+        for (i = 0; i < args.length; i++) {
+            item = args[i] || {};
+            let isItemObject = isPlaneObject(item);
+            let isItemVnode = item.hasOwnProperty('sel');
 
-            for (let prop in props) {
-                if (prop !== 'class' && prop !== 'id' && prop !== '_') {
-                    if (prop === 'event') {
-                        d.on = props.event;
-                    } else {
-                        d[prop] = props[prop];
+            // Check if item is a plane object = attribute.
+            if (isItemObject && !isItemVnode) {
+                console.log('attributes', item)
+                if (item.hasOwnProperty('id')) {
+                    selectorName += '#' + item.id;
+                }
+                if (item.hasOwnProperty('class') || item.hasOwnProperty('_')) {
+                    selectorName += '.' + item.class;
+                }
+
+                for (let property in item) {
+                    if (property !== 'class' && property !== 'id' && property !== '_') {
+                        if (property === 'event') {
+                            attributes.on = item.event;
+                        } else {
+                            attributes[property] = item[property];
+                        }
                     }
                 }
+                continue;
             }
 
-        } else {
-            throw new Error('Props is not an object')
-        }
+            // Check if item is an array = group of child elements.
+            if (Array.isArray(item)) {
+                childNodes = [...childNodes, ...item];
+                continue;
+            }
 
-        var children, text, i;
-        if (b !== undefined) {
-            if (Array.isArray(b)) {
-                children = b;
-            } else if (isPrimitive(b)) {
-                text = b;
-            } else if (b && b.sel) {
-                children = [b];
+            // check if item is not an object, array or function = child element.
+            if (isItemObject && isItemVnode || isPrimitive) {
+                childNodes.push(item);
+                continue;
             }
         }
 
-
-
-        if (Array.isArray(children)) {
-            for (i = 0; i < children.length; ++i) {
-                if (isPrimitive(children[i]))
-                    children[i] = vnode(undefined, undefined, undefined, children[i]);
+        for (i = 0; i < childNodes.length; ++i) {
+            if (isPrimitive(childNodes[i])) {
+                childNodes[i] = vnode(undefined, undefined, undefined, childNodes[i]);
             }
         }
+
         if (selectorName[0] === 's' && selectorName[1] === 'v' && selectorName[2] === 'g' &&
             (selectorName.length === 3 || selectorName[3] === '.' || selectorName[3] === '#')) {
-            addNS(d, children, selectorName);
+            addNS(attributes, childNodes, selectorName);
         }
 
-        return vnode(selectorName, d, children, text, undefined);
+        return vnode(selectorName, attributes, childNodes, text, undefined);
     }
 }
+
+
 
 
 export const a = assembly('a');
@@ -88,7 +119,7 @@ export const area = assembly('area');
 export const article = assembly('article');
 export const aside = assembly('aside');
 export const audio = assembly('audio');
-export const b = assembly('b');
+export const childNodes = assembly('childNodes');
 export const base = assembly('base');
 export const bdi = assembly('bdi');
 export const bdo = assembly('bdo');
