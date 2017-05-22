@@ -1,29 +1,26 @@
 import vnode from '../libs/vnode';
 import isPlaneObject from '../libs/is-plane-object';
+import { init } from 'snabbdom';
+import { classModule } from 'snabbdom/modules/class';
+import attributes from './attributes';
+import props from './props';
+import { heroModule } from 'snabbdom/modules/hero';
+import { styleModule } from 'snabbdom/modules/style';
+import eventListenersModule from '../libs/eventlisteners';
 
-console.log('vnode', vnode)
+
+
+
+    console.log('vnode', vnode)
 
 function isPrimitive(s) {
     return typeof s === 'string' || typeof s === 'number';
 }
 
 
-function isObject(val) {
-    return val != null && typeof val === 'object' && Array.isArray(val) === false;
-};
-
-
 function isArray(val) {
     return val != null && typeof val === 'object' && Array.isArray(val) === false;
 };
-
-// function isEmpty(obj) {
-//     for (var key in obj) {
-//         if (obj.hasOwnProperty(key))
-//             return false;
-//     }
-//     return true;
-// }
 
 function isFunction(value) {
     return typeof value === 'function';
@@ -57,11 +54,7 @@ const attributeType = [
     'checked',
     'value'
 ];
-// const identifiers = ['class', '.', 'id', '#'];
-// const event = ['event', 'e'];
-// const prop = ['prop', 'p'];
-// const style = ['style', '$'];
-// const data = ['dataSet', 'd'];
+
 
 const attributeHas = (key, prop) => prop.some(attribute => key.indexOf(attributeHas) >= 0);
 
@@ -131,50 +124,10 @@ const assembly = (tagName) => {
                             }
 
                         } else {
-                            // console.log('considered attribute', key);
                             attributes.attrs[key] = item[key];
                         }
                     }
                 });
-                console.log('attributes', attributes)
-                    // if (attributeHas(attrKeys, ['style', '$'])) {
-                    //     attributes.style = item.style;
-                    // } else
-
-                // if (attributeHas(attrKeys, ['event', 'e'])) {
-                //     attributes.on = item.event;
-                // } else
-
-                // if (attributeHas(attrKeys, ['props', 'p'])) {
-                //     attributes.props = item.props;
-                // } else
-
-                // if (attributeHas(attrKeys, ['dataset', 'd'])) {
-                //     attributes.dataset = item.dataset;
-                // } else {
-                //     console.log()
-                // // console.log(i)
-                //     // if (!isSelector) {
-                //     //     // console.log('not selector',item)
-                //     //    for (let property in item) {
-                //     //     attributes.attrs[property] = item[property];
-                //     //     }
-                //     // }
-                // }
-
-                // for (let property in item) {
-                // if()
-
-                // if (property !== 'class' && property !== 'id' && property !== '_') {
-                //     if (property === 'event') {
-                //         attributes.on = item.event;
-                //     } else {
-                //         attributes[property] = item[property];
-                //     }
-                // }
-
-
-                // }
                 continue;
             }
 
@@ -208,7 +161,7 @@ const assembly = (tagName) => {
 
 
 
-
+// HTML Elements.
 export const a = assembly('a');
 export const abbr = assembly('abbr');
 export const address = assembly('address');
@@ -308,3 +261,14 @@ export const tr = assembly('tr');
 export const ul = assembly('ul');
 export const v = assembly('var');
 export const video = assembly('video');
+
+
+// Render API
+export const patch = init([
+    classModule,
+    props,
+    attributes,
+    heroModule,
+    styleModule,
+    eventListenersModule
+]);

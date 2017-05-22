@@ -1,6 +1,6 @@
 import { div, span, sup } from '../../../../../../dist/wavefront.es.js';
 
-const keypad = (clearButton) =>
+export default clearButton =>
     div({ class: 'keypad' }, [
         div({ class: 'key-row-1 keys', }, [
             span({ class: 'clear' }, clearButton),
@@ -40,5 +40,3 @@ const keypad = (clearButton) =>
             span({ class: 'quad-last' }, '+'),
         ])
     ]);
-
-export default keypad;
