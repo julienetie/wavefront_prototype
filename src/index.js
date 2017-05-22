@@ -2,25 +2,17 @@ import vnode from '../libs/vnode';
 import isPlaneObject from '../libs/is-plane-object';
 import { init } from 'snabbdom';
 import { classModule } from 'snabbdom/modules/class';
+import { datasetModule } from 'snabbdom/modules/dataset';
 import attributes from './attributes';
 import props from './props';
 import { heroModule } from 'snabbdom/modules/hero';
 import { styleModule } from 'snabbdom/modules/style';
 import eventListenersModule from '../libs/eventlisteners';
 
-
-
-
-    console.log('vnode', vnode)
-
 function isPrimitive(s) {
     return typeof s === 'string' || typeof s === 'number';
 }
 
-
-function isArray(val) {
-    return val != null && typeof val === 'object' && Array.isArray(val) === false;
-};
 
 function isFunction(value) {
     return typeof value === 'function';
@@ -81,51 +73,40 @@ const assembly = (tagName) => {
                 let isSelector = false;
                 const attrKeys = Object.keys(item);
 
-                // if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
+                // Create virtual id selector.
                 if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
                     selectorName += '#' + item.id;
                     isSelector = true;
                 }
+                // Create virtual class selectors.
                 if (item.hasOwnProperty('class') || item.hasOwnProperty('.')) {
                     selectorName += '.' + item.class;
                     isSelector = true;
                 }
 
                 attrKeys.forEach((key) => {
-                    // console.log(key)
+                    // If not selector
                     if (['id', '#', 'class', '.'].indexOf(key) < 0) {
-                        if (attributeType.indexOf(key) >= 0) {
                             switch (key) {
                                 case 'e':
                                 case 'event':
                                     attributes.on = item[key];
                                     break;
                                 case 'p':
+                                case 'props':
                                     attributes.props = item[key];
                                     break;
                                 case '$':
+                                case 'style':
                                     attributes.style = item[key];
                                     break;
                                 case 'd':
+                                case 'dataset':
                                     attributes.dataset = item[key];
                                     break;
-                                case 'href':
-                                case 'placeholder':
-                                case 'autofocus':
-                                case 'type':
-                                case 'checked':
-                                case 'value':
-                                    attributes.props[key] = item[key];
-                                    break;
-                                case 'for':
-                                    attributes.props.htmlFor = item[key];
                                 default:
-                                    attributes[key] = item[key];
+                                    attributes.attrs[key] = item[key];
                             }
-
-                        } else {
-                            attributes.attrs[key] = item[key];
-                        }
                     }
                 });
                 continue;
@@ -270,5 +251,6 @@ export const patch = init([
     attributes,
     heroModule,
     styleModule,
+    datasetModule,
     eventListenersModule
 ]);

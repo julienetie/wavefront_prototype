@@ -823,6 +823,46 @@ var _class = createCommonjsModule(function (module, exports) {
 
 var _class_1 = _class.classModule;
 
+var dataset = createCommonjsModule(function (module, exports) {
+    "use strict";
+
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var CAPS_REGEX = /[A-Z]/g;
+    function updateDataset(oldVnode, vnode) {
+        var elm = vnode.elm,
+            oldDataset = oldVnode.data.dataset,
+            dataset = vnode.data.dataset,
+            key;
+        if (!oldDataset && !dataset) return;
+        if (oldDataset === dataset) return;
+        oldDataset = oldDataset || {};
+        dataset = dataset || {};
+        var d = elm.dataset;
+        for (key in oldDataset) {
+            if (!dataset[key]) {
+                if (d) {
+                    delete d[key];
+                } else {
+                    elm.removeAttribute('data-' + key.replace(CAPS_REGEX, '-$&').toLowerCase());
+                }
+            }
+        }
+        for (key in dataset) {
+            if (oldDataset[key] !== dataset[key]) {
+                if (d) {
+                    d[key] = dataset[key];
+                } else {
+                    elm.setAttribute('data-' + key.replace(CAPS_REGEX, '-$&').toLowerCase(), dataset[key]);
+                }
+            }
+        }
+    }
+    exports.datasetModule = { create: updateDataset, update: updateDataset };
+    exports.default = exports.datasetModule;
+});
+
+var dataset_1 = dataset.datasetModule;
+
 var booleanAttrs = ["allowfullscreen", "async", "autofocus", "autoplay", "checked", "compact", "controls", "declare", "default", "defaultchecked", "defaultmuted", "defaultselected", "defer", "disabled", "draggable", "enabled", "formnovalidate", "hidden", "indeterminate", "inert", "ismap", "itemscope", "loop", "multiple", "muted", "nohref", "noresize", "noshade", "novalidate", "nowrap", "open", "pauseonexit", "readonly", "required", "reversed", "scoped", "seamless", "selected", "sortable", "spellcheck", "translate", "truespeed", "typemustmatch", "visible"];
 
 var xlinkNS = 'http://www.w3.org/1999/xlink';
@@ -840,7 +880,6 @@ function updateAttrs(oldVnode, vnode) {
     var elm = vnode.elm;
     var oldAttrs = oldVnode.data.attrs;
     var attrs = vnode.data.attrs;
-
     if (!oldAttrs && !attrs || oldAttrs === attrs) {
         return;
     }
@@ -1256,8 +1295,6 @@ var eventListenersModule = {
     destroy: updateEventListeners
 };
 
-console.log('vnode', vnode);
-
 function isPrimitive(s) {
     return typeof s === 'string' || typeof s === 'number';
 }
@@ -1273,8 +1310,6 @@ function addNS(data, children, sel) {
         }
     }
 }
-var attributeType = ['event', 'e', 'props', 'p', 'style', '$', 'dataset', 'd', 'href', 'placeholder', 'autofocus', 'type', 'for', 'checked', 'value'];
-
 var assembly = function assembly(tagName) {
     return function inner() {
         var sel = '' + tagName;
@@ -1301,49 +1336,39 @@ var assembly = function assembly(tagName) {
                 var isSelector = false;
                 var attrKeys = Object.keys(item);
 
-                // if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
+                // Create virtual id selector.
                 if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
                     selectorName += '#' + item.id;
                     isSelector = true;
                 }
+                // Create virtual class selectors.
                 if (item.hasOwnProperty('class') || item.hasOwnProperty('.')) {
                     selectorName += '.' + item.class;
                     isSelector = true;
                 }
 
                 attrKeys.forEach(function (key) {
-                    // console.log(key)
+                    // If not selector
                     if (['id', '#', 'class', '.'].indexOf(key) < 0) {
-                        if (attributeType.indexOf(key) >= 0) {
-                            switch (key) {
-                                case 'e':
-                                case 'event':
-                                    attributes$$1.on = item[key];
-                                    break;
-                                case 'p':
-                                    attributes$$1.props = item[key];
-                                    break;
-                                case '$':
-                                    attributes$$1.style = item[key];
-                                    break;
-                                case 'd':
-                                    attributes$$1.dataset = item[key];
-                                    break;
-                                case 'href':
-                                case 'placeholder':
-                                case 'autofocus':
-                                case 'type':
-                                case 'checked':
-                                case 'value':
-                                    attributes$$1.props[key] = item[key];
-                                    break;
-                                case 'for':
-                                    attributes$$1.props.htmlFor = item[key];
-                                default:
-                                    attributes$$1[key] = item[key];
-                            }
-                        } else {
-                            attributes$$1.attrs[key] = item[key];
+                        switch (key) {
+                            case 'e':
+                            case 'event':
+                                attributes$$1.on = item[key];
+                                break;
+                            case 'p':
+                            case 'props':
+                                attributes$$1.props = item[key];
+                                break;
+                            case '$':
+                            case 'style':
+                                attributes$$1.style = item[key];
+                                break;
+                            case 'd':
+                            case 'dataset':
+                                attributes$$1.dataset = item[key];
+                                break;
+                            default:
+                                attributes$$1.attrs[key] = item[key];
                         }
                     }
                 });
@@ -1393,7 +1418,7 @@ var span = assembly('span');
 var strong = assembly('strong');
 var ul = assembly('ul');
 // Render API
-var patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, eventListenersModule]);
+var patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, dataset_1, eventListenersModule]);
 
 var vnode$1 = function (sel, data, children, text, elm) {
   var key = data === undefined ? undefined : data.key;
@@ -1435,152 +1460,6 @@ var footer$2 = (function (_ref) {
 
 // style 
 // href
-
-function createElement(tagName) {
-  return document.createElement(tagName);
-}
-
-function createElementNS(namespaceURI, qualifiedName) {
-  return document.createElementNS(namespaceURI, qualifiedName);
-}
-
-function createTextNode(text) {
-  return document.createTextNode(text);
-}
-
-function insertBefore(parentNode, newNode, referenceNode) {
-  parentNode.insertBefore(newNode, referenceNode);
-}
-
-function removeChild(node, child) {
-  node.removeChild(child);
-}
-
-function appendChild(node, child) {
-  node.appendChild(child);
-}
-
-function parentNode(node) {
-  return node.parentElement;
-}
-
-function nextSibling(node) {
-  return node.nextSibling;
-}
-
-function tagName(node) {
-  return node.tagName;
-}
-
-function setTextContent(node, text) {
-  node.textContent = text;
-}
-
-var htmldomapi$1 = {
-  createElement: createElement,
-  createElementNS: createElementNS,
-  createTextNode: createTextNode,
-  appendChild: appendChild,
-  removeChild: removeChild,
-  insertBefore: insertBefore,
-  parentNode: parentNode,
-  nextSibling: nextSibling,
-  tagName: tagName,
-  setTextContent: setTextContent
-};
-
-var VNode$1 = vnode$1;
-var is$4 = is$2;
-var domApi = htmldomapi$1;
-
-function isUndef(s) {
-  return s === undefined;
-}
-function isDef(s) {
-  return s !== undefined;
-}
-
-var emptyNode = VNode$1('', {}, [], undefined, undefined);
-
-function sameVnode(vnode1, vnode2) {
-  return vnode1.key === vnode2.key && vnode1.sel === vnode2.sel;
-}
-
-function createKeyToOldIdx(children, beginIdx, endIdx) {
-  var i,
-      map = {},
-      key;
-  for (i = beginIdx; i <= endIdx; ++i) {
-    key = children[i].key;
-    if (isDef(key)) map[key] = i;
-  }
-  return map;
-}
-
-var hooks = ['create', 'update', 'remove', 'destroy', 'pre', 'post'];
-
-var raf = typeof window !== 'undefined' && window.requestAnimationFrame || setTimeout;
-var nextFrame = function nextFrame(fn) {
-  raf(function () {
-    raf(fn);
-  });
-};
-
-function setNextFrame(obj, prop, val) {
-  nextFrame(function () {
-    obj[prop] = val;
-  });
-}
-
-function invokeHandler$1(handler, vnode, event) {
-  if (typeof handler === "function") {
-    // call function handler
-    handler.call(vnode, event, vnode);
-  } else if ((typeof handler === "undefined" ? "undefined" : _typeof(handler)) === "object") {
-    // call handler with arguments
-    if (typeof handler[0] === "function") {
-      // special case for single argument for performance
-      if (handler.length === 2) {
-        handler[0].call(vnode, handler[1], event, vnode);
-      } else {
-        var args = handler.slice(1);
-        args.push(event);
-        args.push(vnode);
-        handler[0].apply(vnode, args);
-      }
-    } else {
-      // call multiple handlers
-      for (var i = 0; i < handler.length; i++) {
-        invokeHandler$1(handler[i]);
-      }
-    }
-  }
-}
-
-function handleEvent$1(event, vnode) {
-  var name = event.type,
-      on = vnode.data.on;
-
-  // call event handler(s) if exists
-  if (on && on[name]) {
-    invokeHandler$1(on[name], vnode, event);
-  }
-}
-
-function createListener$1() {
-  return function handler(event) {
-    handleEvent$1(event, handler.vnode);
-  };
-}
-
-// Render 
-console.log(patch);
-// var patch = snabbdom.init([
-//     sClass,
-//     props,
-//     style,
-//     eventlisteners
-// ]);
 
 var render = function render(container, vNode, oldVnode) {
     if (!oldVnode) {
@@ -1682,12 +1561,12 @@ var returnKey = {
     }
 };
 
-var props$4 = {
+var props$2 = {
     returnKey: returnKey
 };
 
 var controller$2 = function controller$2(cmd, data) {
-    return header$2(props$4);
+    return header$2(props$2);
 };
 
 var mainSection$1 = (function (_ref) {
@@ -1707,7 +1586,7 @@ var todoItem$1 = (function (_ref) {
     return li({ class: '' + completed + editing, event: editTodo }, div({ class: 'view' }, input({ class: 'toggle', type: 'checkbox', checked: !!completed, event: toggleComplete }), label(value), button({ class: 'destroy', event: removeTodo })), input({ class: 'edit', value: value, event: saveTodo }));
 });
 
-var props$6 = {};
+var props$4 = {};
 
 var toggleComplete = function toggleComplete(index) {
     return {
@@ -1756,14 +1635,14 @@ var removeTodo = function removeTodo(index) {
 };
 
 var controller$4 = function controller$4(completed, value, ignore, editing, index) {
-    props$6.value = value;
-    props$6.toggleComplete = toggleComplete(index);
-    props$6.removeTodo = removeTodo(index);
-    props$6.completed = completed;
-    props$6.editing = editing;
-    props$6.editTodo = editTodo(index);
-    props$6.saveTodo = saveTodo(index, value);
-    return todoItem$1(props$6);
+    props$4.value = value;
+    props$4.toggleComplete = toggleComplete(index);
+    props$4.removeTodo = removeTodo(index);
+    props$4.completed = completed;
+    props$4.editing = editing;
+    props$4.editTodo = editTodo(index);
+    props$4.saveTodo = saveTodo(index, value);
+    return todoItem$1(props$4);
 };
 
 var todoItems = o$1('todos');
@@ -1774,7 +1653,7 @@ var completed = '';
 var allDone = true;
 var ref = 0;
 
-var props$5 = {};
+var props$3 = {};
 
 var toggleCompleted = function toggleCompleted(currentToggle) {
     return completed = currentToggle ? '' : '.completed';
@@ -1859,9 +1738,9 @@ var controller$3 = function controller$3(cmd, data) {
         return item[0] === '';
     }).length;
 
-    props$5.todoList = todoList;
-    props$5.toggleAllAsCompleted = toggleAllAsCompleted();
-    return mainSection$1(props$5);
+    props$3.todoList = todoList;
+    props$3.toggleAllAsCompleted = toggleAllAsCompleted();
+    return mainSection$1(props$3);
 };
 
 // import document from './document/controller';

@@ -1,4 +1,5 @@
-const booleanAttrs = ["allowfullscreen", "async", "autofocus", "autoplay", "checked", "compact", "controls", "declare",
+const booleanAttrs = [
+    "allowfullscreen", "async", "autofocus", "autoplay", "checked", "compact", "controls", "declare",
     "default", "defaultchecked", "defaultmuted", "defaultselected", "defer", "disabled", "draggable",
     "enabled", "formnovalidate", "hidden", "indeterminate", "inert", "ismap", "itemscope", "loop", "multiple",
     "muted", "nohref", "noresize", "noshade", "novalidate", "nowrap", "open", "pauseonexit", "readonly",
@@ -22,7 +23,6 @@ function updateAttrs(oldVnode, vnode) {
     let elm = vnode.elm;
     let oldAttrs = oldVnode.data.attrs;
     let attrs = vnode.data.attrs;
-
     if ((!oldAttrs && !attrs) || (oldAttrs === attrs)) {
         return;
     }

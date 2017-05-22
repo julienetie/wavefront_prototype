@@ -790,6 +790,47 @@ exports.default = exports.classModule;
 
 var _class_1 = _class.classModule;
 
+var dataset = createCommonjsModule(function (module, exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var CAPS_REGEX = /[A-Z]/g;
+function updateDataset(oldVnode, vnode) {
+    var elm = vnode.elm,
+        oldDataset = oldVnode.data.dataset,
+        dataset = vnode.data.dataset,
+        key;
+    if (!oldDataset && !dataset) return;
+    if (oldDataset === dataset) return;
+    oldDataset = oldDataset || {};
+    dataset = dataset || {};
+    var d = elm.dataset;
+    for (key in oldDataset) {
+        if (!dataset[key]) {
+            if (d) {
+                delete d[key];
+            } else {
+                elm.removeAttribute('data-' + key.replace(CAPS_REGEX, '-$&').toLowerCase());
+            }
+        }
+    }
+    for (key in dataset) {
+        if (oldDataset[key] !== dataset[key]) {
+            if (d) {
+                d[key] = dataset[key];
+            } else {
+                elm.setAttribute('data-' + key.replace(CAPS_REGEX, '-$&').toLowerCase(), dataset[key]);
+            }
+        }
+    }
+}
+exports.datasetModule = { create: updateDataset, update: updateDataset };
+exports.default = exports.datasetModule;
+
+});
+
+var dataset_1 = dataset.datasetModule;
+
 var booleanAttrs = ["allowfullscreen", "async", "autofocus", "autoplay", "checked", "compact", "controls", "declare", "default", "defaultchecked", "defaultmuted", "defaultselected", "defer", "disabled", "draggable", "enabled", "formnovalidate", "hidden", "indeterminate", "inert", "ismap", "itemscope", "loop", "multiple", "muted", "nohref", "noresize", "noshade", "novalidate", "nowrap", "open", "pauseonexit", "readonly", "required", "reversed", "scoped", "seamless", "selected", "sortable", "spellcheck", "translate", "truespeed", "typemustmatch", "visible"];
 
 var xlinkNS = 'http://www.w3.org/1999/xlink';
@@ -807,7 +848,6 @@ function updateAttrs(oldVnode, vnode) {
     var elm = vnode.elm;
     var oldAttrs = oldVnode.data.attrs;
     var attrs = vnode.data.attrs;
-
     if (!oldAttrs && !attrs || oldAttrs === attrs) {
         return;
     }
@@ -1225,13 +1265,9 @@ var eventListenersModule = {
     destroy: updateEventListeners
 };
 
-console.log('vnode', vnode);
-
 function isPrimitive(s) {
     return typeof s === 'string' || typeof s === 'number';
 }
-
-
 
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
@@ -1244,8 +1280,6 @@ function addNS(data, children, sel) {
         }
     }
 }
-var attributeType = ['event', 'e', 'props', 'p', 'style', '$', 'dataset', 'd', 'href', 'placeholder', 'autofocus', 'type', 'for', 'checked', 'value'];
-
 var assembly = function assembly(tagName) {
     return function inner() {
         var sel = '' + tagName;
@@ -1272,49 +1306,39 @@ var assembly = function assembly(tagName) {
                 var isSelector = false;
                 var attrKeys = Object.keys(item);
 
-                // if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
+                // Create virtual id selector.
                 if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
                     selectorName += '#' + item.id;
                     isSelector = true;
                 }
+                // Create virtual class selectors.
                 if (item.hasOwnProperty('class') || item.hasOwnProperty('.')) {
                     selectorName += '.' + item.class;
                     isSelector = true;
                 }
 
                 attrKeys.forEach(function (key) {
-                    // console.log(key)
+                    // If not selector
                     if (['id', '#', 'class', '.'].indexOf(key) < 0) {
-                        if (attributeType.indexOf(key) >= 0) {
-                            switch (key) {
-                                case 'e':
-                                case 'event':
-                                    attributes$$1.on = item[key];
-                                    break;
-                                case 'p':
-                                    attributes$$1.props = item[key];
-                                    break;
-                                case '$':
-                                    attributes$$1.style = item[key];
-                                    break;
-                                case 'd':
-                                    attributes$$1.dataset = item[key];
-                                    break;
-                                case 'href':
-                                case 'placeholder':
-                                case 'autofocus':
-                                case 'type':
-                                case 'checked':
-                                case 'value':
-                                    attributes$$1.props[key] = item[key];
-                                    break;
-                                case 'for':
-                                    attributes$$1.props.htmlFor = item[key];
-                                default:
-                                    attributes$$1[key] = item[key];
-                            }
-                        } else {
-                            attributes$$1.attrs[key] = item[key];
+                        switch (key) {
+                            case 'e':
+                            case 'event':
+                                attributes$$1.on = item[key];
+                                break;
+                            case 'p':
+                            case 'props':
+                                attributes$$1.props = item[key];
+                                break;
+                            case '$':
+                            case 'style':
+                                attributes$$1.style = item[key];
+                                break;
+                            case 'd':
+                            case 'dataset':
+                                attributes$$1.dataset = item[key];
+                                break;
+                            default:
+                                attributes$$1.attrs[key] = item[key];
                         }
                     }
                 });
@@ -1450,7 +1474,7 @@ var v = assembly('var');
 var video = assembly('video');
 
 // Render API
-var patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, eventListenersModule]);
+var patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, dataset_1, eventListenersModule]);
 
 exports.a = a;
 exports.abbr = abbr;

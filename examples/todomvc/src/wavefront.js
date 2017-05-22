@@ -1,17 +1,4 @@
-import snabbdom from 'snabbdom';
-import sClass from 'snabbdom/modules/class';
-import props from 'snabbdom/modules/props';
-import style from 'snabbdom/modules/style';
-import eventlisteners from '../libs/snabbdom_eventlisteners';
 import { patch } from '../../../dist/wavefront.es';
-// Render 
-console.log(patch)
-// var patch = snabbdom.init([
-//     sClass,
-//     props,
-//     style,
-//     eventlisteners
-// ]);
 
 const render = (container, vNode, oldVnode) => {
     if (!oldVnode) {

@@ -724,6 +724,47 @@ exports.default = exports.classModule;
 
 var _class_1 = _class.classModule;
 
+var dataset = createCommonjsModule(function (module, exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var CAPS_REGEX = /[A-Z]/g;
+function updateDataset(oldVnode, vnode) {
+    var elm = vnode.elm, oldDataset = oldVnode.data.dataset, dataset = vnode.data.dataset, key;
+    if (!oldDataset && !dataset)
+        return;
+    if (oldDataset === dataset)
+        return;
+    oldDataset = oldDataset || {};
+    dataset = dataset || {};
+    var d = elm.dataset;
+    for (key in oldDataset) {
+        if (!dataset[key]) {
+            if (d) {
+                delete d[key];
+            }
+            else {
+                elm.removeAttribute('data-' + key.replace(CAPS_REGEX, '-$&').toLowerCase());
+            }
+        }
+    }
+    for (key in dataset) {
+        if (oldDataset[key] !== dataset[key]) {
+            if (d) {
+                d[key] = dataset[key];
+            }
+            else {
+                elm.setAttribute('data-' + key.replace(CAPS_REGEX, '-$&').toLowerCase(), dataset[key]);
+            }
+        }
+    }
+}
+exports.datasetModule = { create: updateDataset, update: updateDataset };
+exports.default = exports.datasetModule;
+
+});
+
+var dataset_1 = dataset.datasetModule;
+
 const booleanAttrs = ["allowfullscreen", "async", "autofocus", "autoplay", "checked", "compact", "controls", "declare", "default", "defaultchecked", "defaultmuted", "defaultselected", "defer", "disabled", "draggable", "enabled", "formnovalidate", "hidden", "indeterminate", "inert", "ismap", "itemscope", "loop", "multiple", "muted", "nohref", "noresize", "noshade", "novalidate", "nowrap", "open", "pauseonexit", "readonly", "required", "reversed", "scoped", "seamless", "selected", "sortable", "spellcheck", "translate", "truespeed", "typemustmatch", "visible"];
 
 const xlinkNS = 'http://www.w3.org/1999/xlink';
@@ -741,7 +782,6 @@ function updateAttrs(oldVnode, vnode) {
     let elm = vnode.elm;
     let oldAttrs = oldVnode.data.attrs;
     let attrs = vnode.data.attrs;
-
     if (!oldAttrs && !attrs || oldAttrs === attrs) {
         return;
     }
@@ -1146,13 +1186,9 @@ const eventListenersModule = {
     destroy: updateEventListeners
 };
 
-console.log('vnode', vnode);
-
 function isPrimitive(s) {
     return typeof s === 'string' || typeof s === 'number';
 }
-
-
 
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
@@ -1165,8 +1201,6 @@ function addNS(data, children, sel) {
         }
     }
 }
-const attributeType = ['event', 'e', 'props', 'p', 'style', '$', 'dataset', 'd', 'href', 'placeholder', 'autofocus', 'type', 'for', 'checked', 'value'];
-
 const assembly = tagName => {
     return function inner(...args) {
         let sel = `${tagName}`;
@@ -1189,49 +1223,39 @@ const assembly = tagName => {
                 let isSelector = false;
                 const attrKeys = Object.keys(item);
 
-                // if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
+                // Create virtual id selector.
                 if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
                     selectorName += '#' + item.id;
                     isSelector = true;
                 }
+                // Create virtual class selectors.
                 if (item.hasOwnProperty('class') || item.hasOwnProperty('.')) {
                     selectorName += '.' + item.class;
                     isSelector = true;
                 }
 
                 attrKeys.forEach(key => {
-                    // console.log(key)
+                    // If not selector
                     if (['id', '#', 'class', '.'].indexOf(key) < 0) {
-                        if (attributeType.indexOf(key) >= 0) {
-                            switch (key) {
-                                case 'e':
-                                case 'event':
-                                    attributes$$1.on = item[key];
-                                    break;
-                                case 'p':
-                                    attributes$$1.props = item[key];
-                                    break;
-                                case '$':
-                                    attributes$$1.style = item[key];
-                                    break;
-                                case 'd':
-                                    attributes$$1.dataset = item[key];
-                                    break;
-                                case 'href':
-                                case 'placeholder':
-                                case 'autofocus':
-                                case 'type':
-                                case 'checked':
-                                case 'value':
-                                    attributes$$1.props[key] = item[key];
-                                    break;
-                                case 'for':
-                                    attributes$$1.props.htmlFor = item[key];
-                                default:
-                                    attributes$$1[key] = item[key];
-                            }
-                        } else {
-                            attributes$$1.attrs[key] = item[key];
+                        switch (key) {
+                            case 'e':
+                            case 'event':
+                                attributes$$1.on = item[key];
+                                break;
+                            case 'p':
+                            case 'props':
+                                attributes$$1.props = item[key];
+                                break;
+                            case '$':
+                            case 'style':
+                                attributes$$1.style = item[key];
+                                break;
+                            case 'd':
+                            case 'dataset':
+                                attributes$$1.dataset = item[key];
+                                break;
+                            default:
+                                attributes$$1.attrs[key] = item[key];
                         }
                     }
                 });
@@ -1367,7 +1391,7 @@ const v = assembly('var');
 const video = assembly('video');
 
 // Render API
-const patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, eventListenersModule]);
+const patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, dataset_1, eventListenersModule]);
 
 export { a, abbr, address, area, article, aside, audio, childNodes, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, v, video, patch };
 //# sourceMappingURL=wavefront.es.js.map
