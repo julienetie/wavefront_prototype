@@ -20,9 +20,9 @@
 
 
 ## Why?
-1. Very little lock-in
-2. Light weight, won't exceed 64kb.
-3. Easy to understand, no new syntax to learn
+1. Discourages [vendor lock-in](https://en.wikipedia.org/wiki/Vendor_lock-in)
+2. Light weight
+3. Templating syntax has the exact notation of HTML/ SVG
 4. Features a complete separation of logic and semantics
 5. Requires no transpiler
 6. Child nodes do not require an outer container
@@ -31,6 +31,7 @@
 9. No build eco-system or build dependencies
 10. A non-eco-system for integrating existing vanilla Js libraries
 11. SEO without requering server-side rendering
+
 
 ### What are Declarative Templates
 WaveFront...
