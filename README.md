@@ -55,7 +55,7 @@ div({ class: someClass, id: someId },
 ```
 HTML Output...
 ```html
-<div class="welcome-container" id="introduction">
+<div class="welcome" id="intro">
     <h1>Hello World!</h1>
     <p>How are you?</p>
     <figure class="images">
