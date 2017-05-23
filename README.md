@@ -36,9 +36,9 @@
 WaveFront...
 
 ```javascript
-import { div, h1, p, figure, figcaption, img } from 'wavefront';
+import { div, h1, p, figure, figcaption, img } from 'wavefront'
 
-export default ({someClass, someId, greeting, })=>
+export default ({ someClass, someId, greeting }) =>
 /**
  * Greeting with three cat images.
  */
