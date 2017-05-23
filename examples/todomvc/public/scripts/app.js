@@ -1295,9 +1295,15 @@ var eventListenersModule = {
     destroy: updateEventListeners
 };
 
-function isPrimitive(s) {
-    return typeof s === 'string' || typeof s === 'number';
-}
+var isString = function isString(value) {
+    return typeof value === 'string';
+};
+var isPrimitive = function isPrimitive(value) {
+    return isString(value) || typeof value === 'number';
+};
+var isElement = function isElement(value) {
+    return value instanceof Element;
+};
 
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
@@ -1420,6 +1426,42 @@ var ul = assembly('ul');
 // Render API
 var patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, dataset_1, eventListenersModule]);
 
+var renderPartial = function renderPartial() {
+    var previousVNode = void 0;
+    var DOMContainer = void 0;
+    var selectorString = void 0;
+    var documentRef = document;
+    /**
+     * @param {string | HTMLElement} selector - Root HTML element 
+     * @param {Object} newVNode - New virtual node
+     * @param {Boolean} cache - Cache element, defaults to true.
+     */
+    return function (selector, newVNode, cache) {
+        // Set HTML element.
+        if (isString(selector)) {
+            if (selector !== selectorString && !cache) {
+                DOMContainer = documentRef.querySelector(selector);
+                selectorString = selector;
+            }
+        } else if (isElement(selector) && !cache) {
+            if (selector !== selectorString) {
+                DOMContainer = selector;
+            }
+        }
+
+        // Diff and patch the DOM. 
+        if (!previousVNode) {
+            patch(DOMContainer, newVNode);
+        }
+        if (previousVNode && previousVNode !== newVNode) {
+            patch(previousVNode, newVNode);
+        }
+        previousVNode = newVNode;
+    };
+};
+
+var render = renderPartial();
+
 var vnode$1 = function (sel, data, children, text, elm) {
   var key = data === undefined ? undefined : data.key;
   return { sel: sel, data: data, children: children,
@@ -1455,20 +1497,20 @@ var footer$2 = (function (_ref) {
         all = _ref.all,
         active = _ref.active,
         completed = _ref.completed;
-    return footer({ class: 'footer' }, span({ class: 'todo-count', style: { background: 'red' } }, strong(itemsLeft), ' items left'), ul({ class: 'filters' }, li(a({ class: 'selected', href: '#/', event: all }, 'All')), li(a({ href: '#/active', event: active }, 'Active')), li(a({ href: '#/completed', event: completed }, 'Completed'))), button({ class: 'clear-completed' }, 'Clear completed'));
+    return footer({ class: 'footer' }, span({ class: 'todo-count', style: { background: 'blue' } }, strong(itemsLeft), ' items left'), ul({ class: 'filters' }, li(a({ class: 'selected', href: '#/', event: all }, 'All')), li(a({ href: '#/active', event: active }, 'Active')), li(a({ href: '#/completed', event: completed }, 'Completed'))), button({ class: 'clear-completed' }, 'Clear completed'));
 });
 
 // style 
 // href
 
-var render = function render(container, vNode, oldVnode) {
-    if (!oldVnode) {
-        patch(container, vNode);
-    }
-    if (oldVnode && oldVnode !== vNode) {
-        patch(oldVnode, vNode);
-    }
-};
+// const render = (container, vNode, oldVnode) => {
+//     if (!oldVnode) {
+//         patch(container, vNode);
+//     }
+//     if (oldVnode && oldVnode !== vNode) {
+//         patch(oldVnode, vNode);
+//     }
+// }
 
 // Data Skeleton
 
@@ -1743,45 +1785,22 @@ var controller$3 = function controller$3(cmd, data) {
     return mainSection$1(props$3);
 };
 
-// import document from './document/controller';
-var oldVnode = void 0;
-
-var todoApp = document.getElementById('root');
-console.log(document);
+// const todoApp = document.getElementById();
 
 var interfaces = function interfaces(cmd, data) {
-
-    /**
-     * 
-     */
-    // document();
-
-    var newVNode = div({}, [section({ class: 'todoapp' }, [controller$2(), controller$3(cmd, data), controller()]), controller$1(cmd, data)]);
-
-    // const newVNode = h('div', [
-
-    //     h('section.todoapp', [
-    //         header(),
-    //         mainSection(cmd, data),
-    //         footer()
-    //     ]),
-    //     info(cmd, data)
-    // ]);
-
-    render(todoApp, newVNode, oldVnode);
-
-    oldVnode = newVNode;
+    var vNode = div(section({ class: 'todoapp' }, controller$2(), controller$3(cmd, data), controller()), controller$1(cmd, data));
+    render('#root', vNode);
 };
 
 var act = function act(cmd, data) {
     interfaces(cmd, data);
 };
 
-/**
- * This is the main controller.
- * A call without parameters is expected to 
- * initialse the app.
- */
+// *
+//  * This is the main controller.
+//  * A call without parameters is expected to 
+//  * initialse the app.
+
 act();
 
 })));

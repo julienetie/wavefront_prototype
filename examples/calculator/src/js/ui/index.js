@@ -2,19 +2,14 @@ import headings from './headings/controller';
 import footer from './footer/controller';
 import display from './display/controller';
 import keypad from './keypad/controller';
-import render from '../render';
-import { div } from '../../../../../dist/wavefront.es.js';
+import { div, render } from '../../../../../dist/wavefront.es';
 
 let oldVnode;
 let newVnode
 const calculatorApp = document.getElementById('root');
 
+console.log('this is render',render)
 
-// var vnode = div({ id: 'container', class: 'two classes', event: { click: () => { console.log('yo') } } }, [
-//     span({ style: { fontWeight: 'bold' } }, 'This is bold'),
-//     ' and this is just normal text',
-//     a({ props: { href: '/foo' } }, 'I\'ll take you places!')
-// ]);
 let displayContent;
 let clearButton = 'CE';
 const ui = (cmd, data) => {
@@ -44,11 +39,11 @@ const ui = (cmd, data) => {
 
     render(
         calculatorApp,
-        newVnode,
-        oldVnode,
+        newVnode
+        // oldVnode,
     );
 
-    oldVnode = newVnode;
+    // oldVnode = newVnode;
     return;
 }
 

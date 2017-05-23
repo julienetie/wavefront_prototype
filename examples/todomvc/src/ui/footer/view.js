@@ -5,7 +5,7 @@ import { footer, span, strong, ul, li, a, button } from '../../../../../dist/wav
  */
 export default ({ itemsLeft, all, active, completed }) =>
 footer({ class: 'footer' },
-    span({ class: 'todo-count', style: { background: 'red' } },
+    span({ class: 'todo-count', style: { background: 'blue' } },
         strong(itemsLeft), ' items left'),
     ul({ class: 'filters' },
         li(a({ class: 'selected', href: '#/', event: all }, 'All')),

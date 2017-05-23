@@ -1265,9 +1265,15 @@ var eventListenersModule = {
     destroy: updateEventListeners
 };
 
-function isPrimitive(s) {
-    return typeof s === 'string' || typeof s === 'number';
-}
+var isString = function isString(value) {
+    return typeof value === 'string';
+};
+var isPrimitive = function isPrimitive(value) {
+    return isString(value) || typeof value === 'number';
+};
+var isElement = function isElement(value) {
+    return value instanceof Element;
+};
 
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
@@ -1476,6 +1482,42 @@ var video = assembly('video');
 // Render API
 var patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, dataset_1, eventListenersModule]);
 
+var renderPartial = function renderPartial() {
+    var previousVNode = void 0;
+    var DOMContainer = void 0;
+    var selectorString = void 0;
+    var documentRef = document;
+    /**
+     * @param {string | HTMLElement} selector - Root HTML element 
+     * @param {Object} newVNode - New virtual node
+     * @param {Boolean} cache - Cache element, defaults to true.
+     */
+    return function (selector, newVNode, cache) {
+        // Set HTML element.
+        if (isString(selector)) {
+            if (selector !== selectorString && !cache) {
+                DOMContainer = documentRef.querySelector(selector);
+                selectorString = selector;
+            }
+        } else if (isElement(selector) && !cache) {
+            if (selector !== selectorString) {
+                DOMContainer = selector;
+            }
+        }
+
+        // Diff and patch the DOM. 
+        if (!previousVNode) {
+            patch(DOMContainer, newVNode);
+        }
+        if (previousVNode && previousVNode !== newVNode) {
+            patch(previousVNode, newVNode);
+        }
+        previousVNode = newVNode;
+    };
+};
+
+var render = renderPartial();
+
 exports.a = a;
 exports.abbr = abbr;
 exports.address = address;
@@ -1576,6 +1618,7 @@ exports.ul = ul;
 exports.v = v;
 exports.video = video;
 exports.patch = patch;
+exports.render = render;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

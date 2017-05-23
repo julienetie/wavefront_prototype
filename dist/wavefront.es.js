@@ -1186,9 +1186,9 @@ const eventListenersModule = {
     destroy: updateEventListeners
 };
 
-function isPrimitive(s) {
-    return typeof s === 'string' || typeof s === 'number';
-}
+const isString = value => typeof value === 'string';
+const isPrimitive = value => isString(value) || typeof value === 'number';
+const isElement = value => value instanceof Element;
 
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
@@ -1393,5 +1393,41 @@ const video = assembly('video');
 // Render API
 const patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, dataset_1, eventListenersModule]);
 
-export { a, abbr, address, area, article, aside, audio, childNodes, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, v, video, patch };
+const renderPartial = () => {
+    let previousVNode;
+    let DOMContainer;
+    let selectorString;
+    let documentRef = document;
+    /**
+     * @param {string | HTMLElement} selector - Root HTML element 
+     * @param {Object} newVNode - New virtual node
+     * @param {Boolean} cache - Cache element, defaults to true.
+     */
+    return (selector, newVNode, cache) => {
+        // Set HTML element.
+        if (isString(selector)) {
+            if (selector !== selectorString && !cache) {
+                DOMContainer = documentRef.querySelector(selector);
+                selectorString = selector;
+            }
+        } else if (isElement(selector) && !cache) {
+            if (selector !== selectorString) {
+                DOMContainer = selector;
+            }
+        }
+
+        // Diff and patch the DOM. 
+        if (!previousVNode) {
+            patch(DOMContainer, newVNode);
+        }
+        if (previousVNode && previousVNode !== newVNode) {
+            patch(previousVNode, newVNode);
+        }
+        previousVNode = newVNode;
+    };
+};
+
+const render = renderPartial();
+
+export { a, abbr, address, area, article, aside, audio, childNodes, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, v, video, patch, render };
 //# sourceMappingURL=wavefront.es.js.map

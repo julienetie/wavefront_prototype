@@ -1,13 +1,13 @@
 import { patch } from '../../../dist/wavefront.es';
 
-const render = (container, vNode, oldVnode) => {
-    if (!oldVnode) {
-        patch(container, vNode);
-    }
-    if (oldVnode && oldVnode !== vNode) {
-        patch(oldVnode, vNode);
-    }
-}
+// const render = (container, vNode, oldVnode) => {
+//     if (!oldVnode) {
+//         patch(container, vNode);
+//     }
+//     if (oldVnode && oldVnode !== vNode) {
+//         patch(oldVnode, vNode);
+//     }
+// }
 
 // Data Skeleton
 
@@ -34,6 +34,6 @@ o.create = function(skeleton) {
 };
 
  export {
-  render, 
+  // render, 
   o
  };

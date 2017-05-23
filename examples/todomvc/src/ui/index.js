@@ -1,53 +1,26 @@
-import { section, div } from '../../../../dist/wavefront.es.js';
+import { section, div, render } from '../../../../dist/wavefront.es';
 import h from 'snabbdom/h';
 import footer from './footer/controller';
 import info from './info/controller';
 import header from './header/controller';
 import mainSection from './main-section/controller';
-// import document from './document/controller';
 import todoItem from './todo-item/controller';
-import { render } from '../wavefront';
 import act from '../act';
 
-let oldVnode;
 
-const todoApp = document.getElementById('root');
-console.log(document)
+// const todoApp = document.getElementById();
 
 const interfaces = (cmd, data) => {
-
-    /**
-     * 
-     */
-    // document();
-
-    const newVNode =
-        div({}, [
-            section({class:'todoapp'}, [
+    const vNode =
+        div(
+            section({ class: 'todoapp' },
                 header(),
                 mainSection(cmd, data),
                 footer()
-            ]),
+            ),
             info(cmd, data)
-        ]);
-
-    // const newVNode = h('div', [
-
-    //     h('section.todoapp', [
-    //         header(),
-    //         mainSection(cmd, data),
-    //         footer()
-    //     ]),
-    //     info(cmd, data)
-    // ]);
-
-    render(
-        todoApp,
-        newVNode,
-        oldVnode
-    );
-
-    oldVnode = newVNode;
+        );
+    render('#root', vNode);
 }
 
 

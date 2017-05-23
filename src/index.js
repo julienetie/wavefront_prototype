@@ -9,14 +9,11 @@ import { heroModule } from 'snabbdom/modules/hero';
 import { styleModule } from 'snabbdom/modules/style';
 import eventListenersModule from '../libs/eventlisteners';
 
-function isPrimitive(s) {
-    return typeof s === 'string' || typeof s === 'number';
-}
 
-
-function isFunction(value) {
-    return typeof value === 'function';
-}
+const isString = value => typeof value === 'string';
+const isPrimitive = value => isString(value) || typeof value === 'number';
+const isFunction = value => typeof value === 'function';
+const isElement = value => value instanceof Element;
 
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
@@ -87,26 +84,26 @@ const assembly = (tagName) => {
                 attrKeys.forEach((key) => {
                     // If not selector
                     if (['id', '#', 'class', '.'].indexOf(key) < 0) {
-                            switch (key) {
-                                case 'e':
-                                case 'event':
-                                    attributes.on = item[key];
-                                    break;
-                                case 'p':
-                                case 'props':
-                                    attributes.props = item[key];
-                                    break;
-                                case '$':
-                                case 'style':
-                                    attributes.style = item[key];
-                                    break;
-                                case 'd':
-                                case 'dataset':
-                                    attributes.dataset = item[key];
-                                    break;
-                                default:
-                                    attributes.attrs[key] = item[key];
-                            }
+                        switch (key) {
+                            case 'e':
+                            case 'event':
+                                attributes.on = item[key];
+                                break;
+                            case 'p':
+                            case 'props':
+                                attributes.props = item[key];
+                                break;
+                            case '$':
+                            case 'style':
+                                attributes.style = item[key];
+                                break;
+                            case 'd':
+                            case 'dataset':
+                                attributes.dataset = item[key];
+                                break;
+                            default:
+                                attributes.attrs[key] = item[key];
+                        }
                     }
                 });
                 continue;
@@ -254,3 +251,40 @@ export const patch = init([
     datasetModule,
     eventListenersModule
 ]);
+
+const renderPartial = () => {
+    let previousVNode;
+    let DOMContainer;
+    let selectorString;
+    let documentRef = document;
+    /**
+     * @param {string | HTMLElement} selector - Root HTML element 
+     * @param {Object} newVNode - New virtual node
+     * @param {Boolean} cache - Cache element, defaults to true.
+     */
+    return (selector, newVNode, cache) => {
+        // Set HTML element.
+        if (isString(selector)) {
+            if (selector !== selectorString && !cache) {
+                DOMContainer = documentRef.querySelector(selector);
+                selectorString = selector;
+            }
+        } else if (isElement(selector) && !cache) {
+            if (selector !== selectorString) {
+                DOMContainer = selector;
+            }
+        }
+
+
+        // Diff and patch the DOM. 
+        if (!previousVNode) {
+            patch(DOMContainer, newVNode);
+        }
+        if (previousVNode && previousVNode !== newVNode) {
+            patch(previousVNode, newVNode);
+        }
+        previousVNode = newVNode;
+    }
+}
+
+export const render = renderPartial();
