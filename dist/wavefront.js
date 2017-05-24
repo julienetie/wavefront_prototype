@@ -1476,8 +1476,111 @@ var thead = assembly('thead');
 var title = assembly('title');
 var tr = assembly('tr');
 var ul = assembly('ul');
-var v = assembly('var');
+var Var = assembly('var'); // First capital
 var video = assembly('video');
+
+// SVG Elements.
+var altGlyph = assembly('altGlyph');
+var altGlyphDef = assembly('altGlyphDef');
+var altGlyphItem = assembly('altGlyphItem');
+var animate = assembly('animate');
+var animateColor = assembly('animateColor');
+var animateMotion = assembly('animateMotion');
+var animateTransform = assembly('animateTransform');
+var animation = assembly('animation');
+var circle = assembly('circle');
+var clipPath = assembly('clipPath');
+var colorProfile = assembly('color-profile'); // color-profile
+var cursor = assembly('cursor');
+var defs = assembly('defs');
+var desc = assembly('desc');
+var discard = assembly('discard');
+var ellipse = assembly('ellipse');
+var feBlend = assembly('feBlend');
+var feColorMatrix = assembly('feComposite');
+var feComponentTransfer = assembly('feComponentTransfer');
+var feComposite = assembly('feComposite');
+var feConvolveMatrix = assembly('feConvolveMatrix');
+var feDiffuseLighting = assembly('feDiffuseLighting');
+var feDisplacementMap = assembly('feDistantLight');
+var feDistantLight = assembly('feDistantLight');
+var feDropShadow = assembly('feDropShadow');
+var feFlood = assembly('feFlood');
+var feFuncA = assembly('feFuncA');
+var feFuncB = assembly('feFuncB');
+var feFuncG = assembly('feFuncG');
+var feFuncR = assembly('feFuncR');
+var feGaussianBlur = assembly('feGaussianBlur');
+var feImage = assembly('feImage');
+var feMerge = assembly('feMerge');
+var feMergeNode = assembly('feMergeNode');
+var feMorphology = assembly('feMorphology');
+var feOffset = assembly('feOffset');
+var fePointLight = assembly('fePointLight');
+var feSpecularLighting = assembly('feSpecularLighting');
+var feSpotLight = assembly('feSpotLight');
+var feTile = assembly('feTile');
+var feTurbulence = assembly('feTurbulence');
+var filter = assembly('filter');
+var font = assembly('font');
+var fontFace = assembly('font-face'); // fontFace
+var fontFaceFormat = assembly('font-face-format'); // fontFaceFormat
+var fontFaceName = assembly('font-face-name'); // fontFaceName
+var fontFaceSrc = assembly('font-face-src'); // fontFaceSrc
+var fontFaceUri = assembly('font-face-uri'); // fontFaceUri
+var foreignObject = assembly('foreignObject');
+var g = assembly('g');
+var glyph = assembly('glyph');
+var glyphRef = assembly('glyphRef');
+var handler = assembly('handler');
+var hatch = assembly('hatch');
+var hatchpath = assembly('hatchpath');
+var hkern = assembly('hkern');
+var image = assembly('image');
+var line = assembly('line');
+var linearGradient = assembly('linearGradient');
+var listener = assembly('listener');
+var marker = assembly('marker');
+var mask = assembly('mask');
+var mesh = assembly('mesh');
+var meshgradient = assembly('meshgradient');
+var meshpatch = assembly('meshpatch');
+var meshrow = assembly('meshrow');
+var metadata = assembly('metadata');
+var missingGlyph = assembly('missing-glyph'); // missing-glyph
+var mpath = assembly('mpath');
+var path = assembly('path');
+var pattern = assembly('pattern');
+var polygon = assembly('polygon');
+var polyline = assembly('polyline');
+var prefetch = assembly('prefetch');
+var radialGradient = assembly('radialGradient');
+var rect = assembly('rect');
+var set$$1 = assembly('set');
+var solidColor = assembly('solidColor');
+var solidcolor = assembly('solidcolor');
+var stop = assembly('stop');
+var Switch = assembly('switch'); // First capital
+var symbol = assembly('symbol');
+var tbreak = assembly('tbreak');
+var text = assembly('text');
+var textArea = assembly('textArea');
+var textPath = assembly('textPath');
+var tref = assembly('tref');
+var tspan = assembly('tspan');
+var unknown = assembly('unknown');
+var use = assembly('use');
+var view = assembly('view');
+var vkern = assembly('vkern');
+// a in HTML
+// audio in HTML
+// canvas in HTML
+// iframe in HTML
+// video in HTML
+// script in HTML
+// style in HTML
+// svg in HTML
+// title in HTML
 
 // Render API
 var patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, dataset_1, eventListenersModule]);
@@ -1517,6 +1620,27 @@ var renderPartial = function renderPartial() {
 };
 
 var render = renderPartial();
+
+/**
+ * A simple plugin integration system.
+ * {
+ *      dependencies:[api, api, api],
+ *      waveModules: [wModule, wModule, wModule]
+ * }
+ *
+ */
+var registerWaveModules = function registerWaveModules() {
+
+    // Register dependencies 
+
+    // Register waveModules
+
+    // Check dependenicies exist for waveModules
+
+    // Throw error if dependencies do not exist for any waveModule
+
+    // Expose Wavefront to plugins via $$$store object. 
+};
 
 exports.a = a;
 exports.abbr = abbr;
@@ -1615,10 +1739,103 @@ exports.thead = thead;
 exports.title = title;
 exports.tr = tr;
 exports.ul = ul;
-exports.v = v;
+exports.Var = Var;
 exports.video = video;
+exports.altGlyph = altGlyph;
+exports.altGlyphDef = altGlyphDef;
+exports.altGlyphItem = altGlyphItem;
+exports.animate = animate;
+exports.animateColor = animateColor;
+exports.animateMotion = animateMotion;
+exports.animateTransform = animateTransform;
+exports.animation = animation;
+exports.circle = circle;
+exports.clipPath = clipPath;
+exports.colorProfile = colorProfile;
+exports.cursor = cursor;
+exports.defs = defs;
+exports.desc = desc;
+exports.discard = discard;
+exports.ellipse = ellipse;
+exports.feBlend = feBlend;
+exports.feColorMatrix = feColorMatrix;
+exports.feComponentTransfer = feComponentTransfer;
+exports.feComposite = feComposite;
+exports.feConvolveMatrix = feConvolveMatrix;
+exports.feDiffuseLighting = feDiffuseLighting;
+exports.feDisplacementMap = feDisplacementMap;
+exports.feDistantLight = feDistantLight;
+exports.feDropShadow = feDropShadow;
+exports.feFlood = feFlood;
+exports.feFuncA = feFuncA;
+exports.feFuncB = feFuncB;
+exports.feFuncG = feFuncG;
+exports.feFuncR = feFuncR;
+exports.feGaussianBlur = feGaussianBlur;
+exports.feImage = feImage;
+exports.feMerge = feMerge;
+exports.feMergeNode = feMergeNode;
+exports.feMorphology = feMorphology;
+exports.feOffset = feOffset;
+exports.fePointLight = fePointLight;
+exports.feSpecularLighting = feSpecularLighting;
+exports.feSpotLight = feSpotLight;
+exports.feTile = feTile;
+exports.feTurbulence = feTurbulence;
+exports.filter = filter;
+exports.font = font;
+exports.fontFace = fontFace;
+exports.fontFaceFormat = fontFaceFormat;
+exports.fontFaceName = fontFaceName;
+exports.fontFaceSrc = fontFaceSrc;
+exports.fontFaceUri = fontFaceUri;
+exports.foreignObject = foreignObject;
+exports.g = g;
+exports.glyph = glyph;
+exports.glyphRef = glyphRef;
+exports.handler = handler;
+exports.hatch = hatch;
+exports.hatchpath = hatchpath;
+exports.hkern = hkern;
+exports.image = image;
+exports.line = line;
+exports.linearGradient = linearGradient;
+exports.listener = listener;
+exports.marker = marker;
+exports.mask = mask;
+exports.mesh = mesh;
+exports.meshgradient = meshgradient;
+exports.meshpatch = meshpatch;
+exports.meshrow = meshrow;
+exports.metadata = metadata;
+exports.missingGlyph = missingGlyph;
+exports.mpath = mpath;
+exports.path = path;
+exports.pattern = pattern;
+exports.polygon = polygon;
+exports.polyline = polyline;
+exports.prefetch = prefetch;
+exports.radialGradient = radialGradient;
+exports.rect = rect;
+exports.set = set$$1;
+exports.solidColor = solidColor;
+exports.solidcolor = solidcolor;
+exports.stop = stop;
+exports.Switch = Switch;
+exports.symbol = symbol;
+exports.tbreak = tbreak;
+exports.text = text;
+exports.textArea = textArea;
+exports.textPath = textPath;
+exports.tref = tref;
+exports.tspan = tspan;
+exports.unknown = unknown;
+exports.use = use;
+exports.view = view;
+exports.vkern = vkern;
 exports.patch = patch;
 exports.render = render;
+exports.registerWaveModules = registerWaveModules;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

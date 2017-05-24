@@ -539,6 +539,12 @@ balanced-match@^0.4.1:
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-0.4.2.tgz#cb3f3e3c732dc0f01ee70b403f302e61d7709838"
 
+baobab@^2.4.3:
+  version "2.4.3"
+  resolved "https://registry.yarnpkg.com/baobab/-/baobab-2.4.3.tgz#9655d6f1a69ce66a82fc6391773ca6a9f7a25a9d"
+  dependencies:
+    emmett "^3.1.1"
+
 bcrypt-pbkdf@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/bcrypt-pbkdf/-/bcrypt-pbkdf-1.0.0.tgz#3ca76b85241c7170bf7d9703e7b9aa74630040d4"
@@ -750,6 +756,10 @@ ecstatic@^2.0.0:
     mime "^1.2.11"
     minimist "^1.1.0"
     url-join "^1.0.0"
+
+emmett@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/emmett/-/emmett-3.1.1.tgz#7173858aabdfece0f40232696d4b13fef232cf04"
 
 escape-string-regexp@^1.0.0, escape-string-regexp@^1.0.2:
   version "1.0.5"

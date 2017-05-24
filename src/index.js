@@ -15,6 +15,9 @@ const isPrimitive = value => isString(value) || typeof value === 'number';
 const isFunction = value => typeof value === 'function';
 const isElement = value => value instanceof Element;
 
+// Internal storage API
+const $$$store = {};
+
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
     if (sel !== 'foreignObject' && children !== undefined) {
@@ -237,9 +240,111 @@ export const thead = assembly('thead');
 export const title = assembly('title');
 export const tr = assembly('tr');
 export const ul = assembly('ul');
-export const v = assembly('var');
+export const Var = assembly('var'); // First capital
 export const video = assembly('video');
 
+// SVG Elements.
+export const altGlyph = assembly('altGlyph');
+export const altGlyphDef = assembly('altGlyphDef');
+export const altGlyphItem = assembly('altGlyphItem');
+export const animate = assembly('animate');
+export const animateColor = assembly('animateColor');
+export const animateMotion = assembly('animateMotion');
+export const animateTransform = assembly('animateTransform');
+export const animation = assembly('animation');
+export const circle = assembly('circle');
+export const clipPath = assembly('clipPath');
+export const colorProfile = assembly('color-profile');  // color-profile
+export const cursor = assembly('cursor');
+export const defs = assembly('defs');
+export const desc = assembly('desc');
+export const discard = assembly('discard');
+export const ellipse = assembly('ellipse');
+export const feBlend = assembly('feBlend');
+export const feColorMatrix = assembly('feComposite');
+export const feComponentTransfer = assembly('feComponentTransfer');
+export const feComposite = assembly('feComposite');
+export const feConvolveMatrix = assembly('feConvolveMatrix');
+export const feDiffuseLighting = assembly('feDiffuseLighting');
+export const feDisplacementMap = assembly('feDistantLight');
+export const feDistantLight = assembly('feDistantLight');
+export const feDropShadow = assembly('feDropShadow');
+export const feFlood = assembly('feFlood');
+export const feFuncA = assembly('feFuncA');
+export const feFuncB = assembly('feFuncB');
+export const feFuncG = assembly('feFuncG');
+export const feFuncR = assembly('feFuncR');
+export const feGaussianBlur = assembly('feGaussianBlur');
+export const feImage = assembly('feImage');
+export const feMerge = assembly('feMerge');
+export const feMergeNode = assembly('feMergeNode');
+export const feMorphology = assembly('feMorphology');
+export const feOffset = assembly('feOffset');
+export const fePointLight = assembly('fePointLight');
+export const feSpecularLighting = assembly('feSpecularLighting');
+export const feSpotLight = assembly('feSpotLight');
+export const feTile = assembly('feTile');
+export const feTurbulence = assembly('feTurbulence');
+export const filter = assembly('filter');
+export const font = assembly('font');
+export const fontFace = assembly('font-face');               // fontFace
+export const fontFaceFormat = assembly('font-face-format');  // fontFaceFormat
+export const fontFaceName = assembly('font-face-name');      // fontFaceName
+export const fontFaceSrc = assembly('font-face-src');        // fontFaceSrc
+export const fontFaceUri = assembly('font-face-uri');        // fontFaceUri
+export const foreignObject = assembly('foreignObject');
+export const g = assembly('g');
+export const glyph = assembly('glyph');
+export const glyphRef = assembly('glyphRef');
+export const handler = assembly('handler');
+export const hatch = assembly('hatch');
+export const hatchpath = assembly('hatchpath');
+export const hkern = assembly('hkern');
+export const image = assembly('image');
+export const line = assembly('line');
+export const linearGradient = assembly('linearGradient');
+export const listener = assembly('listener');
+export const marker = assembly('marker');
+export const mask = assembly('mask');
+export const mesh = assembly('mesh');
+export const meshgradient = assembly('meshgradient');
+export const meshpatch = assembly('meshpatch');
+export const meshrow = assembly('meshrow');
+export const metadata = assembly('metadata');
+export const missingGlyph = assembly('missing-glyph');  // missing-glyph
+export const mpath = assembly('mpath');
+export const path = assembly('path');
+export const pattern = assembly('pattern');
+export const polygon = assembly('polygon');
+export const polyline = assembly('polyline');
+export const prefetch = assembly('prefetch');
+export const radialGradient = assembly('radialGradient');
+export const rect = assembly('rect');
+export const set = assembly('set');
+export const solidColor = assembly('solidColor');
+export const solidcolor = assembly('solidcolor');
+export const stop = assembly('stop');
+export const Switch = assembly('switch'); // First capital
+export const symbol = assembly('symbol');
+export const tbreak = assembly('tbreak');
+export const text = assembly('text');
+export const textArea = assembly('textArea');
+export const textPath = assembly('textPath');
+export const tref = assembly('tref');
+export const tspan = assembly('tspan');
+export const unknown = assembly('unknown');
+export const use = assembly('use');
+export const view = assembly('view');
+export const vkern = assembly('vkern')
+// a in HTML
+// audio in HTML
+// canvas in HTML
+// iframe in HTML
+// video in HTML
+// script in HTML
+// style in HTML
+// svg in HTML
+// title in HTML
 
 // Render API
 export const patch = init([
@@ -288,3 +393,24 @@ const renderPartial = () => {
 }
 
 export const render = renderPartial();
+
+/**
+ * A simple plugin integration system.
+ * {
+ *      dependencies:[api, api, api],
+ *      waveModules: [wModule, wModule, wModule]
+ * }
+ *
+ */
+export const registerWaveModules = (...pluginsList) => {
+  
+    // Register dependencies 
+
+    // Register waveModules
+
+    // Check dependenicies exist for waveModules
+
+    // Throw error if dependencies do not exist for any waveModule
+
+    // Expose Wavefront to plugins via $$$store object. 
+}

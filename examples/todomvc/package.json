@@ -5,6 +5,7 @@
     "author": "Julien Etienne",
     "license": "MIT",
     "dependencies": {
+        "baobab": "^2.4.3",
         "todomvc-app-css": "^2.0.6",
         "todomvc-common": "^1.0.3"
     },

@@ -71,14 +71,14 @@ var get = function get(object, property, receiver) {
 
 
 
-var set = function set(object, property, value, receiver) {
+var set$1 = function set$1(object, property, value, receiver) {
   var desc = Object.getOwnPropertyDescriptor(object, property);
 
   if (desc === undefined) {
     var parent = Object.getPrototypeOf(object);
 
     if (parent !== null) {
-      set(parent, property, value, receiver);
+      set$1(parent, property, value, receiver);
     }
   } else if ("value" in desc && desc.writable) {
     desc.value = value;
@@ -1423,6 +1423,17 @@ var section = assembly('section');
 var span = assembly('span');
 var strong = assembly('strong');
 var ul = assembly('ul');
+var handler = assembly('handler');
+// a in HTML
+// audio in HTML
+// canvas in HTML
+// iframe in HTML
+// video in HTML
+// script in HTML
+// style in HTML
+// svg in HTML
+// title in HTML
+
 // Render API
 var patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, dataset_1, eventListenersModule]);
 
@@ -1517,19 +1528,19 @@ var footer$2 = (function (_ref) {
 function o$1(address$$1, write) {
     var addressArr = address$$1.split(' ');
     var addressLength = addressArr.length;
-    var path = o$1.prototype.skeleton;
+    var path$$1 = o$1.prototype.skeleton;
 
     for (var i$$1 = 0; i$$1 < addressLength; i$$1++) {
-        path = path[addressArr[i$$1]];
+        path$$1 = path$$1[addressArr[i$$1]];
 
         if (write) {
             if (i$$1 === addressLength - 2) {
-                path[addressArr[i$$1 + 1]] = write;
+                path$$1[addressArr[i$$1 + 1]] = write;
             }
         }
     }
 
-    return path;
+    return path$$1;
 }
 
 o$1.create = function (skeleton) {
@@ -1689,7 +1700,7 @@ var controller$4 = function controller$4(completed, value, ignore, editing, inde
 
 var todoItems = o$1('todos');
 var itemsLeft$1 = o$1('itemsLeft');
-var view = 'all'; //o('view');
+var view$1 = 'all'; //o('view');
 
 var completed = '';
 var allDone = true;
@@ -1748,7 +1759,7 @@ var controller$3 = function controller$3(cmd, data) {
                 todoItems[data.index][1] = data.editiedValue;
                 break;
             case 'TOGGLE_VIEW':
-                view = data.viewName || 'all';
+                view$1 = data.viewName || 'all';
                 break;
         }
 
@@ -1760,13 +1771,13 @@ var controller$3 = function controller$3(cmd, data) {
     })();
 
     var todoList = todoItems.filter(function (todoData, i) {
-        if (view === 'all') {
+        if (view$1 === 'all') {
             return todoData;
-        } else if (view === 'active') {
+        } else if (view$1 === 'active') {
             if (!todoData[0]) {
                 return todoData;
             }
-        } else if (view === 'completed') {
+        } else if (view$1 === 'completed') {
             if (todoData[0]) {
                 return todoData;
             }

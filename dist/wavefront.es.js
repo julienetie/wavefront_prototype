@@ -1387,8 +1387,111 @@ const thead = assembly('thead');
 const title = assembly('title');
 const tr = assembly('tr');
 const ul = assembly('ul');
-const v = assembly('var');
+const Var = assembly('var'); // First capital
 const video = assembly('video');
+
+// SVG Elements.
+const altGlyph = assembly('altGlyph');
+const altGlyphDef = assembly('altGlyphDef');
+const altGlyphItem = assembly('altGlyphItem');
+const animate = assembly('animate');
+const animateColor = assembly('animateColor');
+const animateMotion = assembly('animateMotion');
+const animateTransform = assembly('animateTransform');
+const animation = assembly('animation');
+const circle = assembly('circle');
+const clipPath = assembly('clipPath');
+const colorProfile = assembly('color-profile'); // color-profile
+const cursor = assembly('cursor');
+const defs = assembly('defs');
+const desc = assembly('desc');
+const discard = assembly('discard');
+const ellipse = assembly('ellipse');
+const feBlend = assembly('feBlend');
+const feColorMatrix = assembly('feComposite');
+const feComponentTransfer = assembly('feComponentTransfer');
+const feComposite = assembly('feComposite');
+const feConvolveMatrix = assembly('feConvolveMatrix');
+const feDiffuseLighting = assembly('feDiffuseLighting');
+const feDisplacementMap = assembly('feDistantLight');
+const feDistantLight = assembly('feDistantLight');
+const feDropShadow = assembly('feDropShadow');
+const feFlood = assembly('feFlood');
+const feFuncA = assembly('feFuncA');
+const feFuncB = assembly('feFuncB');
+const feFuncG = assembly('feFuncG');
+const feFuncR = assembly('feFuncR');
+const feGaussianBlur = assembly('feGaussianBlur');
+const feImage = assembly('feImage');
+const feMerge = assembly('feMerge');
+const feMergeNode = assembly('feMergeNode');
+const feMorphology = assembly('feMorphology');
+const feOffset = assembly('feOffset');
+const fePointLight = assembly('fePointLight');
+const feSpecularLighting = assembly('feSpecularLighting');
+const feSpotLight = assembly('feSpotLight');
+const feTile = assembly('feTile');
+const feTurbulence = assembly('feTurbulence');
+const filter = assembly('filter');
+const font = assembly('font');
+const fontFace = assembly('font-face'); // fontFace
+const fontFaceFormat = assembly('font-face-format'); // fontFaceFormat
+const fontFaceName = assembly('font-face-name'); // fontFaceName
+const fontFaceSrc = assembly('font-face-src'); // fontFaceSrc
+const fontFaceUri = assembly('font-face-uri'); // fontFaceUri
+const foreignObject = assembly('foreignObject');
+const g = assembly('g');
+const glyph = assembly('glyph');
+const glyphRef = assembly('glyphRef');
+const handler = assembly('handler');
+const hatch = assembly('hatch');
+const hatchpath = assembly('hatchpath');
+const hkern = assembly('hkern');
+const image = assembly('image');
+const line = assembly('line');
+const linearGradient = assembly('linearGradient');
+const listener = assembly('listener');
+const marker = assembly('marker');
+const mask = assembly('mask');
+const mesh = assembly('mesh');
+const meshgradient = assembly('meshgradient');
+const meshpatch = assembly('meshpatch');
+const meshrow = assembly('meshrow');
+const metadata = assembly('metadata');
+const missingGlyph = assembly('missing-glyph'); // missing-glyph
+const mpath = assembly('mpath');
+const path = assembly('path');
+const pattern = assembly('pattern');
+const polygon = assembly('polygon');
+const polyline = assembly('polyline');
+const prefetch = assembly('prefetch');
+const radialGradient = assembly('radialGradient');
+const rect = assembly('rect');
+const set = assembly('set');
+const solidColor = assembly('solidColor');
+const solidcolor = assembly('solidcolor');
+const stop = assembly('stop');
+const Switch = assembly('switch'); // First capital
+const symbol = assembly('symbol');
+const tbreak = assembly('tbreak');
+const text = assembly('text');
+const textArea = assembly('textArea');
+const textPath = assembly('textPath');
+const tref = assembly('tref');
+const tspan = assembly('tspan');
+const unknown = assembly('unknown');
+const use = assembly('use');
+const view = assembly('view');
+const vkern = assembly('vkern');
+// a in HTML
+// audio in HTML
+// canvas in HTML
+// iframe in HTML
+// video in HTML
+// script in HTML
+// style in HTML
+// svg in HTML
+// title in HTML
 
 // Render API
 const patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, dataset_1, eventListenersModule]);
@@ -1429,5 +1532,26 @@ const renderPartial = () => {
 
 const render = renderPartial();
 
-export { a, abbr, address, area, article, aside, audio, childNodes, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, v, video, patch, render };
+/**
+ * A simple plugin integration system.
+ * {
+ *      dependencies:[api, api, api],
+ *      waveModules: [wModule, wModule, wModule]
+ * }
+ *
+ */
+const registerWaveModules = (...pluginsList) => {
+
+    // Register dependencies 
+
+    // Register waveModules
+
+    // Check dependenicies exist for waveModules
+
+    // Throw error if dependencies do not exist for any waveModule
+
+    // Expose Wavefront to plugins via $$$store object. 
+};
+
+export { a, abbr, address, area, article, aside, audio, childNodes, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, Var, video, altGlyph, altGlyphDef, altGlyphItem, animate, animateColor, animateMotion, animateTransform, animation, circle, clipPath, colorProfile, cursor, defs, desc, discard, ellipse, feBlend, feColorMatrix, feComponentTransfer, feComposite, feConvolveMatrix, feDiffuseLighting, feDisplacementMap, feDistantLight, feDropShadow, feFlood, feFuncA, feFuncB, feFuncG, feFuncR, feGaussianBlur, feImage, feMerge, feMergeNode, feMorphology, feOffset, fePointLight, feSpecularLighting, feSpotLight, feTile, feTurbulence, filter, font, fontFace, fontFaceFormat, fontFaceName, fontFaceSrc, fontFaceUri, foreignObject, g, glyph, glyphRef, handler, hatch, hatchpath, hkern, image, line, linearGradient, listener, marker, mask, mesh, meshgradient, meshpatch, meshrow, metadata, missingGlyph, mpath, path, pattern, polygon, polyline, prefetch, radialGradient, rect, set, solidColor, solidcolor, stop, Switch, symbol, tbreak, text, textArea, textPath, tref, tspan, unknown, use, view, vkern, patch, render, registerWaveModules };
 //# sourceMappingURL=wavefront.es.js.map

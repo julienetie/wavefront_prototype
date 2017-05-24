@@ -23,5 +23,18 @@
         "backgroundColor": "",
         "titleColor": "",
         "tickColor": ""
+    },
+    "dataSets":{
+    	"actions":{
+    		"ADD_TODO":"ADD_TODO",
+    		"DELETE_TODO":"DELETE_TODO",
+    		"EDIT_TODO":"EDIT_TODO",
+    		"CANCEL_EDIT_TODO":"CANCEL_EDIT_TODO",
+    		"COMPLETE_TODO":"COMPLETE_TODO",
+    		"COMPLETE_ALL":"COMPLETE_ALL",
+    		"SET_ROUTE":"SET_ROUTE",
+    		"TOGGLE_COMPLETED":"TOGGLE_COMPLETED",
+    		"CLEAR_COMPLETED":"CLEAR_COMPLETED"
+    	}
     }
 }
