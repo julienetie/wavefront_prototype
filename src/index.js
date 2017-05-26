@@ -16,7 +16,7 @@ const isFunction = value => typeof value === 'function';
 const isElement = value => value instanceof Element;
 
 // Internal storage API
-const $$$store = {};
+const $$$store = { modules: {} };
 
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
@@ -29,23 +29,23 @@ function addNS(data, children, sel) {
         }
     }
 }
-const attributeType = [
-    'event',
-    'e',
-    'props',
-    'p',
-    'style',
-    '$',
-    'dataset',
-    'd',
-    'href',
-    'placeholder',
-    'autofocus',
-    'type',
-    'for',
-    'checked',
-    'value'
-];
+// const attributeType = [
+//     'event',
+//     'e',
+//     'props',
+//     'p',
+//     'style',
+//     '$',
+//     'dataset',
+//     'd',
+//     'href',
+//     'placeholder',
+//     'autofocus',
+//     'type',
+//     'for',
+//     'checked',
+//     'value'
+// ];
 
 
 const attributeHas = (key, prop) => prop.some(attribute => key.indexOf(attributeHas) >= 0);
@@ -95,6 +95,9 @@ const assembly = (tagName) => {
                             case 'p':
                             case 'props':
                                 attributes.props = item[key];
+                            case 'h':
+                            case 'hook':
+                                attributes.hook = item[key];
                                 break;
                             case '$':
                             case 'style':
@@ -254,7 +257,7 @@ export const animateTransform = assembly('animateTransform');
 export const animation = assembly('animation');
 export const circle = assembly('circle');
 export const clipPath = assembly('clipPath');
-export const colorProfile = assembly('color-profile');  // color-profile
+export const colorProfile = assembly('color-profile'); // color-profile
 export const cursor = assembly('cursor');
 export const defs = assembly('defs');
 export const desc = assembly('desc');
@@ -287,11 +290,11 @@ export const feTile = assembly('feTile');
 export const feTurbulence = assembly('feTurbulence');
 export const filter = assembly('filter');
 export const font = assembly('font');
-export const fontFace = assembly('font-face');               // fontFace
-export const fontFaceFormat = assembly('font-face-format');  // fontFaceFormat
-export const fontFaceName = assembly('font-face-name');      // fontFaceName
-export const fontFaceSrc = assembly('font-face-src');        // fontFaceSrc
-export const fontFaceUri = assembly('font-face-uri');        // fontFaceUri
+export const fontFace = assembly('font-face'); // fontFace
+export const fontFaceFormat = assembly('font-face-format'); // fontFaceFormat
+export const fontFaceName = assembly('font-face-name'); // fontFaceName
+export const fontFaceSrc = assembly('font-face-src'); // fontFaceSrc
+export const fontFaceUri = assembly('font-face-uri'); // fontFaceUri
 export const foreignObject = assembly('foreignObject');
 export const g = assembly('g');
 export const glyph = assembly('glyph');
@@ -311,7 +314,7 @@ export const meshgradient = assembly('meshgradient');
 export const meshpatch = assembly('meshpatch');
 export const meshrow = assembly('meshrow');
 export const metadata = assembly('metadata');
-export const missingGlyph = assembly('missing-glyph');  // missing-glyph
+export const missingGlyph = assembly('missing-glyph'); // missing-glyph
 export const mpath = assembly('mpath');
 export const path = assembly('path');
 export const pattern = assembly('pattern');
@@ -336,15 +339,15 @@ export const unknown = assembly('unknown');
 export const use = assembly('use');
 export const view = assembly('view');
 export const vkern = assembly('vkern')
-// a in HTML
-// audio in HTML
-// canvas in HTML
-// iframe in HTML
-// video in HTML
-// script in HTML
-// style in HTML
-// svg in HTML
-// title in HTML
+    // a in HTML
+    // audio in HTML
+    // canvas in HTML
+    // iframe in HTML
+    // video in HTML
+    // script in HTML
+    // style in HTML
+    // svg in HTML
+    // title in HTML
 
 // Render API
 export const patch = init([
@@ -402,15 +405,18 @@ export const render = renderPartial();
  * }
  *
  */
-export const registerWaveModules = (...pluginsList) => {
-  
+
+export const registerModules = (plugins) => {
     // Register dependencies 
-
-    // Register waveModules
-
-    // Check dependenicies exist for waveModules
-
-    // Throw error if dependencies do not exist for any waveModule
-
-    // Expose Wavefront to plugins via $$$store object. 
+    $$$store.dependencies = plugins.dependencies
+        // Register waveModules
+    $$$store.waveModules = plugins.waveModules
+        // Check dependenicies exist for waveModules
+    $$$store.waveModules.forEach((waveObject, i) =>
+        $$$store.modules[$$$store.waveModules[i].name] = (...args) =>
+        waveObject(...args).plugin($$$store, waveObject().dependencies)
+    );
+    // return $$$store.modules;
 }
+
+export const modules = $$$store.modules;

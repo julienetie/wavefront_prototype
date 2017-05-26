@@ -1,27 +1,19 @@
 import { section, div, render } from '../../../../dist/wavefront.es';
-import h from 'snabbdom/h';
 import footer from './footer/controller';
 import info from './info/controller';
 import header from './header/controller';
 import mainSection from './main-section/controller';
-import todoItem from './todo-item/controller';
-import act from '../act';
 
-
-// const todoApp = document.getElementById();
-
-const interfaces = (cmd, data) => {
+export default (cmd, data) => {
     const vNode =
         div(
             section({ class: 'todoapp' },
-                header(),
+                header(cmd),
                 mainSection(cmd, data),
-                footer()
+                footer(cmd, data),
             ),
-            info(cmd, data)
+            info(cmd, data),
         );
+    // Render to DOM.
     render('#root', vNode);
-}
-
-
-export default interfaces;
+};

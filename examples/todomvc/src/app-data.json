@@ -1,40 +1,41 @@
 {
     "content": {
-        "todoMVC": {
-            "header": "todos",
-            "newTodo": "What needs to be done?",
-            "toggleAll": "Mark all as complete",
-            "all": "All",
-            "active": "Active",
-            "completed": "Completed",
-            "clearCompleted": "Clear completed",
-            "info": [
-                "Double-click to edit a todo",
-                "Created by <a href=\"http://twitter.com/oscargodson\">Oscar Godson</a>",
-                "Refactored by <a href=\"https://github.com/cburgmer\">Christoph Burgmer</a>",
-                "Part of <a href=\"http://todomvc.com\">TodoMVC</a>"
-            ],
-            "itemsLeft": " items left"
-        },
+        "heading": "todos",
+        "placeholder": "What needs to be done?",
+        "toggleAll": "Mark all as complete",
+        "all": "All",
+        "active": "Active",
+        "completed": "Completed",
+        "clearCompleted": "Clear completed",
+        "info": [
+            "Double-click to edit a todo",
+            "Created by <a href=\"http://twitter.com/oscargodson\">Oscar Godson</a>",
+            "Refactored by <a href=\"https://github.com/cburgmer\">Christoph Burgmer</a>",
+            "Part of <a href=\"http://todomvc.com\">TodoMVC</a>"
+        ],
+        "itemsLeft": " items left"
     },
     "defaults": {
+        "view": "all",
+        "editing": false,
+        "todoItems": [],
         "enableLocalStorage": true,
         "limitTodos": false,
         "backgroundColor": "",
         "titleColor": "",
         "tickColor": ""
     },
-    "dataSets":{
-    	"actions":{
-    		"ADD_TODO":"ADD_TODO",
-    		"DELETE_TODO":"DELETE_TODO",
-    		"EDIT_TODO":"EDIT_TODO",
-    		"CANCEL_EDIT_TODO":"CANCEL_EDIT_TODO",
-    		"COMPLETE_TODO":"COMPLETE_TODO",
-    		"COMPLETE_ALL":"COMPLETE_ALL",
-    		"SET_ROUTE":"SET_ROUTE",
-    		"TOGGLE_COMPLETED":"TOGGLE_COMPLETED",
-    		"CLEAR_COMPLETED":"CLEAR_COMPLETED"
-    	}
+    "dataSets": {
+        "actions": {
+            "ADD_TODO": "ADD_TODO",
+            "DELETE_TODO": "DELETE_TODO",
+            "EDIT_TODO": "EDIT_TODO",
+            "CANCEL_EDIT_TODO": "CANCEL_EDIT_TODO",
+            "COMPLETE_TODO": "COMPLETE_TODO",
+            "COMPLETE_ALL": "COMPLETE_ALL",
+            "SET_ROUTE": "SET_ROUTE",
+            "TOGGLE_COMPLETED": "TOGGLE_COMPLETED",
+            "CLEAR_COMPLETED": "CLEAR_COMPLETED"
+        }
     }
 }

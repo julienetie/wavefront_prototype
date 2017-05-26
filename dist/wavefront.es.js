@@ -1190,6 +1190,9 @@ const isString = value => typeof value === 'string';
 const isPrimitive = value => isString(value) || typeof value === 'number';
 const isElement = value => value instanceof Element;
 
+// Internal storage API
+const $$$store = { modules: {} };
+
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
     if (sel !== 'foreignObject' && children !== undefined) {
@@ -1245,6 +1248,9 @@ const assembly = tagName => {
                             case 'p':
                             case 'props':
                                 attributes$$1.props = item[key];
+                            case 'h':
+                            case 'hook':
+                                attributes$$1.hook = item[key];
                                 break;
                             case '$':
                             case 'style':
@@ -1540,18 +1546,18 @@ const render = renderPartial();
  * }
  *
  */
-const registerWaveModules = (...pluginsList) => {
 
+const registerModules = plugins => {
     // Register dependencies 
-
+    $$$store.dependencies = plugins.dependencies;
     // Register waveModules
-
+    $$$store.waveModules = plugins.waveModules;
     // Check dependenicies exist for waveModules
-
-    // Throw error if dependencies do not exist for any waveModule
-
-    // Expose Wavefront to plugins via $$$store object. 
+    $$$store.waveModules.forEach((waveObject, i) => $$$store.modules[$$$store.waveModules[i].name] = (...args) => waveObject(...args).plugin($$$store, waveObject().dependencies));
+    // return $$$store.modules;
 };
 
-export { a, abbr, address, area, article, aside, audio, childNodes, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, Var, video, altGlyph, altGlyphDef, altGlyphItem, animate, animateColor, animateMotion, animateTransform, animation, circle, clipPath, colorProfile, cursor, defs, desc, discard, ellipse, feBlend, feColorMatrix, feComponentTransfer, feComposite, feConvolveMatrix, feDiffuseLighting, feDisplacementMap, feDistantLight, feDropShadow, feFlood, feFuncA, feFuncB, feFuncG, feFuncR, feGaussianBlur, feImage, feMerge, feMergeNode, feMorphology, feOffset, fePointLight, feSpecularLighting, feSpotLight, feTile, feTurbulence, filter, font, fontFace, fontFaceFormat, fontFaceName, fontFaceSrc, fontFaceUri, foreignObject, g, glyph, glyphRef, handler, hatch, hatchpath, hkern, image, line, linearGradient, listener, marker, mask, mesh, meshgradient, meshpatch, meshrow, metadata, missingGlyph, mpath, path, pattern, polygon, polyline, prefetch, radialGradient, rect, set, solidColor, solidcolor, stop, Switch, symbol, tbreak, text, textArea, textPath, tref, tspan, unknown, use, view, vkern, patch, render, registerWaveModules };
+const modules = $$$store.modules;
+
+export { a, abbr, address, area, article, aside, audio, childNodes, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, Var, video, altGlyph, altGlyphDef, altGlyphItem, animate, animateColor, animateMotion, animateTransform, animation, circle, clipPath, colorProfile, cursor, defs, desc, discard, ellipse, feBlend, feColorMatrix, feComponentTransfer, feComposite, feConvolveMatrix, feDiffuseLighting, feDisplacementMap, feDistantLight, feDropShadow, feFlood, feFuncA, feFuncB, feFuncG, feFuncR, feGaussianBlur, feImage, feMerge, feMergeNode, feMorphology, feOffset, fePointLight, feSpecularLighting, feSpotLight, feTile, feTurbulence, filter, font, fontFace, fontFaceFormat, fontFaceName, fontFaceSrc, fontFaceUri, foreignObject, g, glyph, glyphRef, handler, hatch, hatchpath, hkern, image, line, linearGradient, listener, marker, mask, mesh, meshgradient, meshpatch, meshrow, metadata, missingGlyph, mpath, path, pattern, polygon, polyline, prefetch, radialGradient, rect, set, solidColor, solidcolor, stop, Switch, symbol, tbreak, text, textArea, textPath, tref, tspan, unknown, use, view, vkern, patch, render, registerModules, modules };
 //# sourceMappingURL=wavefront.es.js.map

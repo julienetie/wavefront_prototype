@@ -1,66 +1,74 @@
 import todoItem from './view';
 import act from '../';
+import editInput from './view/edit-input';
 
-const props = {};
+const toggleCompleteEvent = id => ({
+    click: () => act('TOGGLE_COMPLETED_TODO', { id: id })
+});
 
-const toggleComplete = (index) => {
-    return {
-        click: () => {
-            act('TOGGLE_COMPLETED_TODO', { index });
+
+const editTodoEvent = id => ({
+    dblclick: e => act('EDIT_TODO', { id, target: e.target })
+});
+
+
+const saveTodoEvent = (id, editedValue) => {
+    const saveTodoEdit = (e, id) => {
+        const text = e.target.value.trim();
+        if (text === '') {
+            act('REMOVE_TODO', { target: e.target.closest('li'), id })
+            act('SAVE_TODO_EDIT', { id, text });
+        } else {
+            act('SAVE_TODO_EDIT', { id, text });
         }
     }
-}
 
-const editTodo = (index) => {
     return {
-        dblclick: (e) => {
-            act('EDIT_TODO', { index });
-        }
-    }
-}
-
-
-const saveTodo = (index, editedValue) => {
-    const saveTodoEdit = (e, index) => {
-        act('SAVE_TODO_EDIT', { index, editiedValue: e.target.value.trim() });
-    }
-    return {
-        blur: (e) => {
-            const value = e.target.value.trim();
-            if (value) {
-                saveTodoEdit(e, index);
-            } else {
-                act('REMOVE_TODO', { index });
-            }
+        change: e => {
+            saveTodoEdit(e, id)
         },
-        keypress: (e) => {
-            const value = e.target.value.trim();
-            if (e.keyCode === 13 && value) {
-                saveTodoEdit(e, index);
+        blur: e => {
+            saveTodoEdit(e, id);
+        },
+        keyDown: e => {
+            if (e.which === 13) {
+                saveTodoEdit(e, id);
             }
         }
     }
 }
 
 
-const removeTodo = (index) => {
-    return {
-        click: () => {
-            act('REMOVE_TODO', { index });
-        }
+const removeTodoEvent = id => ({
+    click: e => act('REMOVE_TODO', {
+        target: e.target,
+        id
+    })
+});
+
+
+const focusOnInput = {
+    insert: vNode => {
+        const el = vNode.elm;
+        setTimeout(function(){ el.selectionStart = el.selectionEnd = 10000; }, 0);
+        el.focus();
     }
-}
+};
 
-
-const controller = (completed, value, ignore, editing, index) => {
-    props.value = value;
-    props.toggleComplete = toggleComplete(index);
-    props.removeTodo = removeTodo(index);
-    props.completed = completed;
-    props.editing = editing;
-    props.editTodo = editTodo(index);
-    props.saveTodo = saveTodo(index, value);
+/**
+ * @param
+ */
+export default ({ completed, id, text, editing }) => {
+    const props = {
+        value: text,
+        toggleComplete: toggleCompleteEvent(id),
+        removeTodo: removeTodoEvent(id),
+        completed: completed ? 'completed' : '',
+        editing: editing ? 'editing' : '',
+        editInput: editing ? editInput : () => {},
+        editTodo: editTodoEvent(id),
+        saveTodo: saveTodoEvent(id, text),
+        focusOnInput
+    }
     return todoItem(props);
 }
-
-export default controller;

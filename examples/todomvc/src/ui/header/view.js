@@ -1,17 +1,16 @@
-import { header, h1, input } from '../../../../../dist/wavefront.es.js';
+import { header, h1, input } from '../../../../../dist/wavefront.es';
 
 /**
  * Header.
  * @param...
  */
-export default ({ returnKey }) =>
+export default ({ returnKey, heading, placeholder }) =>
 header({ class: 'header' }, [
-    h1('todos'),
+    h1(heading),
     input({
         class: 'new-todo',
-        placeholder: 'What needs to be done?', 
         autofocus: 'autofocus',
-        event: returnKey
-    })
+        event: returnKey,
+        placeholder,
+    }),
 ]);
-

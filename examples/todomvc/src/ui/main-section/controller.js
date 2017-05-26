@@ -1,116 +1,135 @@
 import mainSection from './view';
 import todoItem from '../todo-item/controller';
-import h from 'snabbdom/h';
-import o from '../../skeleton';
 import act from '../';
+import tree from '../../tree';
 
-const todoItems = o('todos');
-const itemsLeft = o('itemsLeft');
-let view = 'all'; //o('view');
+const todoState = tree.select(['state', 'todoItems']);
+tree.set(['state', 'view'], 'all');
+const viewState = tree.select(['state', 'view']);
+const editState = tree.select(['state', 'editing']);
 
-let completed = '';
-let allDone = true;
-let ref = 0;
 
-const props = {};
-
-const toggleCompleted = (currentToggle) => {
-    return completed = currentToggle ? '' : '.completed';
-}
-
-const toggleAll = () => {
-    if (allDone) {
-        allDone = false;
-        return '.completed';
-    } else {
-        allDone = true;
-        return ''
-    }
+const toggleAllAsCompleted = {
+    click: () => act('TOGGLE_ALL_AS_COMPLETED')
 }
 
 
-const toggleAllAsCompleted = () => {
-    return {
-        click: (e) => {
-            act('TOGGLE_ALL_AS_COMPLETED');
-        }
-    }
-}
-
-
-const filter = (arr, viewName) => {
-    return arr.filter((items) => {
-        if (items[0] === viewName) {
-            return items;
-        }
-    })
-}
-
-
+let i = 0;
+let allCompletedState = false;
 const controller = (cmd, data) => {
-    const todoItemsLength = todoItems.length;
-
     switch (cmd) {
         case 'ADD_TODO':
-            ref++;
-            todoItems.push(['', data.value, ref, '']);
-            break;
-        case 'TOGGLE_COMPLETED_TODO':
-            todoItems[data.index][0] = toggleCompleted(
-                todoItems[
-                    data.index
-                ][0]);
-            break;
-        case 'REMOVE_TODO':
-            todoItems.splice(data.index, 1);
-            break;
-        case 'TOGGLE_ALL_AS_COMPLETED':
-            const completedStatus = toggleAll();
-            todoItems.forEach((item, i) => {
-                todoItems[i][0] = completedStatus;
+            i++;
+            todoState.push({
+                id: i,
+                completed: false,
+                editing: false,
+                text: data.value
             });
             break;
-        case 'EDIT_TODO':
-            todoItems[data.index][3] = '.editing';
+        case 'REMOVE_TODO':
+            const excludedList = todoState.get()
+                .filter((todo, i) => data.id !== todo.id);
+            todoState.set(excludedList);
             break;
-        case 'SAVE_TODO_EDIT':
-            todoItems[data.index][3] = '';
-            todoItems[data.index][1] = data.editiedValue;
+        case 'TOGGLE_COMPLETED_TODO':
+            const toggleCompletedList = todoState.get()
+                .map(todo => {
+                    if (data.id === todo.id) {
+                        return {
+                            completed: !todo.completed,
+                            id: todo.id,
+                            text: todo.text,
+                            editing: todo.editing
+                        }
+                    }
+                    return todo;
+                });
+            todoState.set(toggleCompletedList);
             break;
         case 'TOGGLE_VIEW':
-            view = data.viewName || 'all';
+            viewState.set(data.view);
+            break;
+        case 'EDIT_TODO':
+            const isEditing = editState.get();
+            if (!isEditing) {
+                editState.set(true);
+                const updateTodoAsEditing = todoState.get()
+                    .map(todo => {
+                        if (data.id === todo.id) {
+                            return {
+                                completed: todo.completed,
+                                id: todo.id,
+                                text: todo.text,
+                                editing: !todo.editing
+                            }
+                        }
+                        return todo;
+                    });
+                todoState.set(updateTodoAsEditing);
+            }
+            break;
+        case 'SAVE_TODO_EDIT':
+            const saveTodoEditInList = todoState.get()
+                .map(todo => {
+                    if (data.id === todo.id) {
+                        return {
+                            completed: todo.completed,
+                            id: todo.id,
+                            text: data.text,
+                            editing: false
+                        }
+                    }
+                    return todo;
+                });
+            todoState.set(saveTodoEditInList);
+            editState.set(false);
+            break;
+        case 'TOGGLE_ALL_AS_COMPLETED':
+            allCompletedState = !allCompletedState;
+            const toggleAllTodosAsCompleted = todoState.get()
+                .map(todo => ({
+                    completed: allCompletedState,
+                    id: todo.id,
+                    text: todo.text,
+                    editing: todo.editing
+                }));
+            todoState.set(toggleAllTodosAsCompleted);
+            break;
+        case 'CLEAR_COMPLETED':
+            const clearCompletedTodos = todoState.get()
+                .filter(todo => !todo.completed)
+            todoState.set(clearCompletedTodos);
             break;
     }
 
-    // if (data.hasOwnProperty('viewName')) {
-
-    //     view = data.viewName;
-    // }
 
 
+    const view = viewState.get();
+    const todoList = todoState.get()
+        .filter(todo => {
 
-
-    const todoList = todoItems.filter((todoData, i) => {
-        if (view === 'all') {
-            return todoData;
-        } else if (view === 'active') {
-            if (!todoData[0]) {
-                return todoData;
+            const todoFilter = {
+                active: !todo.completed,
+                all: todo,
+                completed: todo.completed
             }
-        } else if (view === 'completed') {
-            if (todoData[0]) {
-                return todoData;
-            }
-        }
-    }).map((todoData, i) => {
-        return todoItem(...todoData, i);
+            return todoFilter[view];
+            // switch (view) {
+            //     case 'active':
+            //         return !todo.completed;
+            //     case 'completed':
+            //         return todo.completed;
+            //     case 'all':
+            //         return todo;
+            // }
+        })
+        .map(todoState => todoItem(todoState))
+
+
+    return mainSection({
+        todoList,
+        toggleAllAsCompleted
     });
-    console.log('todoList', todoList)
-
-    itemsLeft[0] = todoItems.filter((item) => item[0] === '').length;
-
-    props.todoList = todoList;
-    props.toggleAllAsCompleted = toggleAllAsCompleted();
-    return mainSection(props);
 }
 export default controller;

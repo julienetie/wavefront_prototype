@@ -1,24 +1,34 @@
-import header from './view';
+import view from './view';
 import act from '../';
+import tree from '../../tree';
+
+const { heading, placeholder } = tree.get('content');
+
+const returnHandlerPartial = () => {
+    let i = 0;
+    return (e) => {
+        const target = e.target;
+        const value = target.value.trim();
+        if (e.keyCode === 13 && value.length) {
+            i++;
+            act('ADD_TODO', { value });
+            target.value = '';
+        }
+    };
+};
+
+const returnHandler = returnHandlerPartial();
 
 const returnKey = {
-    keypress: (e) => {
-    	const value = e.target.value.trim();
-        if (e.keyCode === 13 && value) {
-            act('ADD_TODO', {value});
-            e.target.value = '';
-        }
-    }
-}
-
+    keypress: returnHandler(e),
+};
 
 const props = {
-    returnKey
-}
+    returnKey,
+    heading,
+    placeholder,
+};
 
-
-const controller = (cmd, data) => {
-    return header(props)
-}
+const controller = () => view(props);
 
 export default controller;

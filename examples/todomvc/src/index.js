@@ -1,8 +1,3 @@
-import act from './act';
+import ui from './ui';
 
-// *
-//  * This is the main controller.
-//  * A call without parameters is expected to 
-//  * initialse the app.
- 
-act();	
+ui();

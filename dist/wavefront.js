@@ -1275,6 +1275,9 @@ var isElement = function isElement(value) {
     return value instanceof Element;
 };
 
+// Internal storage API
+var $$$store = { modules: {} };
+
 function addNS(data, children, sel) {
     data.ns = 'http://www.w3.org/2000/svg';
     if (sel !== 'foreignObject' && children !== undefined) {
@@ -1334,6 +1337,9 @@ var assembly = function assembly(tagName) {
                             case 'p':
                             case 'props':
                                 attributes$$1.props = item[key];
+                            case 'h':
+                            case 'hook':
+                                attributes$$1.hook = item[key];
                                 break;
                             case '$':
                             case 'style':
@@ -1629,18 +1635,22 @@ var render = renderPartial();
  * }
  *
  */
-var registerWaveModules = function registerWaveModules() {
 
+var registerModules = function registerModules(plugins) {
     // Register dependencies 
-
+    $$$store.dependencies = plugins.dependencies;
     // Register waveModules
-
+    $$$store.waveModules = plugins.waveModules;
     // Check dependenicies exist for waveModules
-
-    // Throw error if dependencies do not exist for any waveModule
-
-    // Expose Wavefront to plugins via $$$store object. 
+    $$$store.waveModules.forEach(function (waveObject, i) {
+        return $$$store.modules[$$$store.waveModules[i].name] = function () {
+            return waveObject.apply(undefined, arguments).plugin($$$store, waveObject().dependencies);
+        };
+    });
+    // return $$$store.modules;
 };
+
+var modules = $$$store.modules;
 
 exports.a = a;
 exports.abbr = abbr;
@@ -1835,7 +1845,8 @@ exports.view = view;
 exports.vkern = vkern;
 exports.patch = patch;
 exports.render = render;
-exports.registerWaveModules = registerWaveModules;
+exports.registerModules = registerModules;
+exports.modules = modules;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
