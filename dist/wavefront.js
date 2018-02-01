@@ -1012,6 +1012,41 @@ exports.default = exports.styleModule;
 //# sourceMappingURL=style.js.map
 });
 
+var startTime;
+var lastMeasure;
+var startMeasure = function startMeasure(name) {
+    startTime = performance.now();
+    lastMeasure = name;
+};
+var stopMeasure = function stopMeasure() {
+    var last = lastMeasure;
+    if (lastMeasure) {
+        window.setTimeout(function () {
+            lastMeasure = null;
+            var stop = performance.now();
+            var duration = 0;
+            console.log(last + " took " + (stop - startTime));
+        }, 0);
+    }
+};
+
+function _random(max) {
+    return Math.round(Math.random() * 1000) % max;
+}
+
+var buildData = function buildData() {
+    var count = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1000;
+
+    var id = 0;
+    var adjectives = ["pretty", "large", "big", "small", "tall", "short", "long", "handsome", "plain", "quaint", "clean", "elegant", "easy", "angry", "crazy", "helpful", "mushy", "odd", "unsightly", "adorable", "important", "inexpensive", "cheap", "expensive", "fancy"];
+    var colours = ["red", "yellow", "blue", "green", "pink", "brown", "purple", "brown", "white", "black", "orange"];
+    var nouns = ["table", "chair", "house", "bbq", "desk", "car", "pony", "cookie", "sandwich", "burger", "pizza", "mouse", "keyboard"];
+    var data = [];
+    for (var i = 0; i < count; i++) {
+        data.push({ id: id, label: adjectives[_random(adjectives.length)] + " " + colours[_random(colours.length)] + " " + nouns[_random(nouns.length)] });
+    }return data;
+};
+
 var isString = function isString(value) {
     return typeof value === 'string';
 };
@@ -1045,6 +1080,16 @@ var node = function node(t, id, at, ch) {
 var count = 0;
 var currentTree = void 0;
 
+/** 
+ Assembly is the mechanics of the tag functions. 
+ A Wavefront template is a set of nested functions
+ which act similar to recursion. 
+
+ The deepest nested tag of the youngest index is
+ the first executed tag function.
+
+
+**/
 var assembly = function assembly(tagName) {
 
     return function inner() {
@@ -1407,21 +1452,47 @@ var vkern = assembly('vkern');
 //         23984729
 //     ]),
 // ])
+
+// console.log('DATA', buildData(10000))
+
+// var rows = this.rows,
+//     s_data = this.store.data,
+//     data = this.data,
+//     tbody = this.tbody;
+// for (let i = rows.length; i < s_data.length; i++) {
+//     let tr = this.createRow(s_data[i]);
+//     rows[i] = tr;
+//     data[i] = s_data[i];
+//     tbody.appendChild(tr);
+// }
+var thing = [];
+var lotsData = buildData(10000);
+
+console.log(lotsData[0]);
+for (var _i = 0; _i < lotsData.length; _i++) {
+    // console.log(i)
+    var dat = lotsData[_i];
+    thing.push(tr({ class: 'menu-item' }, [td({ class: 'col-md-1' }, dat.id), td({ class: 'col-md-4' }, a({ class: 'lbl' }, dat.label)), td({ class: 'col-md-1' }, a({ class: 'remove' }, span({
+        class: 'glyphicon glyphicon-remove remove'
+    }))), td({ class: 'col-md-6' })]));
+}
+// console.log('thing',thing)
+
+
 var twitterHref = 'http://google.com';
 var facebookHref = 'http://facebook.com';
 var someUI = [div({ id: 'block-social-responsive', class: 'footer__social' }, ul({ class: 'menu' }, li({ class: 'menu-item' }, a({ href: twitterHref, class: 'icon-twitter', target: '_blank' }, 'TWITTER')), li({ class: 'menu-item' }, a({
     href: facebookHref,
     class: 'icon-fb',
     target: '_blank',
-    event: ['mouseover', function (e) {
-        console.log('THIS ELEMENT', e.target);
-    }, false],
+    _innerHTML: 'HELOOOOOOO',
+    // event: ['mouseover', (e) => { console.log('THIS ELEMENT', e.target) }, false],
     $: { backgroundColor: 'red', color: 'yellow' },
     'd-foijfwoeifjw': 2000000000,
     name: 'jack'
 }, 'FACEBOOK')),
 // Without variables...
-li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin')), li({ class: 'menu-item' }, a({ href: 'https://www.youtube.com/user/TheLinuxFoundation', class: 'icon-youtube', target: '_blank' }, 'Youtube')))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION')];
+li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin')))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'), tbody({ id: 'tbody' }, thing)];
 
 var createAndAppendNode = function createAndAppendNode(fragment, node) {
 
@@ -1442,9 +1513,9 @@ var createAndAppendNode = function createAndAppendNode(fragment, node) {
         var attributeKeys = Object.keys(_attributes);
         var attributesLength = attributeKeys.length;
 
-        for (var _i = 0; _i < attributesLength; _i++) {
+        for (var _i2 = 0; _i2 < attributesLength; _i2++) {
 
-            var attributeKey = attributeKeys[_i];
+            var attributeKey = attributeKeys[_i2];
 
             // Standard dataset syntax.
             if (attributeKey.indexOf('data-') === 0) {
@@ -1458,25 +1529,27 @@ var createAndAppendNode = function createAndAppendNode(fragment, node) {
                 element.dataset[_dataKey] = _attributes[attributeKey];
                 continue;
             }
+            // Props: _
+            if (attributeKey[0] === '_') {
+                var cleanKey = attributeKey.replace('_', '');
+                element[cleanKey] = _attributes[attributeKey];
+                continue;
+            }
 
             switch (attributeKey) {
                 case 'e':
-                    element.addEventListener.apply(element, toConsumableArray(_attributes.e));
-                    break;
                 case 'event':
-                    element.addEventListener.apply(element, toConsumableArray(_attributes.event));
+                    element.addEventListener.apply(element, toConsumableArray(_attributes[attributeKey]));
                     break;
                 case '$':
-                    Object.assign(element.style, _attributes.$);
-                    break;
                 case 'style':
-                    Object.assign(element.style, _attributes.style);
+                    Object.assign(element.style, _attributes[attributeKey]);
                     break;
                 case 'class':
                     element.className = _attributes.class;
                     break;
                 default:
-                    element[attributeKey] = _attributes[attributeKey];
+                    element.setAttribute(attributeKey, _attributes[attributeKey]);
                     break;
             }
         }
@@ -1502,8 +1575,8 @@ var renderPartial = function renderPartial(selector) {
         if (cache === undefined) {
             if (Array.isArray(newNode)) {
                 // Group of elements 
-                for (var _i2 = 0; _i2 < newNode.length; _i2++) {
-                    var currentNewNode = newNode[_i2];
+                for (var _i3 = 0; _i3 < newNode.length; _i3++) {
+                    var currentNewNode = newNode[_i3];
                     console.log(currentNewNode);
 
                     createAndAppendNode(fragment, currentNewNode);
@@ -1515,14 +1588,28 @@ var renderPartial = function renderPartial(selector) {
             }
             requestAnimationFrame(function () {
                 container.appendChild(fragment);
+
+                /** 
+                   Static Rendering:
+                   This will generate the inital state
+                   of the HTML as a string. headers 
+                   and other content can be generated 
+                   from the front side or modified on the
+                   back end...
+                **/
+                // const staticRender = container.outerHTML;
+                // console.log(staticRender)
             });
         }
     };
 };
 
-var render = renderPartial('#root');
-
-render(someUI);
+document.addEventListener('click', function () {
+    startMeasure('Wavefront');
+    var render = renderPartial('#root');
+    render(someUI);
+    stopMeasure();
+}, false);
 
 // console.log(someUI)
 // render(

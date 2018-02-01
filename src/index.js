@@ -10,6 +10,43 @@ import { styleModule } from 'snabbdom/modules/style';
 import eventListenersModule from '../libs/eventlisteners';
 
 
+
+var startTime;
+var lastMeasure;
+var startMeasure = function(name) {
+    startTime = performance.now();
+    lastMeasure = name;
+}
+var stopMeasure = function() {
+    var last = lastMeasure;
+    if (lastMeasure) {
+        window.setTimeout(function() {
+            lastMeasure = null;
+            var stop = performance.now();
+            var duration = 0;
+            console.log(last + " took " + (stop - startTime));
+        }, 0);
+    }
+}
+
+function _random(max) {
+    return Math.round(Math.random() * 1000) % max;
+}
+
+const buildData = (count = 1000) => {
+    let id = 0;
+    var adjectives = ["pretty", "large", "big", "small", "tall", "short", "long", "handsome", "plain", "quaint", "clean", "elegant", "easy", "angry", "crazy", "helpful", "mushy", "odd", "unsightly", "adorable", "important", "inexpensive", "cheap", "expensive", "fancy"];
+    var colours = ["red", "yellow", "blue", "green", "pink", "brown", "purple", "brown", "white", "black", "orange"];
+    var nouns = ["table", "chair", "house", "bbq", "desk", "car", "pony", "cookie", "sandwich", "burger", "pizza", "mouse", "keyboard"];
+    var data = [];
+    for (var i = 0; i < count; i++)
+        data.push({ id, label: adjectives[_random(adjectives.length)] + " " + colours[_random(colours.length)] + " " + nouns[_random(nouns.length)] });
+    return data;
+}
+
+
+
+
 const isString = value => typeof value === 'string';
 const isPrimitive = value => isString(value) || typeof value === 'number';
 const isFunction = value => typeof value === 'function';
@@ -77,6 +114,16 @@ const node = (t, id, at, ch) => {
 let count = 0;
 let currentTree;
 
+/** 
+ Assembly is the mechanics of the tag functions. 
+ A Wavefront template is a set of nested functions
+ which act similar to recursion. 
+
+ The deepest nested tag of the youngest index is
+ the first executed tag function.
+
+
+**/
 const assembly = (tagName) => {
 
     return function inner(...args) {
@@ -441,6 +488,51 @@ export const vkern = assembly('vkern')
 //         23984729
 //     ]),
 // ])
+
+// console.log('DATA', buildData(10000))
+
+// var rows = this.rows,
+//     s_data = this.store.data,
+//     data = this.data,
+//     tbody = this.tbody;
+// for (let i = rows.length; i < s_data.length; i++) {
+//     let tr = this.createRow(s_data[i]);
+//     rows[i] = tr;
+//     data[i] = s_data[i];
+//     tbody.appendChild(tr);
+// }
+let thing = [];
+const lotsData = buildData(10000);
+
+console.log(lotsData[0])
+for (let i = 0; i < lotsData.length; i++) {
+    // console.log(i)
+    const dat = lotsData[i];
+    thing.push(
+        tr({ class: 'menu-item' }, [
+            td({ class: 'col-md-1' },
+                dat.id
+            ),
+            td({ class: 'col-md-4' },
+                a({ class: 'lbl' }, dat.label)
+            ),
+            td({ class: 'col-md-1' },
+                a({ class: 'remove' },
+                    span({
+                        class: 'glyphicon glyphicon-remove remove'
+                    })
+                )
+            ),
+            td({ class: 'col-md-6' })
+        ]))
+}
+// console.log('thing',thing)
+
+
+
+
+
+
 const twitterHref = 'http://google.com';
 const facebookHref = 'http://facebook.com';
 const someUI = [
@@ -456,9 +548,10 @@ const someUI = [
                         href: facebookHref,
                         class: 'icon-fb',
                         target: '_blank',
-                        event: ['mouseover', (e) => { console.log('THIS ELEMENT', e.target) }, false],
+                        _innerHTML: 'HELOOOOOOO',
+                        // event: ['mouseover', (e) => { console.log('THIS ELEMENT', e.target) }, false],
                         $: { backgroundColor: 'red', color: 'yellow' },
-                        'd-foijfwoeifjw': 2000000000, 
+                        'd-foijfwoeifjw': 2000000000,
                         name: 'jack'
                     },
                     'FACEBOOK'
@@ -469,15 +562,11 @@ const someUI = [
                 a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' },
                     'Linkedin'
                 )
-            ),
-            li({ class: 'menu-item' },
-                a({ href: 'https://www.youtube.com/user/TheLinuxFoundation', class: 'icon-youtube', target: '_blank' },
-                    'Youtube'
-                )
             )
         )
     ),
-    section({ id: 'blah', class: 'wefw' }, 'TEST SECTION')
+    section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'),
+    tbody({ id: 'tbody' }, thing)
 ];
 
 
@@ -516,27 +605,27 @@ const createAndAppendNode = (fragment, node) => {
                 element.dataset[dataKey] = attributes[attributeKey];
                 continue;
             }
-
-
+            // Props: _
+            if(attributeKey[0] === '_'){
+                const cleanKey = attributeKey.replace('_','');
+                element[cleanKey] = attributes[attributeKey];
+                continue;
+            }
 
             switch (attributeKey) {
                 case 'e':
-                    element.addEventListener(...attributes.e);
-                    break;
                 case 'event':
-                    element.addEventListener(...attributes.event);
+                    element.addEventListener(...attributes[attributeKey]);
                     break;
-                case '$'    :
-                    Object.assign(element.style, attributes.$);
-                    break;
+                case '$':
                 case 'style':
-                    Object.assign(element.style, attributes.style);
+                    Object.assign(element.style, attributes[attributeKey]);
                     break;
                 case 'class':
                     element.className = attributes.class;
                     break;
                 default:
-                    element[attributeKey] = attributes[attributeKey];
+                    element.setAttribute(attributeKey,attributes[attributeKey]);
                     break;
             }
         }
@@ -576,16 +665,33 @@ const renderPartial = (selector) => {
             }
             requestAnimationFrame(() => {
                 container.appendChild(fragment)
+
+                /** 
+                   Static Rendering:
+                   This will generate the inital state
+                   of the HTML as a string. headers 
+                   and other content can be generated 
+                   from the front side or modified on the
+                   back end...
+                **/
+                // const staticRender = container.outerHTML;
+                // console.log(staticRender)
             });
+
+
+
         }
     }
 }
 
-const render = renderPartial('#root');
 
+document.addEventListener('click', () => {
+    startMeasure('Wavefront')
+    const render = renderPartial('#root');
+    render(someUI);
+    stopMeasure()
+}, false)
 
-
-render(someUI);
 
 // console.log(someUI)
 // render(
