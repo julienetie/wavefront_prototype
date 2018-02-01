@@ -153,49 +153,9 @@ const assembly = (tagName, isSVG) => {
             if (isItemObject && !isItemVnode) {
                 // let isSelector = false;
                 attributes = item;
-                // const attrKeys = Object.keys(item);
-
-                // Create virtual id selector.
-                // if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
-                //     selectorName += '#' + item.id;
-                //     isSelector = true;
-                // }
-                // Create virtual class selectors.
-                // if (item.hasOwnProperty('class') || item.hasOwnProperty('.')) {
-                //     selectorName += '.' + item.class;
-                //     isSelector = true;
-                // }
-                // console.log('attrKeys', attrKeys)
-                // attrKeys.forEach((key) => {
-                //     // If not selector
-                //     if (['id', '#', 'class', '.'].indexOf(key) < 0) {
-                //         switch (key) {
-                //             case 'e':
-                //             case 'event':
-                //                 attributes.on = item[key];
-                //                 break;
-                //             case 'p':
-                //             case 'props':
-                //                 attributes.props = item[key];
-                //             case 'h':
-                //             case 'hook':
-                //                 attributes.hook = item[key];
-                //                 break;
-                //             case '$':
-                //             case 'style':
-                //                 attributes.style = item[key];
-                //                 break;
-                //             case 'd':
-                //             case 'dataset':
-                //                 attributes.dataset = item[key];
-                //                 break;
-                //             default:
-                //                 attributes.attrs[key] = item[key];
-                //         }
-                //     }
-                // });
                 continue;
             }
+
 
             // Check if item is an array = group of child elements.
             if (Array.isArray(item)) {
@@ -213,11 +173,19 @@ const assembly = (tagName, isSVG) => {
 
 
         for (i = 0; i < childNodes.length; ++i) {
-            if (isPrimitive(childNodes[i])) {
+            const childNode = childNodes[i];
+            if (isPrimitive(childNode)) {
+                let type;
+                let value;
+                if(childNode[0] === '@'){
+                    type = 'comment';
+                    value = childNode.slice(1)
+                }else{
+                    type = 'primitive';
+                    value = childNode;
+                }
                 count++;
-                currentTree = node('primitive', count, childNodes[i], null, isSVG);
-                // console.log('currentTree', currentTree)
-                childNodes[i] = currentTree
+                childNodes[i] = node(type, count, value, null, isSVG);
             }
         }
 
@@ -512,28 +480,28 @@ export const vkern = assembly('vkern', true)
 let thing = [];
 const lotsData = buildData(10000);
 
-console.log(lotsData[0])
-for (let i = 0; i < lotsData.length; i++) {
-    // console.log(i)
-    const dat = lotsData[i];
-    thing.push(
-        tr({ class: 'menu-item' }, [
-            td({ class: 'col-md-1' },
-                dat.id
-            ),
-            td({ class: 'col-md-4' },
-                a({ class: 'lbl' }, dat.label)
-            ),
-            td({ class: 'col-md-1' },
-                a({ class: 'remove' },
-                    span({
-                        class: 'glyphicon glyphicon-remove remove'
-                    })
-                )
-            ),
-            td({ class: 'col-md-6' })
-        ]))
-}
+// console.log(lotsData[0])
+// for (let i = 0; i < lotsData.length; i++) {
+//     // console.log(i)
+//     const dat = lotsData[i];
+//     thing.push(
+//         tr({ class: 'menu-item' }, [
+//             td({ class: 'col-md-1' },
+//                 dat.id
+//             ),
+//             td({ class: 'col-md-4' },
+//                 a({ class: 'lbl' }, dat.label)
+//             ),
+//             td({ class: 'col-md-1' },
+//                 a({ class: 'remove' },
+//                     span({
+//                         class: 'glyphicon glyphicon-remove remove'
+//                     })
+//                 )
+//             ),
+//             td({ class: 'col-md-6' })
+//         ]))
+// }
 // console.log('thing',thing)
 
 
@@ -569,7 +537,8 @@ const someUI = [
             li({ class: 'menu-item' },
                 a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' },
                     'Linkedin'
-                )
+                ),
+                `@This is a single line comment`
             )
         )
     ),
@@ -584,20 +553,27 @@ const someUI = [
         ellipse({ cx: 200, cy: 70, rx: 85, ry: 55, fill: 'url(#grad1)' }),
         'Sorry, your browser does not support inline SVG.'
     ),
-    tbody({ id: 'tbody' }, thing)
+    `@This is a single line comment`,
+    // tbody({ id: 'tbody' }, thing)
 ];
 
 
 const createAndAppendNode = (fragment, node) => {
-
-    // If Text
+    console.log('node', node)
+    // TEXT_NODE        3
     if (node.t === 'TEXT') {
         const textNode = document.createTextNode(node.val);
         fragment.appendChild(textNode);
         return;
     }
+    // COMMENT_NODE     8
+    if (node.t === 'COM') {
+        const commentNode = document.createComment(node.val);
+        fragment.appendChild(commentNode);
+        return;
+    }
 
-    // If Element
+    // ELEMENT_NODE     1
     const element = node.svg ? document.createElementNS('http://www.w3.org/2000/svg', node.t) : document.createElement(node.t);
 
     // Add attributes
@@ -671,7 +647,13 @@ const renderPartial = (selector) => {
                 // Group of elements 
                 for (let i = 0; i < newNode.length; i++) {
                     const currentNewNode = newNode[i]
-                    console.log(currentNewNode)
+                    // console.log('currentNewNode', currentNewNode)
+                    /*
+                        We are not handeling string and comment nodes in 
+                        an group. This needs to be handeled.
+
+                    */
+
 
                     createAndAppendNode(fragment, currentNewNode);
                 }
