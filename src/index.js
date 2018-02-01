@@ -58,27 +58,25 @@ node('primitive', count, id, childNodes[i]);
  * @param {Array} ch - Children 
  */
 const node = (t, id, at, ch) => {
-    if (t === 'primitive') {
-        return {
-            t: '@p',
-            id,
-            val: at
-        }
+    switch (t) {
+        case 'primitive':
+            return { t: 'TEXT', id, val: at };
+        case 'comment':
+            return { t: 'COM', id, val: at };
+        default:
+            return {
+                t,
+                id,
+                at,
+                chx: ch.length,
+                ch,
+            };
     }
-
-
-    return {
-        t,
-        id,
-        at,
-        chx: ch.length,
-        ch,
-    }
-
 }
 
 let count = 0;
 let currentTree;
+
 const assembly = (tagName) => {
 
     return function inner(...args) {
@@ -92,11 +90,10 @@ const assembly = (tagName) => {
         let children;
         let text;
 
-
         for (i = 0; i < args.length; i++) {
             item = args[i] || {};
             let isItemObject = isPlaneObject(item);
-            let isItemVnode = item.hasOwnProperty('<t></t>');
+            let isItemVnode = item.hasOwnProperty('t');
 
             // Check if item is a plane object = attribute.
             if (isItemObject && !isItemVnode) {
@@ -165,7 +162,7 @@ const assembly = (tagName) => {
             if (isPrimitive(childNodes[i])) {
                 count++;
                 currentTree = node('primitive', count, childNodes[i]);
-                console.log('currentTree', currentTree)
+                // console.log('currentTree', currentTree)
                 childNodes[i] = currentTree
             }
         }
@@ -183,7 +180,7 @@ const assembly = (tagName) => {
         // }
 
         // console.log('currentTree',currentTree)
-        console.log('attributes', attributes)
+        // console.log('attributes', attributes)
         return node(tagNameStr, count, attributes, childNodes);
     }
 }
@@ -388,52 +385,52 @@ export const vkern = assembly('vkern')
 
 
 // Render API
-export const patch = init([
-    classModule,
-    props,
-    attributes,
-    heroModule,
-    styleModule,
-    datasetModule,
-    eventListenersModule
-]);
+// export const patch = init([
+//     classModule,
+//     props,
+//     attributes,
+//     heroModule,
+//     styleModule,
+//     datasetModule,
+//     eventListenersModule
+// ]);
 
-const renderPartial = () => {
-    let previousVNode;
-    let DOMContainer;
-    let selectorString;
-    let documentRef = document;
-    /**
-     * @param {string | HTMLElement} selector - Root HTML element 
-     * @param {Object} newVNode - New virtual node
-     * @param {Boolean} cache - Cache element, defaults to true.
-     */
-    return (selector, newVNode, cache) => {
-        // Set HTML element.
-        if (isString(selector)) {
-            if (selector !== selectorString && !cache) {
-                DOMContainer = documentRef.querySelector(selector);
-                selectorString = selector;
-            }
-        } else if (isElement(selector) && !cache) {
-            if (selector !== selectorString) {
-                DOMContainer = selector;
-            }
-        }
+// const renderPartial = () => {
+//     let previousVNode;
+//     let DOMContainer;
+//     let selectorString;
+//     let documentRef = document;
+//     /**
+//      * @param {string | HTMLElement} selector - Root HTML element 
+//      * @param {Object} newVNode - New virtual node
+//      * @param {Boolean} cache - Cache element, defaults to true.
+//      */
+//     return (selector, newVNode, cache) => {
+//         // Set HTML element.
+//         if (isString(selector)) {
+//             if (selector !== selectorString && !cache) {
+//                 DOMContainer = documentRef.querySelector(selector);
+//                 selectorString = selector;
+//             }
+//         } else if (isElement(selector) && !cache) {
+//             if (selector !== selectorString) {
+//                 DOMContainer = selector;
+//             }
+//         }
 
 
-        // Diff and patch the DOM. 
-        if (!previousVNode) {
-            patch(DOMContainer, newVNode);
-        }
-        if (previousVNode && previousVNode !== newVNode) {
-            patch(previousVNode, newVNode);
-        }
-        previousVNode = newVNode;
-    }
-}
+//         // Diff and patch the DOM. 
+//         if (!previousVNode) {
+//             patch(DOMContainer, newVNode);
+//         }
+//         if (previousVNode && previousVNode !== newVNode) {
+//             patch(previousVNode, newVNode);
+//         }
+//         previousVNode = newVNode;
+//     }
+// }
 
-export const render = renderPartial();
+// export const render = renderPartial();
 
 
 // const someUI = div({ class: 'side-bar', id: 'someId' }, [
@@ -447,42 +444,150 @@ export const render = renderPartial();
 const twitterHref = 'http://google.com';
 const facebookHref = 'http://facebook.com';
 const someUI = [
-        div({ id: 'block-social-responsive', class: 'footer__social' },
-            ul({ class: 'menu' },
-                li({ class: 'menu-item' },
-                    a({ href: twitterHref, class: 'icon-twitter', target: '_blank'},
-                        'TWITTER'
-                    )
-                ),
-                li({ class: 'menu-item' },
-                    a({ href: facebookHref, class: 'icon-fb', target: '_blank' },
-                        'FACEBOOK'
-                    )
-                ),
-                // Without variables...
-                li({ class: 'menu-item' },
-                    a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' },
-                        'Linkedin'
-                    )
-                ),
-                li({ class: 'menu-item' },
-                    a({ href: 'https://www.youtube.com/user/TheLinuxFoundation', class: 'icon-youtube', target: '_blank' },
-                        'Youtube'
-                    )
+    div({ id: 'block-social-responsive', class: 'footer__social' },
+        ul({ class: 'menu' },
+            li({ class: 'menu-item' },
+                a({ href: twitterHref, class: 'icon-twitter', target: '_blank' },
+                    'TWITTER'
+                )
+            ),
+            li({ class: 'menu-item' },
+                a({
+                        href: facebookHref,
+                        class: 'icon-fb',
+                        target: '_blank',
+                        event: ['mouseover', (e) => { console.log('THIS ELEMENT', e.target) }, false],
+                        $: { backgroundColor: 'red', color: 'yellow' },
+                        'd-foijfwoeifjw': 2000000000, 
+                        name: 'jack'
+                    },
+                    'FACEBOOK'
+                )
+            ),
+            // Without variables...
+            li({ class: 'menu-item' },
+                a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' },
+                    'Linkedin'
+                )
+            ),
+            li({ class: 'menu-item' },
+                a({ href: 'https://www.youtube.com/user/TheLinuxFoundation', class: 'icon-youtube', target: '_blank' },
+                    'Youtube'
                 )
             )
         )
-    ];
+    ),
+    section({ id: 'blah', class: 'wefw' }, 'TEST SECTION')
+];
+
+
+const createAndAppendNode = (fragment, node) => {
+
+    // If Text
+    if (node.t === 'TEXT') {
+        const textNode = document.createTextNode(node.val);
+        fragment.appendChild(textNode);
+        return;
+    }
+
+    // If Element
+
+    const element = document.createElement(node.t);
+
+    // Add attributes
+    if (node.at) {
+        const attributes = node.at;
+        const attributeKeys = Object.keys(attributes);
+        const attributesLength = attributeKeys.length;
+
+        for (let i = 0; i < attributesLength; i++) {
+
+            const attributeKey = attributeKeys[i];
+
+            // Standard dataset syntax.
+            if (attributeKey.indexOf('data-') === 0) {
+                const dataKey = attributeKey.replace('data-', '');
+                element.dataset[dataKey] = attributes[attributeKey];
+                continue;
+            }
+            // Shorthand dataset syntax.
+            if (attributeKey.indexOf('d-') === 0) {
+                const dataKey = attributeKey.replace('d-', '');
+                element.dataset[dataKey] = attributes[attributeKey];
+                continue;
+            }
 
 
 
+            switch (attributeKey) {
+                case 'e':
+                    element.addEventListener(...attributes.e);
+                    break;
+                case 'event':
+                    element.addEventListener(...attributes.event);
+                    break;
+                case '$'    :
+                    Object.assign(element.style, attributes.$);
+                    break;
+                case 'style':
+                    Object.assign(element.style, attributes.style);
+                    break;
+                case 'class':
+                    element.className = attributes.class;
+                    break;
+                default:
+                    element[attributeKey] = attributes[attributeKey];
+                    break;
+            }
+        }
+    }
+
+    // Add children
+    fragment.appendChild(element);
+
+    if (Array.isArray(node.ch)) {
+        node.ch.forEach(childNode => {
+            createAndAppendNode(element, childNode)
+        });
+    }
+}
+
+
+const renderPartial = (selector) => {
+    const container = document.querySelector(selector);
+    const fragment = document.createDocumentFragment();
+    return (newNode, cache) => {
+
+        // 1st render.
+        // container
+        if (cache === undefined) {
+            if (Array.isArray(newNode)) {
+                // Group of elements 
+                for (let i = 0; i < newNode.length; i++) {
+                    const currentNewNode = newNode[i]
+                    console.log(currentNewNode)
+
+                    createAndAppendNode(fragment, currentNewNode);
+                }
+
+                console.log('FINISHED', fragment)
+            } else {
+                // Wrapped element
+            }
+            requestAnimationFrame(() => {
+                container.appendChild(fragment)
+            });
+        }
+    }
+}
+
+const render = renderPartial('#root');
 
 
 
+render(someUI);
 
-
-
-console.log(someUI)
+// console.log(someUI)
 // render(
 //     document.getElementById('root'),
 //     someUI
@@ -514,3 +619,15 @@ console.log(someUI)
 // }
 
 // export const modules = $$$store.modules;
+
+
+
+
+
+
+
+
+/*******
+ @ Issue with Array.isArray polyfill, when using event prop.
+
+**/

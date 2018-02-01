@@ -390,7 +390,7 @@ exports.default = exports.thunk;
 //# sourceMappingURL=thunk.js.map
 });
 
-var snabbdom$1 = createCommonjsModule(function (module, exports) {
+var snabbdom = createCommonjsModule(function (module, exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -686,8 +686,6 @@ exports.init = init;
 //# sourceMappingURL=snabbdom.js.map
 });
 
-var snabbdom_3 = snabbdom$1.init;
-
 var _class = createCommonjsModule(function (module, exports) {
 "use strict";
 
@@ -718,8 +716,6 @@ exports.classModule = { create: updateClass, update: updateClass };
 exports.default = exports.classModule;
 //# sourceMappingURL=class.js.map
 });
-
-var _class_1 = _class.classModule;
 
 var dataset = createCommonjsModule(function (module, exports) {
 "use strict";
@@ -760,96 +756,13 @@ exports.default = exports.datasetModule;
 //# sourceMappingURL=dataset.js.map
 });
 
-var dataset_1 = dataset.datasetModule;
-
 var booleanAttrs = ["allowfullscreen", "async", "autofocus", "autoplay", "checked", "compact", "controls", "declare", "default", "defaultchecked", "defaultmuted", "defaultselected", "defer", "disabled", "draggable", "enabled", "formnovalidate", "hidden", "indeterminate", "inert", "ismap", "itemscope", "loop", "multiple", "muted", "nohref", "noresize", "noshade", "novalidate", "nowrap", "open", "pauseonexit", "readonly", "required", "reversed", "scoped", "seamless", "selected", "sortable", "spellcheck", "translate", "truespeed", "typemustmatch", "visible"];
 
-var xlinkNS = 'http://www.w3.org/1999/xlink';
-var xmlNS = 'http://www.w3.org/XML/1998/namespace';
-var colonChar = 58;
-var xChar = 120;
 var booleanAttrsDict = Object.create(null);
 
 for (var i$1 = 0, len = booleanAttrs.length; i$1 < len; i$1++) {
     booleanAttrsDict[booleanAttrs[i$1]] = true;
 }
-
-function updateAttrs(oldVnode, vnode) {
-    var key = void 0;
-    var elm = vnode.elm;
-    var oldAttrs = oldVnode.data.attrs;
-    var attrs = vnode.data.attrs;
-    if (!oldAttrs && !attrs || oldAttrs === attrs) {
-        return;
-    }
-
-    oldAttrs = oldAttrs || {};
-
-    attrs = attrs || {};
-
-    // update modified attributes, add new attributes
-    for (key in attrs) {
-        var cur = attrs[key];
-        var old = oldAttrs[key];
-
-        if (old !== cur) {
-            if (booleanAttrsDict[key]) {
-                if (cur) {
-                    elm.setAttribute(key, '');
-                } else {
-                    elm.removeAttribute(key);
-                }
-            } else {
-                if (key.charCodeAt(0) !== xChar) {
-                    elm.setAttribute(key, cur);
-                } else if (key.charCodeAt(3) === colonChar) {
-                    // Assume xml namespace
-                    elm.setAttributeNS(xmlNS, key, cur);
-                } else if (key.charCodeAt(5) === colonChar) {
-                    // Assume xlink namespace
-                    elm.setAttributeNS(xlinkNS, key, cur);
-                } else {
-                    elm.setAttribute(key, cur);
-                }
-            }
-        }
-    }
-    // remove removed attributes
-    // use `in` operator since the previous `for` iteration uses it (.i.e. add even attributes with undefined value)
-    // the other option is to remove all attributes with value == undefined
-    for (key in oldAttrs) {
-        if (!(key in attrs)) {
-            elm.removeAttribute(key);
-        }
-    }
-}
-var attributes = { create: updateAttrs, update: updateAttrs };
-
-function updateProps(oldVnode, vnode) {
-    var key,
-        cur,
-        old,
-        elm = vnode.elm,
-        oldProps = oldVnode.data.props,
-        props = vnode.data.props;
-    if (!oldProps && !props) return;
-    if (oldProps === props) return;
-    oldProps = oldProps || {};
-    props = props || {};
-    for (key in oldProps) {
-        if (!props[key]) {
-            delete elm[key];
-        }
-    }
-    for (key in props) {
-        cur = props[key];
-        old = oldProps[key];
-        if (old !== cur && (key !== 'value' || elm[key] !== cur)) {
-            elm[key] = cur;
-        }
-    }
-}
-var props = { create: updateProps, update: updateProps };
 
 var hero = createCommonjsModule(function (module, exports) {
 "use strict";
@@ -999,8 +912,6 @@ exports.default = exports.heroModule;
 //# sourceMappingURL=hero.js.map
 });
 
-var hero_1 = hero.heroModule;
-
 var style$1 = createCommonjsModule(function (module, exports) {
 "use strict";
 
@@ -1101,111 +1012,12 @@ exports.default = exports.styleModule;
 //# sourceMappingURL=style.js.map
 });
 
-var style_1 = style$1.styleModule;
-
-function invokeHandler(handler, vnode, event) {
-    if (typeof handler === "function") {
-        // call function handler
-        handler.call(vnode, event, vnode);
-    } else if ((typeof handler === "undefined" ? "undefined" : _typeof(handler)) === "object") {
-        // call handler with arguments
-        if (typeof handler[0] === "function") {
-            // special case for single argument for performance
-            if (handler.length === 2) {
-                handler[0].call(vnode, handler[1], event, vnode);
-            } else {
-                var args = handler.slice(1);
-                args.push(event);
-                args.push(vnode);
-                handler[0].apply(vnode, args);
-            }
-        } else {
-            // call multiple handlers
-            for (var i = 0; i < handler.length; i++) {
-                invokeHandler(handler[i]);
-            }
-        }
-    }
-}
-function handleEvent(event, vnode) {
-    var name = event.type,
-        on = vnode.data.on;
-    // call event handler(s) if exists
-    if (on && on[name]) {
-        invokeHandler(on[name], vnode, event);
-    }
-}
-function createListener() {
-    return function handler(event) {
-        handleEvent(event, handler.vnode);
-    };
-}
-function updateEventListeners(oldVnode, vnode) {
-    var oldOn = oldVnode.data.on,
-        oldListener = oldVnode.listener,
-        oldElm = oldVnode.elm,
-        on = vnode && vnode.data.on,
-        elm = vnode && vnode.elm,
-        name;
-    // optimization for reused immutable handlers
-    if (oldOn === on) {
-        return;
-    }
-    // remove existing listeners which no longer used
-    if (oldOn && oldListener) {
-        // if element changed or deleted we remove all existing listeners unconditionally
-        if (!on) {
-            for (name in oldOn) {
-                // remove listener if element was changed or existing listeners removed
-                oldElm.removeEventListener(name, oldListener, false);
-            }
-        } else {
-            for (name in oldOn) {
-                // remove listener if existing listener removed
-                if (!on[name]) {
-                    oldElm.removeEventListener(name, oldListener, false);
-                }
-            }
-        }
-    }
-    // add new listeners which has not already attached
-    if (on) {
-        // reuse existing listener or create new
-        var listener = vnode.listener = oldVnode.listener || createListener();
-        // update vnode for listener
-        listener.vnode = vnode;
-        // if element changed or added we add all needed listeners unconditionally
-        if (!oldOn) {
-            for (name in on) {
-                // add listener if element was changed or new listeners added
-                elm.addEventListener(name, listener, false);
-            }
-        } else {
-            for (name in on) {
-                // add listener if new listener added
-                if (!oldOn[name]) {
-                    elm.addEventListener(name, listener, false);
-                }
-            }
-        }
-    }
-}
-var eventListenersModule = {
-    create: updateEventListeners,
-    update: updateEventListeners,
-    destroy: updateEventListeners
-};
-
 var isString = function isString(value) {
     return typeof value === 'string';
 };
 var isPrimitive = function isPrimitive(value) {
     return isString(value) || typeof value === 'number';
 };
-var isElement = function isElement(value) {
-    return value instanceof Element;
-};
-
 /** 
  * @param {string} t - Text 
  * @param {Number} id - Identity (Not an attribute)
@@ -1214,25 +1026,25 @@ var isElement = function isElement(value) {
  * @param {Array} ch - Children 
  */
 var node = function node(t, id, at, ch) {
-    if (t === 'primitive') {
-        return {
-            t: '@p',
-            id: id,
-            val: at
-        };
+    switch (t) {
+        case 'primitive':
+            return { t: 'TEXT', id: id, val: at };
+        case 'comment':
+            return { t: 'COM', id: id, val: at };
+        default:
+            return {
+                t: t,
+                id: id,
+                at: at,
+                chx: ch.length,
+                ch: ch
+            };
     }
-
-    return {
-        t: t,
-        id: id,
-        at: at,
-        chx: ch.length,
-        ch: ch
-    };
 };
 
 var count = 0;
 var currentTree = void 0;
+
 var assembly = function assembly(tagName) {
 
     return function inner() {
@@ -1253,7 +1065,7 @@ var assembly = function assembly(tagName) {
         for (i = 0; i < args.length; i++) {
             item = args[i] || {};
             var isItemObject = isPlainObject(item);
-            var isItemVnode = item.hasOwnProperty('<t></t>');
+            var isItemVnode = item.hasOwnProperty('t');
 
             // Check if item is a plane object = attribute.
             if (isItemObject && !isItemVnode) {
@@ -1320,7 +1132,7 @@ var assembly = function assembly(tagName) {
             if (isPrimitive(childNodes[i])) {
                 count++;
                 currentTree = node('primitive', count, childNodes[i]);
-                console.log('currentTree', currentTree);
+                // console.log('currentTree', currentTree)
                 childNodes[i] = currentTree;
             }
         }
@@ -1338,7 +1150,7 @@ var assembly = function assembly(tagName) {
         // }
 
         // console.log('currentTree',currentTree)
-        console.log('attributes', attributes$$1);
+        // console.log('attributes', attributes)
         return node(tagNameStr, count, attributes$$1, childNodes);
     };
 };
@@ -1539,43 +1351,53 @@ var view = assembly('view');
 var vkern = assembly('vkern');
 
 // Render API
-var patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, dataset_1, eventListenersModule]);
+// export const patch = init([
+//     classModule,
+//     props,
+//     attributes,
+//     heroModule,
+//     styleModule,
+//     datasetModule,
+//     eventListenersModule
+// ]);
 
-var renderPartial = function renderPartial() {
-    var previousVNode = void 0;
-    var DOMContainer = void 0;
-    var selectorString = void 0;
-    var documentRef = document;
-    /**
-     * @param {string | HTMLElement} selector - Root HTML element 
-     * @param {Object} newVNode - New virtual node
-     * @param {Boolean} cache - Cache element, defaults to true.
-     */
-    return function (selector, newVNode, cache) {
-        // Set HTML element.
-        if (isString(selector)) {
-            if (selector !== selectorString && !cache) {
-                DOMContainer = documentRef.querySelector(selector);
-                selectorString = selector;
-            }
-        } else if (isElement(selector) && !cache) {
-            if (selector !== selectorString) {
-                DOMContainer = selector;
-            }
-        }
+// const renderPartial = () => {
+//     let previousVNode;
+//     let DOMContainer;
+//     let selectorString;
+//     let documentRef = document;
+//     /**
+//      * @param {string | HTMLElement} selector - Root HTML element 
+//      * @param {Object} newVNode - New virtual node
+//      * @param {Boolean} cache - Cache element, defaults to true.
+//      */
+//     return (selector, newVNode, cache) => {
+//         // Set HTML element.
+//         if (isString(selector)) {
+//             if (selector !== selectorString && !cache) {
+//                 DOMContainer = documentRef.querySelector(selector);
+//                 selectorString = selector;
+//             }
+//         } else if (isElement(selector) && !cache) {
+//             if (selector !== selectorString) {
+//                 DOMContainer = selector;
+//             }
+//         }
 
-        // Diff and patch the DOM. 
-        if (!previousVNode) {
-            patch(DOMContainer, newVNode);
-        }
-        if (previousVNode && previousVNode !== newVNode) {
-            patch(previousVNode, newVNode);
-        }
-        previousVNode = newVNode;
-    };
-};
 
-var render = renderPartial();
+//         // Diff and patch the DOM. 
+//         if (!previousVNode) {
+//             patch(DOMContainer, newVNode);
+//         }
+//         if (previousVNode && previousVNode !== newVNode) {
+//             patch(previousVNode, newVNode);
+//         }
+//         previousVNode = newVNode;
+//     }
+// }
+
+// export const render = renderPartial();
+
 
 // const someUI = div({ class: 'side-bar', id: 'someId' }, [
 //     span({ class: 'wpefow', id: 'red' }, [
@@ -1587,11 +1409,122 @@ var render = renderPartial();
 // ])
 var twitterHref = 'http://google.com';
 var facebookHref = 'http://facebook.com';
-var someUI = [div({ id: 'block-social-responsive', class: 'footer__social' }, ul({ class: 'menu' }, li({ class: 'menu-item' }, a({ href: twitterHref, class: 'icon-twitter', target: '_blank' }, 'TWITTER')), li({ class: 'menu-item' }, a({ href: facebookHref, class: 'icon-fb', target: '_blank' }, 'FACEBOOK')),
+var someUI = [div({ id: 'block-social-responsive', class: 'footer__social' }, ul({ class: 'menu' }, li({ class: 'menu-item' }, a({ href: twitterHref, class: 'icon-twitter', target: '_blank' }, 'TWITTER')), li({ class: 'menu-item' }, a({
+    href: facebookHref,
+    class: 'icon-fb',
+    target: '_blank',
+    event: ['mouseover', function (e) {
+        console.log('THIS ELEMENT', e.target);
+    }, false],
+    $: { backgroundColor: 'red', color: 'yellow' },
+    'd-foijfwoeifjw': 2000000000,
+    name: 'jack'
+}, 'FACEBOOK')),
 // Without variables...
-li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin')), li({ class: 'menu-item' }, a({ href: 'https://www.youtube.com/user/TheLinuxFoundation', class: 'icon-youtube', target: '_blank' }, 'Youtube'))))];
+li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin')), li({ class: 'menu-item' }, a({ href: 'https://www.youtube.com/user/TheLinuxFoundation', class: 'icon-youtube', target: '_blank' }, 'Youtube')))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION')];
 
-console.log(someUI);
+var createAndAppendNode = function createAndAppendNode(fragment, node) {
+
+    // If Text
+    if (node.t === 'TEXT') {
+        var textNode = document.createTextNode(node.val);
+        fragment.appendChild(textNode);
+        return;
+    }
+
+    // If Element
+
+    var element = document.createElement(node.t);
+
+    // Add attributes
+    if (node.at) {
+        var _attributes = node.at;
+        var attributeKeys = Object.keys(_attributes);
+        var attributesLength = attributeKeys.length;
+
+        for (var _i = 0; _i < attributesLength; _i++) {
+
+            var attributeKey = attributeKeys[_i];
+
+            // Standard dataset syntax.
+            if (attributeKey.indexOf('data-') === 0) {
+                var dataKey = attributeKey.replace('data-', '');
+                element.dataset[dataKey] = _attributes[attributeKey];
+                continue;
+            }
+            // Shorthand dataset syntax.
+            if (attributeKey.indexOf('d-') === 0) {
+                var _dataKey = attributeKey.replace('d-', '');
+                element.dataset[_dataKey] = _attributes[attributeKey];
+                continue;
+            }
+
+            switch (attributeKey) {
+                case 'e':
+                    element.addEventListener.apply(element, toConsumableArray(_attributes.e));
+                    break;
+                case 'event':
+                    element.addEventListener.apply(element, toConsumableArray(_attributes.event));
+                    break;
+                case '$':
+                    Object.assign(element.style, _attributes.$);
+                    break;
+                case 'style':
+                    Object.assign(element.style, _attributes.style);
+                    break;
+                case 'class':
+                    element.className = _attributes.class;
+                    break;
+                default:
+                    element[attributeKey] = _attributes[attributeKey];
+                    break;
+            }
+        }
+    }
+
+    // Add children
+    fragment.appendChild(element);
+
+    if (Array.isArray(node.ch)) {
+        node.ch.forEach(function (childNode) {
+            createAndAppendNode(element, childNode);
+        });
+    }
+};
+
+var renderPartial = function renderPartial(selector) {
+    var container = document.querySelector(selector);
+    var fragment = document.createDocumentFragment();
+    return function (newNode, cache) {
+
+        // 1st render.
+        // container
+        if (cache === undefined) {
+            if (Array.isArray(newNode)) {
+                // Group of elements 
+                for (var _i2 = 0; _i2 < newNode.length; _i2++) {
+                    var currentNewNode = newNode[_i2];
+                    console.log(currentNewNode);
+
+                    createAndAppendNode(fragment, currentNewNode);
+                }
+
+                console.log('FINISHED', fragment);
+            } else {
+                // Wrapped element
+            }
+            requestAnimationFrame(function () {
+                container.appendChild(fragment);
+            });
+        }
+    };
+};
+
+var render = renderPartial('#root');
+
+render(someUI);
+
+// console.log(someUI)
 // render(
 //     document.getElementById('root'),
 //     someUI
@@ -1621,6 +1554,12 @@ console.log(someUI);
 // }
 
 // export const modules = $$$store.modules;
+
+
+/*******
+ @ Issue with Array.isArray polyfill, when using event prop.
+
+**/
 
 exports.a = a;
 exports.abbr = abbr;
@@ -1813,8 +1752,6 @@ exports.unknown = unknown;
 exports.use = use;
 exports.view = view;
 exports.vkern = vkern;
-exports.patch = patch;
-exports.render = render;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
