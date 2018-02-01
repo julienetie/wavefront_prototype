@@ -1,9 +1,3 @@
-function vnode(sel, data, children, text, elm) {
-    var key = data === undefined ? undefined : data.key;
-    return { sel: sel, data: data, children: children,
-        text: text, elm: elm, key: key };
-}
-
 /**
  * @license
  * lodash (Custom Build) <https://lodash.com/>
@@ -16,7 +10,6 @@ function vnode(sel, data, children, text, elm) {
 // ;(function() {
 
 /** Used as the semantic version number. */
-/** `Object#toString` result references. */
 var objectTag = '[object Object]';
 
 /** Detect free variable `global` from Node.js. */
@@ -28,16 +21,7 @@ var freeSelf = typeof self == 'object' && self && self.Object === Object && self
 /** Used as a reference to the global object. */
 var root = freeGlobal || freeSelf || Function('return this')();
 
-/*--------------------------------------------------------------------------*/
-
-/**
- * Creates a unary function that invokes `func` with its argument transformed.
- *
- * @private
- * @param {Function} func The function to wrap.
- * @param {Function} transform The argument transform.
- * @returns {Function} Returns the new function.
- */
+/** Detect free variable `exports`. */
 function overArg(func, transform) {
   return function (arg) {
     return func(transform(arg));
@@ -69,35 +53,7 @@ var objectToString = objectProto.toString;
 /** Built-in value references. */
 var getPrototype = overArg(Object.getPrototypeOf, Object);
 
-// No operation performed.
-
-
-/*------------------------------------------------------------------------*/
-
-/**
- * Checks if `value` is object-like. A value is object-like if it's not `null`
- * and has a `typeof` result of "object".
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- * @example
- *
- * _.isObjectLike({});
- * // => true
- *
- * _.isObjectLike([1, 2, 3]);
- * // => true
- *
- * _.isObjectLike(_.noop);
- * // => false
- *
- * _.isObjectLike(null);
- * // => false
- */
+/** Used to lookup unminified function names. */
 function isObjectLike(value) {
   return value != null && typeof value == 'object';
 }
@@ -142,6 +98,9 @@ function isPlainObject(value) {
   return typeof Ctor == 'function' && Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString;
 }
 
+/*------------------------------------------------------------------------*/
+
+// Add methods that return unwrapped values in chain sequences.
 
 
 /*--------------------------------------------------------------------------*/
@@ -187,7 +146,7 @@ function vnode(sel, data, children, text, elm) {
 }
 exports.vnode = vnode;
 exports.default = vnode;
-
+//# sourceMappingURL=vnode.js.map
 });
 
 var is = createCommonjsModule(function (module, exports) {
@@ -198,7 +157,7 @@ function primitive(s) {
     return typeof s === 'string' || typeof s === 'number';
 }
 exports.primitive = primitive;
-
+//# sourceMappingURL=is.js.map
 });
 
 var htmldomapi = createCommonjsModule(function (module, exports) {
@@ -267,7 +226,7 @@ exports.htmlDomApi = {
     isComment: isComment,
 };
 exports.default = exports.htmlDomApi;
-
+//# sourceMappingURL=htmldomapi.js.map
 });
 
 var h_1 = createCommonjsModule(function (module, exports) {
@@ -329,7 +288,7 @@ function h(sel, b, c) {
 exports.h = h;
 
 exports.default = h;
-
+//# sourceMappingURL=h.js.map
 });
 
 var thunk = createCommonjsModule(function (module, exports) {
@@ -379,7 +338,7 @@ exports.thunk = function thunk(sel, key, fn, args) {
     });
 };
 exports.default = exports.thunk;
-
+//# sourceMappingURL=thunk.js.map
 });
 
 var snabbdom$1 = createCommonjsModule(function (module, exports) {
@@ -689,7 +648,7 @@ function init(modules, domApi) {
     };
 }
 exports.init = init;
-
+//# sourceMappingURL=snabbdom.js.map
 });
 
 var snabbdom_3 = snabbdom$1.init;
@@ -719,7 +678,7 @@ function updateClass(oldVnode, vnode) {
 }
 exports.classModule = { create: updateClass, update: updateClass };
 exports.default = exports.classModule;
-
+//# sourceMappingURL=class.js.map
 });
 
 var _class_1 = _class.classModule;
@@ -760,7 +719,7 @@ function updateDataset(oldVnode, vnode) {
 }
 exports.datasetModule = { create: updateDataset, update: updateDataset };
 exports.default = exports.datasetModule;
-
+//# sourceMappingURL=dataset.js.map
 });
 
 var dataset_1 = dataset.datasetModule;
@@ -997,7 +956,7 @@ function post() {
 }
 exports.heroModule = { pre: pre, create: create, destroy: destroy, post: post };
 exports.default = exports.heroModule;
-
+//# sourceMappingURL=hero.js.map
 });
 
 var hero_1 = hero.heroModule;
@@ -1088,7 +1047,7 @@ exports.styleModule = {
     remove: applyRemoveStyle
 };
 exports.default = exports.styleModule;
-
+//# sourceMappingURL=style.js.map
 });
 
 var style_1 = style$1.styleModule;
@@ -1190,25 +1149,39 @@ const isString = value => typeof value === 'string';
 const isPrimitive = value => isString(value) || typeof value === 'number';
 const isElement = value => value instanceof Element;
 
-// Internal storage API
-const $$$store = { modules: {} };
-
-function addNS(data, children, sel) {
-    data.ns = 'http://www.w3.org/2000/svg';
-    if (sel !== 'foreignObject' && children !== undefined) {
-        for (var i = 0; i < children.length; ++i) {
-            var childData = children[i].data;
-            if (childData !== undefined) {
-                addNS(childData, children[i].children, children[i].sel);
-            }
-        }
+/** 
+ * @param {string} t - Text 
+ * @param {Number} id - Identity (Not an attribute)
+ * @param {Number} ix - Index 
+ * @param {Object|string} at - Attributes | Primative
+ * @param {Array} ch - Children 
+ */
+const node = (t, id, at, ch) => {
+    if (t === 'primitive') {
+        return {
+            t: '@p',
+            id,
+            val: at
+        };
     }
-}
+
+    return {
+        t,
+        id,
+        at,
+        chx: ch.length,
+        ch
+    };
+};
+
+let count = 0;
+let currentTree;
 const assembly = tagName => {
+
     return function inner(...args) {
-        let sel = `${tagName}`;
+        let tagNameStr = `${tagName}`;
         let selectorName = tagName;
-        let attributes$$1 = { attrs: {}, props: {} };
+        let attributes$$1;
         let item;
         let textNode;
         let childNodes = [];
@@ -1219,52 +1192,53 @@ const assembly = tagName => {
         for (i = 0; i < args.length; i++) {
             item = args[i] || {};
             let isItemObject = isPlainObject(item);
-            let isItemVnode = item.hasOwnProperty('sel');
+            let isItemVnode = item.hasOwnProperty('<t></t>');
 
             // Check if item is a plane object = attribute.
             if (isItemObject && !isItemVnode) {
-                let isSelector = false;
-                const attrKeys = Object.keys(item);
+                // let isSelector = false;
+                attributes$$1 = item;
+                // const attrKeys = Object.keys(item);
 
                 // Create virtual id selector.
-                if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
-                    selectorName += '#' + item.id;
-                    isSelector = true;
-                }
+                // if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
+                //     selectorName += '#' + item.id;
+                //     isSelector = true;
+                // }
                 // Create virtual class selectors.
-                if (item.hasOwnProperty('class') || item.hasOwnProperty('.')) {
-                    selectorName += '.' + item.class;
-                    isSelector = true;
-                }
-
-                attrKeys.forEach(key => {
-                    // If not selector
-                    if (['id', '#', 'class', '.'].indexOf(key) < 0) {
-                        switch (key) {
-                            case 'e':
-                            case 'event':
-                                attributes$$1.on = item[key];
-                                break;
-                            case 'p':
-                            case 'props':
-                                attributes$$1.props = item[key];
-                            case 'h':
-                            case 'hook':
-                                attributes$$1.hook = item[key];
-                                break;
-                            case '$':
-                            case 'style':
-                                attributes$$1.style = item[key];
-                                break;
-                            case 'd':
-                            case 'dataset':
-                                attributes$$1.dataset = item[key];
-                                break;
-                            default:
-                                attributes$$1.attrs[key] = item[key];
-                        }
-                    }
-                });
+                // if (item.hasOwnProperty('class') || item.hasOwnProperty('.')) {
+                //     selectorName += '.' + item.class;
+                //     isSelector = true;
+                // }
+                // console.log('attrKeys', attrKeys)
+                // attrKeys.forEach((key) => {
+                //     // If not selector
+                //     if (['id', '#', 'class', '.'].indexOf(key) < 0) {
+                //         switch (key) {
+                //             case 'e':
+                //             case 'event':
+                //                 attributes.on = item[key];
+                //                 break;
+                //             case 'p':
+                //             case 'props':
+                //                 attributes.props = item[key];
+                //             case 'h':
+                //             case 'hook':
+                //                 attributes.hook = item[key];
+                //                 break;
+                //             case '$':
+                //             case 'style':
+                //                 attributes.style = item[key];
+                //                 break;
+                //             case 'd':
+                //             case 'dataset':
+                //                 attributes.dataset = item[key];
+                //                 break;
+                //             default:
+                //                 attributes.attrs[key] = item[key];
+                //         }
+                //     }
+                // });
                 continue;
             }
 
@@ -1283,15 +1257,28 @@ const assembly = tagName => {
 
         for (i = 0; i < childNodes.length; ++i) {
             if (isPrimitive(childNodes[i])) {
-                childNodes[i] = vnode(undefined, undefined, undefined, childNodes[i]);
+                count++;
+                currentTree = node('primitive', count, childNodes[i]);
+                console.log('currentTree', currentTree);
+                childNodes[i] = currentTree;
             }
         }
 
-        if (selectorName[0] === 's' && selectorName[1] === 'v' && selectorName[2] === 'g' && (selectorName.length === 3 || selectorName[3] === '.' || selectorName[3] === '#')) {
-            addNS(attributes$$1, childNodes, selectorName);
+        count++;
+        // Update child nodes with parentId
+        for (i = 0; i < childNodes.length; ++i) {
+            childNodes[i].pid = count;
+            childNodes[i].ix = i;
         }
 
-        return vnode(selectorName, attributes$$1, childNodes, text, undefined);
+        // if (selectorName[0] === 's' && selectorName[1] === 'v' && selectorName[2] === 'g' &&
+        //     (selectorName.length === 3 || selectorName[3] === '.' || selectorName[3] === '#')) {
+        //     addNS(attributes, childNodes, selectorName);
+        // }
+
+        // console.log('currentTree',currentTree)
+        console.log('attributes', attributes$$1);
+        return node(tagNameStr, count, attributes$$1, childNodes);
     };
 };
 
@@ -1489,15 +1476,6 @@ const unknown = assembly('unknown');
 const use = assembly('use');
 const view = assembly('view');
 const vkern = assembly('vkern');
-// a in HTML
-// audio in HTML
-// canvas in HTML
-// iframe in HTML
-// video in HTML
-// script in HTML
-// style in HTML
-// svg in HTML
-// title in HTML
 
 // Render API
 const patch = snabbdom_3([_class_1, props, attributes, hero_1, style_1, dataset_1, eventListenersModule]);
@@ -1538,26 +1516,50 @@ const renderPartial = () => {
 
 const render = renderPartial();
 
-/**
- * A simple plugin integration system.
- * {
- *      dependencies:[api, api, api],
- *      waveModules: [wModule, wModule, wModule]
- * }
- *
- */
+// const someUI = div({ class: 'side-bar', id: 'someId' }, [
+//     span({ class: 'wpefow', id: 'red' }, [
+//         'Dig vbar wefwef'
+//     ]),
+//     a({ class: 'wpefow', id: 'yellow' }, [
+//         23984729
+//     ]),
+// ])
+const twitterHref = 'http://google.com';
+const facebookHref = 'http://facebook.com';
+const someUI = [div({ id: 'block-social-responsive', class: 'footer__social' }, ul({ class: 'menu' }, li({ class: 'menu-item' }, a({ href: twitterHref, class: 'icon-twitter', target: '_blank' }, 'TWITTER')), li({ class: 'menu-item' }, a({ href: facebookHref, class: 'icon-fb', target: '_blank' }, 'FACEBOOK')),
+// Without variables...
+li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin')), li({ class: 'menu-item' }, a({ href: 'https://www.youtube.com/user/TheLinuxFoundation', class: 'icon-youtube', target: '_blank' }, 'Youtube'))))];
 
-const registerModules = plugins => {
-    // Register dependencies 
-    $$$store.dependencies = plugins.dependencies;
-    // Register waveModules
-    $$$store.waveModules = plugins.waveModules;
-    // Check dependenicies exist for waveModules
-    $$$store.waveModules.forEach((waveObject, i) => $$$store.modules[$$$store.waveModules[i].name] = (...args) => waveObject(...args).plugin($$$store, waveObject().dependencies));
-    // return $$$store.modules;
-};
+console.log(someUI);
+// render(
+//     document.getElementById('root'),
+//     someUI
+//     )
 
-const modules = $$$store.modules;
 
-export { a, abbr, address, area, article, aside, audio, childNodes, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, Var, video, altGlyph, altGlyphDef, altGlyphItem, animate, animateColor, animateMotion, animateTransform, animation, circle, clipPath, colorProfile, cursor, defs, desc, discard, ellipse, feBlend, feColorMatrix, feComponentTransfer, feComposite, feConvolveMatrix, feDiffuseLighting, feDisplacementMap, feDistantLight, feDropShadow, feFlood, feFuncA, feFuncB, feFuncG, feFuncR, feGaussianBlur, feImage, feMerge, feMergeNode, feMorphology, feOffset, fePointLight, feSpecularLighting, feSpotLight, feTile, feTurbulence, filter, font, fontFace, fontFaceFormat, fontFaceName, fontFaceSrc, fontFaceUri, foreignObject, g, glyph, glyphRef, handler, hatch, hatchpath, hkern, image, line, linearGradient, listener, marker, mask, mesh, meshgradient, meshpatch, meshrow, metadata, missingGlyph, mpath, path, pattern, polygon, polyline, prefetch, radialGradient, rect, set, solidColor, solidcolor, stop, Switch, symbol, tbreak, text, textArea, textPath, tref, tspan, unknown, use, view, vkern, patch, render, registerModules, modules };
+// /**
+//  * A simple plugin integration system.
+//  * {
+//  *      dependencies:[api, api, api],
+//  *      waveModules: [wModule, wModule, wModule]
+//  * }
+//  *
+//  */
+
+// export const registerModules = (plugins) => {
+//     // Register dependencies 
+//     $$$store.dependencies = plugins.dependencies
+//         // Register waveModules
+//     $$$store.waveModules = plugins.waveModules
+//         // Check dependenicies exist for waveModules
+//     $$$store.waveModules.forEach((waveObject, i) =>
+//         $$$store.modules[$$$store.waveModules[i].name] = (...args) =>
+//         waveObject(...args).plugin($$$store, waveObject().dependencies)
+//     );
+//     // return $$$store.modules;
+// }
+
+// export const modules = $$$store.modules;
+
+export { a, abbr, address, area, article, aside, audio, childNodes, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, Var, video, altGlyph, altGlyphDef, altGlyphItem, animate, animateColor, animateMotion, animateTransform, animation, circle, clipPath, colorProfile, cursor, defs, desc, discard, ellipse, feBlend, feColorMatrix, feComponentTransfer, feComposite, feConvolveMatrix, feDiffuseLighting, feDisplacementMap, feDistantLight, feDropShadow, feFlood, feFuncA, feFuncB, feFuncG, feFuncR, feGaussianBlur, feImage, feMerge, feMergeNode, feMorphology, feOffset, fePointLight, feSpecularLighting, feSpotLight, feTile, feTurbulence, filter, font, fontFace, fontFaceFormat, fontFaceName, fontFaceSrc, fontFaceUri, foreignObject, g, glyph, glyphRef, handler, hatch, hatchpath, hkern, image, line, linearGradient, listener, marker, mask, mesh, meshgradient, meshpatch, meshrow, metadata, missingGlyph, mpath, path, pattern, polygon, polyline, prefetch, radialGradient, rect, set, solidColor, solidcolor, stop, Switch, symbol, tbreak, text, textArea, textPath, tref, tspan, unknown, use, view, vkern, patch, render };
 //# sourceMappingURL=wavefront.es.js.map

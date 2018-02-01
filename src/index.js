@@ -33,11 +33,58 @@ function addNS(data, children, sel) {
 
 const attributeHas = (key, prop) => prop.some(attribute => key.indexOf(attributeHas) >= 0);
 
+
+// "use strict";
+
+// function vnode(sel, data, children, text, elm) {
+//     var key = data === undefined ? undefined : data.key;
+//     return {
+//         sel: sel,
+//         data: data,
+//         children: children,
+//         text: text,
+//         elm: elm,
+//         key: key
+//     };
+// }
+// export default vnode;
+
+node('primitive', count, id, childNodes[i]);
+/** 
+ * @param {string} t - Text 
+ * @param {Number} id - Identity (Not an attribute)
+ * @param {Number} ix - Index 
+ * @param {Object|string} at - Attributes | Primative
+ * @param {Array} ch - Children 
+ */
+const node = (t, id, at, ch) => {
+    if (t === 'primitive') {
+        return {
+            t: '@p',
+            id,
+            val: at
+        }
+    }
+
+
+    return {
+        t,
+        id,
+        at,
+        chx: ch.length,
+        ch,
+    }
+
+}
+
+let count = 0;
+let currentTree;
 const assembly = (tagName) => {
+
     return function inner(...args) {
-        let sel = `${tagName}`;
+        let tagNameStr = `${tagName}`;
         let selectorName = tagName;
-        let attributes = { attrs: {}, props: {} };
+        let attributes;
         let item;
         let textNode;
         let childNodes = [];
@@ -49,52 +96,53 @@ const assembly = (tagName) => {
         for (i = 0; i < args.length; i++) {
             item = args[i] || {};
             let isItemObject = isPlaneObject(item);
-            let isItemVnode = item.hasOwnProperty('sel');
+            let isItemVnode = item.hasOwnProperty('<t></t>');
 
             // Check if item is a plane object = attribute.
             if (isItemObject && !isItemVnode) {
-                let isSelector = false;
-                const attrKeys = Object.keys(item);
+                // let isSelector = false;
+                attributes = item;
+                // const attrKeys = Object.keys(item);
 
                 // Create virtual id selector.
-                if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
-                    selectorName += '#' + item.id;
-                    isSelector = true;
-                }
+                // if (item.hasOwnProperty('id') || item.hasOwnProperty('#')) {
+                //     selectorName += '#' + item.id;
+                //     isSelector = true;
+                // }
                 // Create virtual class selectors.
-                if (item.hasOwnProperty('class') || item.hasOwnProperty('.')) {
-                    selectorName += '.' + item.class;
-                    isSelector = true;
-                }
-
-                attrKeys.forEach((key) => {
-                    // If not selector
-                    if (['id', '#', 'class', '.'].indexOf(key) < 0) {
-                        switch (key) {
-                            case 'e':
-                            case 'event':
-                                attributes.on = item[key];
-                                break;
-                            case 'p':
-                            case 'props':
-                                attributes.props = item[key];
-                            case 'h':
-                            case 'hook':
-                                attributes.hook = item[key];
-                                break;
-                            case '$':
-                            case 'style':
-                                attributes.style = item[key];
-                                break;
-                            case 'd':
-                            case 'dataset':
-                                attributes.dataset = item[key];
-                                break;
-                            default:
-                                attributes.attrs[key] = item[key];
-                        }
-                    }
-                });
+                // if (item.hasOwnProperty('class') || item.hasOwnProperty('.')) {
+                //     selectorName += '.' + item.class;
+                //     isSelector = true;
+                // }
+                // console.log('attrKeys', attrKeys)
+                // attrKeys.forEach((key) => {
+                //     // If not selector
+                //     if (['id', '#', 'class', '.'].indexOf(key) < 0) {
+                //         switch (key) {
+                //             case 'e':
+                //             case 'event':
+                //                 attributes.on = item[key];
+                //                 break;
+                //             case 'p':
+                //             case 'props':
+                //                 attributes.props = item[key];
+                //             case 'h':
+                //             case 'hook':
+                //                 attributes.hook = item[key];
+                //                 break;
+                //             case '$':
+                //             case 'style':
+                //                 attributes.style = item[key];
+                //                 break;
+                //             case 'd':
+                //             case 'dataset':
+                //                 attributes.dataset = item[key];
+                //                 break;
+                //             default:
+                //                 attributes.attrs[key] = item[key];
+                //         }
+                //     }
+                // });
                 continue;
             }
 
@@ -111,20 +159,35 @@ const assembly = (tagName) => {
             }
         }
 
+
+
         for (i = 0; i < childNodes.length; ++i) {
             if (isPrimitive(childNodes[i])) {
-                childNodes[i] = vnode(undefined, undefined, undefined, childNodes[i]);
+                count++;
+                currentTree = node('primitive', count, childNodes[i]);
+                console.log('currentTree', currentTree)
+                childNodes[i] = currentTree
             }
         }
 
-        if (selectorName[0] === 's' && selectorName[1] === 'v' && selectorName[2] === 'g' &&
-            (selectorName.length === 3 || selectorName[3] === '.' || selectorName[3] === '#')) {
-            addNS(attributes, childNodes, selectorName);
+        count++;
+        // Update child nodes with parentId
+        for (i = 0; i < childNodes.length; ++i) {
+            childNodes[i].pid = count;
+            childNodes[i].ix = i;
         }
 
-        return vnode(selectorName, attributes, childNodes, text, undefined);
+        // if (selectorName[0] === 's' && selectorName[1] === 'v' && selectorName[2] === 'g' &&
+        //     (selectorName.length === 3 || selectorName[3] === '.' || selectorName[3] === '#')) {
+        //     addNS(attributes, childNodes, selectorName);
+        // }
+
+        // console.log('currentTree',currentTree)
+        console.log('attributes', attributes)
+        return node(tagNameStr, count, attributes, childNodes);
     }
 }
+
 
 
 
@@ -372,26 +435,82 @@ const renderPartial = () => {
 
 export const render = renderPartial();
 
-/**
- * A simple plugin integration system.
- * {
- *      dependencies:[api, api, api],
- *      waveModules: [wModule, wModule, wModule]
- * }
- *
- */
 
-export const registerModules = (plugins) => {
-    // Register dependencies 
-    $$$store.dependencies = plugins.dependencies
-        // Register waveModules
-    $$$store.waveModules = plugins.waveModules
-        // Check dependenicies exist for waveModules
-    $$$store.waveModules.forEach((waveObject, i) =>
-        $$$store.modules[$$$store.waveModules[i].name] = (...args) =>
-        waveObject(...args).plugin($$$store, waveObject().dependencies)
-    );
-    // return $$$store.modules;
-}
+// const someUI = div({ class: 'side-bar', id: 'someId' }, [
+//     span({ class: 'wpefow', id: 'red' }, [
+//         'Dig vbar wefwef'
+//     ]),
+//     a({ class: 'wpefow', id: 'yellow' }, [
+//         23984729
+//     ]),
+// ])
+const twitterHref = 'http://google.com';
+const facebookHref = 'http://facebook.com';
+const someUI = [
+        div({ id: 'block-social-responsive', class: 'footer__social' },
+            ul({ class: 'menu' },
+                li({ class: 'menu-item' },
+                    a({ href: twitterHref, class: 'icon-twitter', target: '_blank'},
+                        'TWITTER'
+                    )
+                ),
+                li({ class: 'menu-item' },
+                    a({ href: facebookHref, class: 'icon-fb', target: '_blank' },
+                        'FACEBOOK'
+                    )
+                ),
+                // Without variables...
+                li({ class: 'menu-item' },
+                    a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' },
+                        'Linkedin'
+                    )
+                ),
+                li({ class: 'menu-item' },
+                    a({ href: 'https://www.youtube.com/user/TheLinuxFoundation', class: 'icon-youtube', target: '_blank' },
+                        'Youtube'
+                    )
+                )
+            )
+        )
+    ];
 
-export const modules = $$$store.modules;
+
+
+
+
+
+
+
+
+console.log(someUI)
+// render(
+//     document.getElementById('root'),
+//     someUI
+//     )
+
+
+
+
+// /**
+//  * A simple plugin integration system.
+//  * {
+//  *      dependencies:[api, api, api],
+//  *      waveModules: [wModule, wModule, wModule]
+//  * }
+//  *
+//  */
+
+// export const registerModules = (plugins) => {
+//     // Register dependencies 
+//     $$$store.dependencies = plugins.dependencies
+//         // Register waveModules
+//     $$$store.waveModules = plugins.waveModules
+//         // Check dependenicies exist for waveModules
+//     $$$store.waveModules.forEach((waveObject, i) =>
+//         $$$store.modules[$$$store.waveModules[i].name] = (...args) =>
+//         waveObject(...args).plugin($$$store, waveObject().dependencies)
+//     );
+//     // return $$$store.modules;
+// }
+
+// export const modules = $$$store.modules;
