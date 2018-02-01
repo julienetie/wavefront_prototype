@@ -1060,14 +1060,21 @@ var isPrimitive = function isPrimitive(value) {
  * @param {Object|string} at - Attributes | Primative
  * @param {Array} ch - Children 
  */
-var node = function node(t, id, at, ch) {
+var node = function node(t, id, at, ch, isSVG) {
     switch (t) {
         case 'primitive':
             return { t: 'TEXT', id: id, val: at };
         case 'comment':
             return { t: 'COM', id: id, val: at };
         default:
-            return {
+            return isSVG ? {
+                t: t,
+                id: id,
+                at: at,
+                chx: ch.length,
+                ch: ch,
+                svg: true
+            } : {
                 t: t,
                 id: id,
                 at: at,
@@ -1090,7 +1097,7 @@ var currentTree = void 0;
 
 
 **/
-var assembly = function assembly(tagName) {
+var assembly = function assembly(tagName, isSVG) {
 
     return function inner() {
         var tagNameStr = '' + tagName;
@@ -1176,7 +1183,7 @@ var assembly = function assembly(tagName) {
         for (i = 0; i < childNodes.length; ++i) {
             if (isPrimitive(childNodes[i])) {
                 count++;
-                currentTree = node('primitive', count, childNodes[i]);
+                currentTree = node('primitive', count, childNodes[i], null, isSVG);
                 // console.log('currentTree', currentTree)
                 childNodes[i] = currentTree;
             }
@@ -1196,7 +1203,7 @@ var assembly = function assembly(tagName) {
 
         // console.log('currentTree',currentTree)
         // console.log('attributes', attributes)
-        return node(tagNameStr, count, attributes$$1, childNodes);
+        return node(tagNameStr, count, attributes$$1, childNodes, isSVG);
     };
 };
 
@@ -1302,98 +1309,99 @@ var Var = assembly('var'); // First capital
 var video = assembly('video');
 
 // SVG Elements.
-var altGlyph = assembly('altGlyph');
-var altGlyphDef = assembly('altGlyphDef');
-var altGlyphItem = assembly('altGlyphItem');
+var svg = assembly('svg', true);
+var altGlyph = assembly('altGlyph', true);
+var altGlyphDef = assembly('altGlyphDef', true);
+var altGlyphItem = assembly('altGlyphItem', true);
 var animate = assembly('animate');
-var animateColor = assembly('animateColor');
-var animateMotion = assembly('animateMotion');
-var animateTransform = assembly('animateTransform');
-var animation = assembly('animation');
-var circle = assembly('circle');
-var clipPath = assembly('clipPath');
-var colorProfile = assembly('color-profile'); // color-profile
-var cursor = assembly('cursor');
-var defs = assembly('defs');
-var desc = assembly('desc');
-var discard = assembly('discard');
-var ellipse = assembly('ellipse');
-var feBlend = assembly('feBlend');
-var feColorMatrix = assembly('feComposite');
-var feComponentTransfer = assembly('feComponentTransfer');
-var feComposite = assembly('feComposite');
-var feConvolveMatrix = assembly('feConvolveMatrix');
-var feDiffuseLighting = assembly('feDiffuseLighting');
-var feDisplacementMap = assembly('feDistantLight');
-var feDistantLight = assembly('feDistantLight');
-var feDropShadow = assembly('feDropShadow');
-var feFlood = assembly('feFlood');
-var feFuncA = assembly('feFuncA');
-var feFuncB = assembly('feFuncB');
-var feFuncG = assembly('feFuncG');
-var feFuncR = assembly('feFuncR');
-var feGaussianBlur = assembly('feGaussianBlur');
-var feImage = assembly('feImage');
-var feMerge = assembly('feMerge');
-var feMergeNode = assembly('feMergeNode');
-var feMorphology = assembly('feMorphology');
-var feOffset = assembly('feOffset');
-var fePointLight = assembly('fePointLight');
-var feSpecularLighting = assembly('feSpecularLighting');
-var feSpotLight = assembly('feSpotLight');
-var feTile = assembly('feTile');
-var feTurbulence = assembly('feTurbulence');
-var filter = assembly('filter');
-var font = assembly('font');
-var fontFace = assembly('font-face'); // fontFace
-var fontFaceFormat = assembly('font-face-format'); // fontFaceFormat
-var fontFaceName = assembly('font-face-name'); // fontFaceName
-var fontFaceSrc = assembly('font-face-src'); // fontFaceSrc
-var fontFaceUri = assembly('font-face-uri'); // fontFaceUri
-var foreignObject = assembly('foreignObject');
-var g = assembly('g');
-var glyph = assembly('glyph');
-var glyphRef = assembly('glyphRef');
-var handler = assembly('handler');
-var hatch = assembly('hatch');
-var hatchpath = assembly('hatchpath');
-var hkern = assembly('hkern');
-var image = assembly('image');
-var line = assembly('line');
-var linearGradient = assembly('linearGradient');
+var animateColor = assembly('animateColor', true);
+var animateMotion = assembly('animateMotion', true);
+var animateTransform = assembly('animateTransform', true);
+var animation = assembly('animation', true);
+var circle = assembly('circle', true);
+var clipPath = assembly('clipPath', true);
+var colorProfile = assembly('color-profile', true); // color-profile
+var cursor = assembly('cursor', true);
+var defs = assembly('defs', true);
+var desc = assembly('desc', true);
+var discard = assembly('discard', true);
+var ellipse = assembly('ellipse', true);
+var feBlend = assembly('feBlend', true);
+var feColorMatrix = assembly('feComposite', true);
+var feComponentTransfer = assembly('feComponentTransfer', true);
+var feComposite = assembly('feComposite', true);
+var feConvolveMatrix = assembly('feConvolveMatrix', true);
+var feDiffuseLighting = assembly('feDiffuseLighting', true);
+var feDisplacementMap = assembly('feDistantLight', true);
+var feDistantLight = assembly('feDistantLight', true);
+var feDropShadow = assembly('feDropShadow', true);
+var feFlood = assembly('feFlood', true);
+var feFuncA = assembly('feFuncA', true);
+var feFuncB = assembly('feFuncB', true);
+var feFuncG = assembly('feFuncG', true);
+var feFuncR = assembly('feFuncR', true);
+var feGaussianBlur = assembly('feGaussianBlur', true);
+var feImage = assembly('feImage', true);
+var feMerge = assembly('feMerge', true);
+var feMergeNode = assembly('feMergeNode', true);
+var feMorphology = assembly('feMorphology', true);
+var feOffset = assembly('feOffset', true);
+var fePointLight = assembly('fePointLight', true);
+var feSpecularLighting = assembly('feSpecularLighting', true);
+var feSpotLight = assembly('feSpotLight', true);
+var feTile = assembly('feTile', true);
+var feTurbulence = assembly('feTurbulence', true);
+var filter = assembly('filter', true);
+var font = assembly('font', true);
+var fontFace = assembly('font-face', true); // fontFace
+var fontFaceFormat = assembly('font-face-format', true); // fontFaceFormat
+var fontFaceName = assembly('font-face-name', true); // fontFaceName
+var fontFaceSrc = assembly('font-face-src', true); // fontFaceSrc
+var fontFaceUri = assembly('font-face-uri', true); // fontFaceUri
+var foreignObject = assembly('foreignObject', true);
+var g = assembly('g', true);
+var glyph = assembly('glyph', true);
+var glyphRef = assembly('glyphRef', true);
+var handler = assembly('handler', true);
+var hatch = assembly('hatch', true);
+var hatchpath = assembly('hatchpath', true);
+var hkern = assembly('hkern', true);
+var image = assembly('image', true);
+var line = assembly('line', true);
+var linearGradient = assembly('linearGradient', true);
 var listener = assembly('listener');
-var marker = assembly('marker');
-var mask = assembly('mask');
-var mesh = assembly('mesh');
-var meshgradient = assembly('meshgradient');
-var meshpatch = assembly('meshpatch');
-var meshrow = assembly('meshrow');
-var metadata = assembly('metadata');
-var missingGlyph = assembly('missing-glyph'); // missing-glyph
-var mpath = assembly('mpath');
-var path = assembly('path');
-var pattern = assembly('pattern');
-var polygon = assembly('polygon');
-var polyline = assembly('polyline');
-var prefetch = assembly('prefetch');
-var radialGradient = assembly('radialGradient');
-var rect = assembly('rect');
-var set$$1 = assembly('set');
-var solidColor = assembly('solidColor');
-var solidcolor = assembly('solidcolor');
-var stop = assembly('stop');
-var Switch = assembly('switch'); // First capital
-var symbol = assembly('symbol');
-var tbreak = assembly('tbreak');
-var text = assembly('text');
-var textArea = assembly('textArea');
-var textPath = assembly('textPath');
-var tref = assembly('tref');
-var tspan = assembly('tspan');
-var unknown = assembly('unknown');
-var use = assembly('use');
-var view = assembly('view');
-var vkern = assembly('vkern');
+var marker = assembly('marker', true);
+var mask = assembly('mask', true);
+var mesh = assembly('mesh', true);
+var meshgradient = assembly('meshgradient', true);
+var meshpatch = assembly('meshpatch', true);
+var meshrow = assembly('meshrow', true);
+var metadata = assembly('metadata', true);
+var missingGlyph = assembly('missing-glyph', true); // missing-glyph
+var mpath = assembly('mpath', true);
+var path = assembly('path', true);
+var pattern = assembly('pattern', true);
+var polygon = assembly('polygon', true);
+var polyline = assembly('polyline', true);
+var prefetch = assembly('prefetch', true);
+var radialGradient = assembly('radialGradient', true);
+var rect = assembly('rect', true);
+var set$$1 = assembly('set', true);
+var solidColor = assembly('solidColor', true);
+var solidcolor = assembly('solidcolor', true);
+var Stop = assembly('stop', true); // First capital
+var Switch = assembly('switch', true); // First capital
+var symbol = assembly('symbol', true);
+var tbreak = assembly('tbreak', true);
+var text = assembly('text', true);
+var textArea = assembly('textArea', true);
+var textPath = assembly('textPath', true);
+var tref = assembly('tref', true);
+var tspan = assembly('tspan', true);
+var unknown = assembly('unknown', true);
+var use = assembly('use', true);
+var view = assembly('view', true);
+var vkern = assembly('vkern', true);
 
 // Render API
 // export const patch = init([
@@ -1492,7 +1500,7 @@ var someUI = [div({ id: 'block-social-responsive', class: 'footer__social' }, ul
     name: 'jack'
 }, 'FACEBOOK')),
 // Without variables...
-li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin')))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'), tbody({ id: 'tbody' }, thing)];
+li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin')))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'), svg({ height: 150, width: 400 }, defs(linearGradient({ id: 'grad1', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, Stop({ offset: '0%', style: { 'stop-color': 'rgb(255,0,0)', 'stop-opacity': 1 } }), Stop({ offset: '100%', style: { 'stop-color': 'rgb(255,255,0)', 'stop-opacity': 1 } }))), ellipse({ cx: 200, cy: 70, rx: 85, ry: 55, fill: 'url(#grad1)' }), 'Sorry, your browser does not support inline SVG.'), tbody({ id: 'tbody' }, thing)];
 
 var createAndAppendNode = function createAndAppendNode(fragment, node) {
 
@@ -1504,8 +1512,7 @@ var createAndAppendNode = function createAndAppendNode(fragment, node) {
     }
 
     // If Element
-
-    var element = document.createElement(node.t);
+    var element = node.svg ? document.createElementNS('http://www.w3.org/2000/svg', node.t) : document.createElement(node.t);
 
     // Add attributes
     if (node.at) {
@@ -1747,6 +1754,7 @@ exports.tr = tr;
 exports.ul = ul;
 exports.Var = Var;
 exports.video = video;
+exports.svg = svg;
 exports.altGlyph = altGlyph;
 exports.altGlyphDef = altGlyphDef;
 exports.altGlyphItem = altGlyphItem;
@@ -1826,7 +1834,7 @@ exports.rect = rect;
 exports.set = set$$1;
 exports.solidColor = solidColor;
 exports.solidcolor = solidcolor;
-exports.stop = stop;
+exports.Stop = Stop;
 exports.Switch = Switch;
 exports.symbol = symbol;
 exports.tbreak = tbreak;

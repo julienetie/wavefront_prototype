@@ -94,19 +94,26 @@ node('primitive', count, id, childNodes[i]);
  * @param {Object|string} at - Attributes | Primative
  * @param {Array} ch - Children 
  */
-const node = (t, id, at, ch) => {
+const node = (t, id, at, ch, isSVG) => {
     switch (t) {
         case 'primitive':
             return { t: 'TEXT', id, val: at };
         case 'comment':
             return { t: 'COM', id, val: at };
         default:
-            return {
+            return isSVG ? {
                 t,
                 id,
                 at,
                 chx: ch.length,
                 ch,
+                svg: true
+            } : {
+                t,
+                id,
+                at,
+                chx: ch.length,
+                ch
             };
     }
 }
@@ -124,7 +131,7 @@ let currentTree;
 
 
 **/
-const assembly = (tagName) => {
+const assembly = (tagName, isSVG) => {
 
     return function inner(...args) {
         let tagNameStr = `${tagName}`;
@@ -208,7 +215,7 @@ const assembly = (tagName) => {
         for (i = 0; i < childNodes.length; ++i) {
             if (isPrimitive(childNodes[i])) {
                 count++;
-                currentTree = node('primitive', count, childNodes[i]);
+                currentTree = node('primitive', count, childNodes[i], null, isSVG);
                 // console.log('currentTree', currentTree)
                 childNodes[i] = currentTree
             }
@@ -228,7 +235,7 @@ const assembly = (tagName) => {
 
         // console.log('currentTree',currentTree)
         // console.log('attributes', attributes)
-        return node(tagNameStr, count, attributes, childNodes);
+        return node(tagNameStr, count, attributes, childNodes, isSVG);
     }
 }
 
@@ -337,98 +344,99 @@ export const Var = assembly('var'); // First capital
 export const video = assembly('video');
 
 // SVG Elements.
-export const altGlyph = assembly('altGlyph');
-export const altGlyphDef = assembly('altGlyphDef');
-export const altGlyphItem = assembly('altGlyphItem');
+export const svg = assembly('svg', true);
+export const altGlyph = assembly('altGlyph', true);
+export const altGlyphDef = assembly('altGlyphDef', true);
+export const altGlyphItem = assembly('altGlyphItem', true);
 export const animate = assembly('animate');
-export const animateColor = assembly('animateColor');
-export const animateMotion = assembly('animateMotion');
-export const animateTransform = assembly('animateTransform');
-export const animation = assembly('animation');
-export const circle = assembly('circle');
-export const clipPath = assembly('clipPath');
-export const colorProfile = assembly('color-profile'); // color-profile
-export const cursor = assembly('cursor');
-export const defs = assembly('defs');
-export const desc = assembly('desc');
-export const discard = assembly('discard');
-export const ellipse = assembly('ellipse');
-export const feBlend = assembly('feBlend');
-export const feColorMatrix = assembly('feComposite');
-export const feComponentTransfer = assembly('feComponentTransfer');
-export const feComposite = assembly('feComposite');
-export const feConvolveMatrix = assembly('feConvolveMatrix');
-export const feDiffuseLighting = assembly('feDiffuseLighting');
-export const feDisplacementMap = assembly('feDistantLight');
-export const feDistantLight = assembly('feDistantLight');
-export const feDropShadow = assembly('feDropShadow');
-export const feFlood = assembly('feFlood');
-export const feFuncA = assembly('feFuncA');
-export const feFuncB = assembly('feFuncB');
-export const feFuncG = assembly('feFuncG');
-export const feFuncR = assembly('feFuncR');
-export const feGaussianBlur = assembly('feGaussianBlur');
-export const feImage = assembly('feImage');
-export const feMerge = assembly('feMerge');
-export const feMergeNode = assembly('feMergeNode');
-export const feMorphology = assembly('feMorphology');
-export const feOffset = assembly('feOffset');
-export const fePointLight = assembly('fePointLight');
-export const feSpecularLighting = assembly('feSpecularLighting');
-export const feSpotLight = assembly('feSpotLight');
-export const feTile = assembly('feTile');
-export const feTurbulence = assembly('feTurbulence');
-export const filter = assembly('filter');
-export const font = assembly('font');
-export const fontFace = assembly('font-face'); // fontFace
-export const fontFaceFormat = assembly('font-face-format'); // fontFaceFormat
-export const fontFaceName = assembly('font-face-name'); // fontFaceName
-export const fontFaceSrc = assembly('font-face-src'); // fontFaceSrc
-export const fontFaceUri = assembly('font-face-uri'); // fontFaceUri
-export const foreignObject = assembly('foreignObject');
-export const g = assembly('g');
-export const glyph = assembly('glyph');
-export const glyphRef = assembly('glyphRef');
-export const handler = assembly('handler');
-export const hatch = assembly('hatch');
-export const hatchpath = assembly('hatchpath');
-export const hkern = assembly('hkern');
-export const image = assembly('image');
-export const line = assembly('line');
-export const linearGradient = assembly('linearGradient');
+export const animateColor = assembly('animateColor', true);
+export const animateMotion = assembly('animateMotion', true);
+export const animateTransform = assembly('animateTransform', true);
+export const animation = assembly('animation', true);
+export const circle = assembly('circle', true);
+export const clipPath = assembly('clipPath', true);
+export const colorProfile = assembly('color-profile', true); // color-profile
+export const cursor = assembly('cursor', true);
+export const defs = assembly('defs', true);
+export const desc = assembly('desc', true);
+export const discard = assembly('discard', true);
+export const ellipse = assembly('ellipse', true);
+export const feBlend = assembly('feBlend', true);
+export const feColorMatrix = assembly('feComposite', true);
+export const feComponentTransfer = assembly('feComponentTransfer', true);
+export const feComposite = assembly('feComposite', true);
+export const feConvolveMatrix = assembly('feConvolveMatrix', true);
+export const feDiffuseLighting = assembly('feDiffuseLighting', true);
+export const feDisplacementMap = assembly('feDistantLight', true);
+export const feDistantLight = assembly('feDistantLight', true);
+export const feDropShadow = assembly('feDropShadow', true);
+export const feFlood = assembly('feFlood', true);
+export const feFuncA = assembly('feFuncA', true);
+export const feFuncB = assembly('feFuncB', true);
+export const feFuncG = assembly('feFuncG', true);
+export const feFuncR = assembly('feFuncR', true);
+export const feGaussianBlur = assembly('feGaussianBlur', true);
+export const feImage = assembly('feImage', true);
+export const feMerge = assembly('feMerge', true);
+export const feMergeNode = assembly('feMergeNode', true);
+export const feMorphology = assembly('feMorphology', true);
+export const feOffset = assembly('feOffset', true);
+export const fePointLight = assembly('fePointLight', true);
+export const feSpecularLighting = assembly('feSpecularLighting', true);
+export const feSpotLight = assembly('feSpotLight', true);
+export const feTile = assembly('feTile', true);
+export const feTurbulence = assembly('feTurbulence', true);
+export const filter = assembly('filter', true);
+export const font = assembly('font', true);
+export const fontFace = assembly('font-face', true); // fontFace
+export const fontFaceFormat = assembly('font-face-format', true); // fontFaceFormat
+export const fontFaceName = assembly('font-face-name', true); // fontFaceName
+export const fontFaceSrc = assembly('font-face-src', true); // fontFaceSrc
+export const fontFaceUri = assembly('font-face-uri', true); // fontFaceUri
+export const foreignObject = assembly('foreignObject', true);
+export const g = assembly('g', true);
+export const glyph = assembly('glyph', true);
+export const glyphRef = assembly('glyphRef', true);
+export const handler = assembly('handler', true);
+export const hatch = assembly('hatch', true);
+export const hatchpath = assembly('hatchpath', true);
+export const hkern = assembly('hkern', true);
+export const image = assembly('image', true);
+export const line = assembly('line', true);
+export const linearGradient = assembly('linearGradient', true);
 export const listener = assembly('listener');
-export const marker = assembly('marker');
-export const mask = assembly('mask');
-export const mesh = assembly('mesh');
-export const meshgradient = assembly('meshgradient');
-export const meshpatch = assembly('meshpatch');
-export const meshrow = assembly('meshrow');
-export const metadata = assembly('metadata');
-export const missingGlyph = assembly('missing-glyph'); // missing-glyph
-export const mpath = assembly('mpath');
-export const path = assembly('path');
-export const pattern = assembly('pattern');
-export const polygon = assembly('polygon');
-export const polyline = assembly('polyline');
-export const prefetch = assembly('prefetch');
-export const radialGradient = assembly('radialGradient');
-export const rect = assembly('rect');
-export const set = assembly('set');
-export const solidColor = assembly('solidColor');
-export const solidcolor = assembly('solidcolor');
-export const stop = assembly('stop');
-export const Switch = assembly('switch'); // First capital
-export const symbol = assembly('symbol');
-export const tbreak = assembly('tbreak');
-export const text = assembly('text');
-export const textArea = assembly('textArea');
-export const textPath = assembly('textPath');
-export const tref = assembly('tref');
-export const tspan = assembly('tspan');
-export const unknown = assembly('unknown');
-export const use = assembly('use');
-export const view = assembly('view');
-export const vkern = assembly('vkern')
+export const marker = assembly('marker', true);
+export const mask = assembly('mask', true);
+export const mesh = assembly('mesh', true);
+export const meshgradient = assembly('meshgradient', true);
+export const meshpatch = assembly('meshpatch', true);
+export const meshrow = assembly('meshrow', true);
+export const metadata = assembly('metadata', true);
+export const missingGlyph = assembly('missing-glyph', true); // missing-glyph
+export const mpath = assembly('mpath', true);
+export const path = assembly('path', true);
+export const pattern = assembly('pattern', true);
+export const polygon = assembly('polygon', true);
+export const polyline = assembly('polyline', true);
+export const prefetch = assembly('prefetch', true);
+export const radialGradient = assembly('radialGradient', true);
+export const rect = assembly('rect', true);
+export const set = assembly('set', true);
+export const solidColor = assembly('solidColor', true);
+export const solidcolor = assembly('solidcolor', true);
+export const Stop = assembly('stop', true); // First capital
+export const Switch = assembly('switch', true); // First capital
+export const symbol = assembly('symbol', true);
+export const tbreak = assembly('tbreak', true);
+export const text = assembly('text', true);
+export const textArea = assembly('textArea', true);
+export const textPath = assembly('textPath', true);
+export const tref = assembly('tref', true);
+export const tspan = assembly('tspan', true);
+export const unknown = assembly('unknown', true);
+export const use = assembly('use', true);
+export const view = assembly('view', true);
+export const vkern = assembly('vkern', true)
 
 
 // Render API
@@ -566,6 +574,16 @@ const someUI = [
         )
     ),
     section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'),
+    svg({ height: 150, width: 400 },
+        defs(
+            linearGradient({ id: 'grad1', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                Stop({ offset: '0%', style: { 'stop-color': 'rgb(255,0,0)', 'stop-opacity': 1 } }),
+                Stop({ offset: '100%', style: { 'stop-color': 'rgb(255,255,0)', 'stop-opacity': 1 } })
+            )
+        ),
+        ellipse({ cx: 200, cy: 70, rx: 85, ry: 55, fill: 'url(#grad1)' }),
+        'Sorry, your browser does not support inline SVG.'
+    ),
     tbody({ id: 'tbody' }, thing)
 ];
 
@@ -580,8 +598,7 @@ const createAndAppendNode = (fragment, node) => {
     }
 
     // If Element
-
-    const element = document.createElement(node.t);
+    const element = node.svg ? document.createElementNS('http://www.w3.org/2000/svg', node.t) : document.createElement(node.t);
 
     // Add attributes
     if (node.at) {
@@ -606,8 +623,8 @@ const createAndAppendNode = (fragment, node) => {
                 continue;
             }
             // Props: _
-            if(attributeKey[0] === '_'){
-                const cleanKey = attributeKey.replace('_','');
+            if (attributeKey[0] === '_') {
+                const cleanKey = attributeKey.replace('_', '');
                 element[cleanKey] = attributes[attributeKey];
                 continue;
             }
@@ -625,7 +642,7 @@ const createAndAppendNode = (fragment, node) => {
                     element.className = attributes.class;
                     break;
                 default:
-                    element.setAttribute(attributeKey,attributes[attributeKey]);
+                    element.setAttribute(attributeKey, attributes[attributeKey]);
                     break;
             }
         }

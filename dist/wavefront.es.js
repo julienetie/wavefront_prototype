@@ -995,14 +995,28 @@ const buildData = (count = 1000) => {
 
 const isString = value => typeof value === 'string';
 const isPrimitive = value => isString(value) || typeof value === 'number';
-const node = (t, id, at, ch) => {
+/** 
+ * @param {string} t - Text 
+ * @param {Number} id - Identity (Not an attribute)
+ * @param {Number} ix - Index 
+ * @param {Object|string} at - Attributes | Primative
+ * @param {Array} ch - Children 
+ */
+const node = (t, id, at, ch, isSVG) => {
     switch (t) {
         case 'primitive':
             return { t: 'TEXT', id, val: at };
         case 'comment':
             return { t: 'COM', id, val: at };
         default:
-            return {
+            return isSVG ? {
+                t,
+                id,
+                at,
+                chx: ch.length,
+                ch,
+                svg: true
+            } : {
                 t,
                 id,
                 at,
@@ -1025,7 +1039,7 @@ let currentTree;
 
 
 **/
-const assembly = tagName => {
+const assembly = (tagName, isSVG) => {
 
     return function inner(...args) {
         let tagNameStr = `${tagName}`;
@@ -1107,7 +1121,7 @@ const assembly = tagName => {
         for (i = 0; i < childNodes.length; ++i) {
             if (isPrimitive(childNodes[i])) {
                 count++;
-                currentTree = node('primitive', count, childNodes[i]);
+                currentTree = node('primitive', count, childNodes[i], null, isSVG);
                 // console.log('currentTree', currentTree)
                 childNodes[i] = currentTree;
             }
@@ -1127,7 +1141,7 @@ const assembly = tagName => {
 
         // console.log('currentTree',currentTree)
         // console.log('attributes', attributes)
-        return node(tagNameStr, count, attributes$$1, childNodes);
+        return node(tagNameStr, count, attributes$$1, childNodes, isSVG);
     };
 };
 
@@ -1233,98 +1247,99 @@ const Var = assembly('var'); // First capital
 const video = assembly('video');
 
 // SVG Elements.
-const altGlyph = assembly('altGlyph');
-const altGlyphDef = assembly('altGlyphDef');
-const altGlyphItem = assembly('altGlyphItem');
+const svg = assembly('svg', true);
+const altGlyph = assembly('altGlyph', true);
+const altGlyphDef = assembly('altGlyphDef', true);
+const altGlyphItem = assembly('altGlyphItem', true);
 const animate = assembly('animate');
-const animateColor = assembly('animateColor');
-const animateMotion = assembly('animateMotion');
-const animateTransform = assembly('animateTransform');
-const animation = assembly('animation');
-const circle = assembly('circle');
-const clipPath = assembly('clipPath');
-const colorProfile = assembly('color-profile'); // color-profile
-const cursor = assembly('cursor');
-const defs = assembly('defs');
-const desc = assembly('desc');
-const discard = assembly('discard');
-const ellipse = assembly('ellipse');
-const feBlend = assembly('feBlend');
-const feColorMatrix = assembly('feComposite');
-const feComponentTransfer = assembly('feComponentTransfer');
-const feComposite = assembly('feComposite');
-const feConvolveMatrix = assembly('feConvolveMatrix');
-const feDiffuseLighting = assembly('feDiffuseLighting');
-const feDisplacementMap = assembly('feDistantLight');
-const feDistantLight = assembly('feDistantLight');
-const feDropShadow = assembly('feDropShadow');
-const feFlood = assembly('feFlood');
-const feFuncA = assembly('feFuncA');
-const feFuncB = assembly('feFuncB');
-const feFuncG = assembly('feFuncG');
-const feFuncR = assembly('feFuncR');
-const feGaussianBlur = assembly('feGaussianBlur');
-const feImage = assembly('feImage');
-const feMerge = assembly('feMerge');
-const feMergeNode = assembly('feMergeNode');
-const feMorphology = assembly('feMorphology');
-const feOffset = assembly('feOffset');
-const fePointLight = assembly('fePointLight');
-const feSpecularLighting = assembly('feSpecularLighting');
-const feSpotLight = assembly('feSpotLight');
-const feTile = assembly('feTile');
-const feTurbulence = assembly('feTurbulence');
-const filter = assembly('filter');
-const font = assembly('font');
-const fontFace = assembly('font-face'); // fontFace
-const fontFaceFormat = assembly('font-face-format'); // fontFaceFormat
-const fontFaceName = assembly('font-face-name'); // fontFaceName
-const fontFaceSrc = assembly('font-face-src'); // fontFaceSrc
-const fontFaceUri = assembly('font-face-uri'); // fontFaceUri
-const foreignObject = assembly('foreignObject');
-const g = assembly('g');
-const glyph = assembly('glyph');
-const glyphRef = assembly('glyphRef');
-const handler = assembly('handler');
-const hatch = assembly('hatch');
-const hatchpath = assembly('hatchpath');
-const hkern = assembly('hkern');
-const image = assembly('image');
-const line = assembly('line');
-const linearGradient = assembly('linearGradient');
+const animateColor = assembly('animateColor', true);
+const animateMotion = assembly('animateMotion', true);
+const animateTransform = assembly('animateTransform', true);
+const animation = assembly('animation', true);
+const circle = assembly('circle', true);
+const clipPath = assembly('clipPath', true);
+const colorProfile = assembly('color-profile', true); // color-profile
+const cursor = assembly('cursor', true);
+const defs = assembly('defs', true);
+const desc = assembly('desc', true);
+const discard = assembly('discard', true);
+const ellipse = assembly('ellipse', true);
+const feBlend = assembly('feBlend', true);
+const feColorMatrix = assembly('feComposite', true);
+const feComponentTransfer = assembly('feComponentTransfer', true);
+const feComposite = assembly('feComposite', true);
+const feConvolveMatrix = assembly('feConvolveMatrix', true);
+const feDiffuseLighting = assembly('feDiffuseLighting', true);
+const feDisplacementMap = assembly('feDistantLight', true);
+const feDistantLight = assembly('feDistantLight', true);
+const feDropShadow = assembly('feDropShadow', true);
+const feFlood = assembly('feFlood', true);
+const feFuncA = assembly('feFuncA', true);
+const feFuncB = assembly('feFuncB', true);
+const feFuncG = assembly('feFuncG', true);
+const feFuncR = assembly('feFuncR', true);
+const feGaussianBlur = assembly('feGaussianBlur', true);
+const feImage = assembly('feImage', true);
+const feMerge = assembly('feMerge', true);
+const feMergeNode = assembly('feMergeNode', true);
+const feMorphology = assembly('feMorphology', true);
+const feOffset = assembly('feOffset', true);
+const fePointLight = assembly('fePointLight', true);
+const feSpecularLighting = assembly('feSpecularLighting', true);
+const feSpotLight = assembly('feSpotLight', true);
+const feTile = assembly('feTile', true);
+const feTurbulence = assembly('feTurbulence', true);
+const filter = assembly('filter', true);
+const font = assembly('font', true);
+const fontFace = assembly('font-face', true); // fontFace
+const fontFaceFormat = assembly('font-face-format', true); // fontFaceFormat
+const fontFaceName = assembly('font-face-name', true); // fontFaceName
+const fontFaceSrc = assembly('font-face-src', true); // fontFaceSrc
+const fontFaceUri = assembly('font-face-uri', true); // fontFaceUri
+const foreignObject = assembly('foreignObject', true);
+const g = assembly('g', true);
+const glyph = assembly('glyph', true);
+const glyphRef = assembly('glyphRef', true);
+const handler = assembly('handler', true);
+const hatch = assembly('hatch', true);
+const hatchpath = assembly('hatchpath', true);
+const hkern = assembly('hkern', true);
+const image = assembly('image', true);
+const line = assembly('line', true);
+const linearGradient = assembly('linearGradient', true);
 const listener = assembly('listener');
-const marker = assembly('marker');
-const mask = assembly('mask');
-const mesh = assembly('mesh');
-const meshgradient = assembly('meshgradient');
-const meshpatch = assembly('meshpatch');
-const meshrow = assembly('meshrow');
-const metadata = assembly('metadata');
-const missingGlyph = assembly('missing-glyph'); // missing-glyph
-const mpath = assembly('mpath');
-const path = assembly('path');
-const pattern = assembly('pattern');
-const polygon = assembly('polygon');
-const polyline = assembly('polyline');
-const prefetch = assembly('prefetch');
-const radialGradient = assembly('radialGradient');
-const rect = assembly('rect');
-const set = assembly('set');
-const solidColor = assembly('solidColor');
-const solidcolor = assembly('solidcolor');
-const stop = assembly('stop');
-const Switch = assembly('switch'); // First capital
-const symbol = assembly('symbol');
-const tbreak = assembly('tbreak');
-const text = assembly('text');
-const textArea = assembly('textArea');
-const textPath = assembly('textPath');
-const tref = assembly('tref');
-const tspan = assembly('tspan');
-const unknown = assembly('unknown');
-const use = assembly('use');
-const view = assembly('view');
-const vkern = assembly('vkern');
+const marker = assembly('marker', true);
+const mask = assembly('mask', true);
+const mesh = assembly('mesh', true);
+const meshgradient = assembly('meshgradient', true);
+const meshpatch = assembly('meshpatch', true);
+const meshrow = assembly('meshrow', true);
+const metadata = assembly('metadata', true);
+const missingGlyph = assembly('missing-glyph', true); // missing-glyph
+const mpath = assembly('mpath', true);
+const path = assembly('path', true);
+const pattern = assembly('pattern', true);
+const polygon = assembly('polygon', true);
+const polyline = assembly('polyline', true);
+const prefetch = assembly('prefetch', true);
+const radialGradient = assembly('radialGradient', true);
+const rect = assembly('rect', true);
+const set = assembly('set', true);
+const solidColor = assembly('solidColor', true);
+const solidcolor = assembly('solidcolor', true);
+const Stop = assembly('stop', true); // First capital
+const Switch = assembly('switch', true); // First capital
+const symbol = assembly('symbol', true);
+const tbreak = assembly('tbreak', true);
+const text = assembly('text', true);
+const textArea = assembly('textArea', true);
+const textPath = assembly('textPath', true);
+const tref = assembly('tref', true);
+const tspan = assembly('tspan', true);
+const unknown = assembly('unknown', true);
+const use = assembly('use', true);
+const view = assembly('view', true);
+const vkern = assembly('vkern', true);
 
 // Render API
 // export const patch = init([
@@ -1423,7 +1438,7 @@ const someUI = [div({ id: 'block-social-responsive', class: 'footer__social' }, 
     name: 'jack'
 }, 'FACEBOOK')),
 // Without variables...
-li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin')))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'), tbody({ id: 'tbody' }, thing)];
+li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin')))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'), svg({ height: 150, width: 400 }, defs(linearGradient({ id: 'grad1', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, Stop({ offset: '0%', style: { 'stop-color': 'rgb(255,0,0)', 'stop-opacity': 1 } }), Stop({ offset: '100%', style: { 'stop-color': 'rgb(255,255,0)', 'stop-opacity': 1 } }))), ellipse({ cx: 200, cy: 70, rx: 85, ry: 55, fill: 'url(#grad1)' }), 'Sorry, your browser does not support inline SVG.'), tbody({ id: 'tbody' }, thing)];
 
 const createAndAppendNode = (fragment, node) => {
 
@@ -1435,8 +1450,7 @@ const createAndAppendNode = (fragment, node) => {
     }
 
     // If Element
-
-    const element = document.createElement(node.t);
+    const element = node.svg ? document.createElementNS('http://www.w3.org/2000/svg', node.t) : document.createElement(node.t);
 
     // Add attributes
     if (node.at) {
@@ -1579,5 +1593,5 @@ document.addEventListener('click', () => {
 
 **/
 
-export { a, abbr, address, area, article, aside, audio, childNodes, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, Var, video, altGlyph, altGlyphDef, altGlyphItem, animate, animateColor, animateMotion, animateTransform, animation, circle, clipPath, colorProfile, cursor, defs, desc, discard, ellipse, feBlend, feColorMatrix, feComponentTransfer, feComposite, feConvolveMatrix, feDiffuseLighting, feDisplacementMap, feDistantLight, feDropShadow, feFlood, feFuncA, feFuncB, feFuncG, feFuncR, feGaussianBlur, feImage, feMerge, feMergeNode, feMorphology, feOffset, fePointLight, feSpecularLighting, feSpotLight, feTile, feTurbulence, filter, font, fontFace, fontFaceFormat, fontFaceName, fontFaceSrc, fontFaceUri, foreignObject, g, glyph, glyphRef, handler, hatch, hatchpath, hkern, image, line, linearGradient, listener, marker, mask, mesh, meshgradient, meshpatch, meshrow, metadata, missingGlyph, mpath, path, pattern, polygon, polyline, prefetch, radialGradient, rect, set, solidColor, solidcolor, stop, Switch, symbol, tbreak, text, textArea, textPath, tref, tspan, unknown, use, view, vkern };
+export { a, abbr, address, area, article, aside, audio, childNodes, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, Var, video, svg, altGlyph, altGlyphDef, altGlyphItem, animate, animateColor, animateMotion, animateTransform, animation, circle, clipPath, colorProfile, cursor, defs, desc, discard, ellipse, feBlend, feColorMatrix, feComponentTransfer, feComposite, feConvolveMatrix, feDiffuseLighting, feDisplacementMap, feDistantLight, feDropShadow, feFlood, feFuncA, feFuncB, feFuncG, feFuncR, feGaussianBlur, feImage, feMerge, feMergeNode, feMorphology, feOffset, fePointLight, feSpecularLighting, feSpotLight, feTile, feTurbulence, filter, font, fontFace, fontFaceFormat, fontFaceName, fontFaceSrc, fontFaceUri, foreignObject, g, glyph, glyphRef, handler, hatch, hatchpath, hkern, image, line, linearGradient, listener, marker, mask, mesh, meshgradient, meshpatch, meshrow, metadata, missingGlyph, mpath, path, pattern, polygon, polyline, prefetch, radialGradient, rect, set, solidColor, solidcolor, Stop, Switch, symbol, tbreak, text, textArea, textPath, tref, tspan, unknown, use, view, vkern };
 //# sourceMappingURL=wavefront.es.js.map
