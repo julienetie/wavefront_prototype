@@ -177,10 +177,10 @@ const assembly = (tagName, isSVG) => {
             if (isPrimitive(childNode)) {
                 let type;
                 let value;
-                if(childNode[0] === '@'){
+                if (childNode[0] === '@') {
                     type = 'comment';
                     value = childNode.slice(1)
-                }else{
+                } else {
                     type = 'primitive';
                     value = childNode;
                 }
@@ -404,8 +404,147 @@ export const tspan = assembly('tspan', true);
 export const unknown = assembly('unknown', true);
 export const use = assembly('use', true);
 export const view = assembly('view', true);
-export const vkern = assembly('vkern', true)
+export const vkern = assembly('vkern', true);
 
+/** 
+ * or is used when you explicitly want the to inidicate
+ * a condition is being made in the template. 
+ * @param {Array} vNodes - An array of vNodes 
+ * @param {Number|Array} switch - A number or series of inidcators (as an array) of what elements to display.
+ * @exclude {Boolean} exclude - 
+ * 
+ */
+export const or = (vNodes, $witch, exclude) => {
+    const includeVNodes = [];
+    const includeIndexes = [];
+
+
+    // Return the vNode of a given index.
+    if (typeof $witch === 'number') {
+        return vNodes[$witch];
+    }
+
+    // Treat toggle as an array. 
+    const toggle = typeof $witch === 'string' ? [$witch] : $witch;
+
+
+    // If toggle is not an array or empty do nothing.
+    if (!Array.isArray(toggle) || toggle.length === 0) {
+        return vNodes;
+    }
+
+
+    const classes = toggle.filter(e => e.indexOf('.') > -1);
+    const ids = toggle.filter(e => e.indexOf('#') === 0);
+    const tags = toggle.filter(e => /^[a-z0-9]+$/i.test(e));
+    const numberOfChildren = toggle.filter(e => e.indexOf('~') === 0);
+    const indexes = toggle.filter(e => typeof e === 'number');
+       
+    for (let i = 0; i < vNodes.length; i++) {
+
+        const vNode = vNodes[i];
+        const attribute = vNode.at;
+
+        // Check class
+        if (classes.length > 0) {
+            classes.forEach(c => {
+                if (attribute.class.includes(c.slice(1))) {
+                    includeIndexes.push(i);
+                }
+            });
+        }
+
+        // Check ids
+        if (ids.length > 0) {
+            ids.forEach(c => {
+                if (attribute.id === c.slice(1)) {
+                    includeIndexes.push(i);
+                }
+            });
+        }
+
+
+        // Check tags
+        if (tags.length > 0) {
+            tags.forEach(c => {
+                if (vNode.t.toUpperCase() === c.toUpperCase()) {
+                    includeIndexes.push(i);
+                }
+            });
+        }
+
+        // Check numberOfChildren
+        if (numberOfChildren.length > 0) {
+            numberOfChildren.forEach(x => {
+               const childrenLength = vNode.ch.filter(c => c.t !== 'TEXT' && c.t !== 'COM').length
+                console.log('childrenLength',childrenLength)
+                if (childrenLength == x.slice(1)) {
+                    includeIndexes.push(i);
+                }
+            });
+        }
+    }
+    console.log('includeIndexes', includeIndexes)
+    // Remove duplicates
+    const indexList = [...(new Set(includeIndexes))];
+
+    console.log('indexList', indexList)
+    if (exclude === true) {
+        return vNodes.filter(function(item, i) {
+            return indexList.indexOf(i) === -1;
+        });
+
+    } else {
+        indexList.forEach(index => {
+            includeVNodes.push(vNodes[index])
+        })
+        return includeVNodes;
+    }
+}
+
+
+
+/** 
+ * or is used when you explicitly want the to inidicate
+ * that an item is being looped by n times or via data
+ * 
+ * @param {Object|Array} vNodes 
+ * @param {*} Data 
+ */
+export const loop = (vNodes, data) => {
+    const singleVnode = isPlaneObject(vNodes);
+    const groupVnodes = Array.isArray(vNodes);
+    const hasNumber = typeof data === 'number';
+
+    let loopedVnodes = [];
+
+    if (hasNumber) {
+        // Single vnode looped by an integer.
+        if (singleVnode) {
+            for (let i = 0; i < data; i++) {
+                loopedVnodes.push(vNodes);
+            }
+        }
+
+        // Grouped vnode looped by an integer.
+        if (groupVnodes) {
+            for (let i = 0; i < data; i++) {
+                loopedVnodes.push(...vNodes);
+            }
+        }
+    } else {
+        if (typeof vNodes === 'function') {
+            loopedVnodes = vNodes(data)
+
+            if (!Array.isArray(loopedVnodes)) {
+                throw new Error('loop() should return an Array of vnodes');
+            }
+        }
+    }
+
+    console.log('loop', loopedVnodes)
+    return loopedVnodes;
+}
 
 // Render API
 // export const patch = init([
@@ -505,8 +644,25 @@ const lotsData = buildData(10000);
 // console.log('thing',thing)
 
 
-
-
+const responseData = [
+    'I\'m fine how are you?',
+    'Not bad thanks',
+    'La La La',
+    'I am well thank you',
+    'Excusemoi'
+];
+const responseList = data => {
+    return data.map((response, i) =>
+        span({
+                style: {
+                    'color': `rgb(${parseInt(i * 50,10)},${255},${parseInt(500 /i,10)})`,
+                    display: 'block'
+                }
+            },
+            response
+        )
+    )
+}
 
 
 const twitterHref = 'http://google.com';
@@ -533,13 +689,30 @@ const someUI = [
                     'FACEBOOK'
                 )
             ),
+            or([
+                div({ class: 'hello', id: 'yeaa' }, 'HELLO'),
+                div({ class: 'foo' }, 'FOO'),
+                a({ class: 'bar', id: 'yeaa' },
+                    h1('This is H TAG 1'),
+                    h2('This is H TAG 2'),
+                    'BAR'
+                ),
+                div({ class: 'baz' }, 'BAZ'),
+                section({ class: 'hello' },
+                    h1('This is H TAG 1'),
+                    h2('This is H TAG 2'),
+                ),
+                section({ class: 'world' }, 'WORLD'),
+            ], ['~2','.world'], true),
             // Without variables...
             li({ class: 'menu-item' },
                 a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' },
                     'Linkedin'
                 ),
                 `@This is a single line comment`
-            )
+            ),
+            loop(li({ style: { backgroundColor: 'pink', fontSize: 20 } }, 'HELLO WORLD'), 5),
+            loop(responseList, responseData),
         )
     ),
     section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'),
@@ -553,8 +726,12 @@ const someUI = [
         ellipse({ cx: 200, cy: 70, rx: 85, ry: 55, fill: 'url(#grad1)' }),
         'Sorry, your browser does not support inline SVG.'
     ),
-    `@This is a single line comment`,
+    `@This is a single line comment`, // not working
     // tbody({ id: 'tbody' }, thing)
+    // loop(div('HELLO WORLD'), 20),
+    // [div('HELLO WORLD'),
+    // div('HELLO WORLD'),
+    // div('HELLO WORLD')]
 ];
 
 
@@ -614,6 +791,7 @@ const createAndAppendNode = (fragment, node) => {
                 case 'style':
                     Object.assign(element.style, attributes[attributeKey]);
                     break;
+                case 'c':
                 case 'class':
                     element.className = attributes.class;
                     break;
@@ -639,7 +817,7 @@ const renderPartial = (selector) => {
     const container = document.querySelector(selector);
     const fragment = document.createDocumentFragment();
     return (newNode, cache) => {
-
+        count = 0; // reset counter used for node ids.
         // 1st render.
         // container
         if (cache === undefined) {

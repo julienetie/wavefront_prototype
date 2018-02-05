@@ -1306,6 +1306,139 @@ const use = assembly('use', true);
 const view = assembly('view', true);
 const vkern = assembly('vkern', true);
 
+/** 
+ * or is used when you explicitly want the to inidicate
+ * a condition is being made in the template. 
+ * @param {Array} vNodes - An array of vNodes 
+ * @param {Number|Array} switch - A number or series of inidcators (as an array) of what elements to display.
+ * @exclude {Boolean} exclude - 
+ * 
+ */
+const or = (vNodes, $witch, exclude) => {
+    const includeVNodes = [];
+    const includeIndexes = [];
+
+    // Return the vNode of a given index.
+    if (typeof $witch === 'number') {
+        return vNodes[$witch];
+    }
+
+    // Treat toggle as an array. 
+    const toggle = typeof $witch === 'string' ? [$witch] : $witch;
+
+    // If toggle is not an array or empty do nothing.
+    if (!Array.isArray(toggle) || toggle.length === 0) {
+        return vNodes;
+    }
+
+    const classes = toggle.filter(e => e.indexOf('.') > -1);
+    const ids = toggle.filter(e => e.indexOf('#') === 0);
+    const tags = toggle.filter(e => /^[a-z0-9]+$/i.test(e));
+    const numberOfChildren = toggle.filter(e => e.indexOf('~') === 0);
+    const indexes = toggle.filter(e => typeof e === 'number');
+
+    for (let i = 0; i < vNodes.length; i++) {
+
+        const vNode = vNodes[i];
+        const attribute = vNode.at;
+
+        // Check class
+        if (classes.length > 0) {
+            classes.forEach(c => {
+                if (attribute.class.includes(c.slice(1))) {
+                    includeIndexes.push(i);
+                }
+            });
+        }
+
+        // Check ids
+        if (ids.length > 0) {
+            ids.forEach(c => {
+                if (attribute.id === c.slice(1)) {
+                    includeIndexes.push(i);
+                }
+            });
+        }
+
+        // Check tags
+        if (tags.length > 0) {
+            tags.forEach(c => {
+                if (vNode.t.toUpperCase() === c.toUpperCase()) {
+                    includeIndexes.push(i);
+                }
+            });
+        }
+
+        // Check numberOfChildren
+        if (numberOfChildren.length > 0) {
+            numberOfChildren.forEach(x => {
+                const childrenLength = vNode.ch.filter(c => c.t !== 'TEXT' && c.t !== 'COM').length;
+                console.log('childrenLength', childrenLength);
+                if (childrenLength == x.slice(1)) {
+                    includeIndexes.push(i);
+                }
+            });
+        }
+    }
+    console.log('includeIndexes', includeIndexes);
+    // Remove duplicates
+    const indexList = [...new Set(includeIndexes)];
+
+    console.log('indexList', indexList);
+    if (exclude === true) {
+        return vNodes.filter(function (item, i) {
+            return indexList.indexOf(i) === -1;
+        });
+    } else {
+        indexList.forEach(index => {
+            includeVNodes.push(vNodes[index]);
+        });
+        return includeVNodes;
+    }
+};
+
+/** 
+ * or is used when you explicitly want the to inidicate
+ * that an item is being looped by n times or via data
+ * 
+ * @param {Object|Array} vNodes 
+ * @param {*} Data 
+ */
+const loop = (vNodes, data) => {
+    const singleVnode = isPlainObject(vNodes);
+    const groupVnodes = Array.isArray(vNodes);
+    const hasNumber = typeof data === 'number';
+
+    let loopedVnodes = [];
+
+    if (hasNumber) {
+        // Single vnode looped by an integer.
+        if (singleVnode) {
+            for (let i = 0; i < data; i++) {
+                loopedVnodes.push(vNodes);
+            }
+        }
+
+        // Grouped vnode looped by an integer.
+        if (groupVnodes) {
+            for (let i = 0; i < data; i++) {
+                loopedVnodes.push(...vNodes);
+            }
+        }
+    } else {
+        if (typeof vNodes === 'function') {
+            loopedVnodes = vNodes(data);
+
+            if (!Array.isArray(loopedVnodes)) {
+                throw new Error('loop() should return an Array of vnodes');
+            }
+        }
+    }
+
+    console.log('loop', loopedVnodes);
+    return loopedVnodes;
+};
+
 const lotsData = buildData(10000);
 
 // console.log(lotsData[0])
@@ -1333,6 +1466,16 @@ const lotsData = buildData(10000);
 // console.log('thing',thing)
 
 
+const responseData = ['I\'m fine how are you?', 'Not bad thanks', 'La La La', 'I am well thank you', 'Excusemoi'];
+const responseList = data => {
+    return data.map((response, i) => span({
+        style: {
+            'color': `rgb(${parseInt(i * 50, 10)},${255},${parseInt(500 / i, 10)})`,
+            display: 'block'
+        }
+    }, response));
+};
+
 const twitterHref = 'http://google.com';
 const facebookHref = 'http://facebook.com';
 const someUI = [div({ id: 'block-social-responsive', class: 'footer__social' }, ul({ class: 'menu' }, li({ class: 'menu-item' }, a({ href: twitterHref, class: 'icon-twitter', target: '_blank' }, 'TWITTER')), li({ class: 'menu-item' }, a({
@@ -1344,9 +1487,9 @@ const someUI = [div({ id: 'block-social-responsive', class: 'footer__social' }, 
     $: { backgroundColor: 'red', color: 'yellow' },
     'd-foijfwoeifjw': 2000000000,
     name: 'jack'
-}, 'FACEBOOK')),
+}, 'FACEBOOK')), or([div({ class: 'hello', id: 'yeaa' }, 'HELLO'), div({ class: 'foo' }, 'FOO'), a({ class: 'bar', id: 'yeaa' }, h1('This is H TAG 1'), h2('This is H TAG 2'), 'BAR'), div({ class: 'baz' }, 'BAZ'), section({ class: 'hello' }, h1('This is H TAG 1'), h2('This is H TAG 2')), section({ class: 'world' }, 'WORLD')], ['~2', '.world'], true),
 // Without variables...
-li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin'), `@This is a single line comment`))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'), svg({ height: 150, width: 400 }, defs(linearGradient({ id: 'grad1', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, Stop({ offset: '0%', style: { 'stop-color': 'rgb(255,0,0)', 'stop-opacity': 1 } }), Stop({ offset: '100%', style: { 'stop-color': 'rgb(255,255,0)', 'stop-opacity': 1 } }))), ellipse({ cx: 200, cy: 70, rx: 85, ry: 55, fill: 'url(#grad1)' }), 'Sorry, your browser does not support inline SVG.'), `@This is a single line comment`];
+li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin'), `@This is a single line comment`), loop(li({ style: { backgroundColor: 'pink', fontSize: 20 } }, 'HELLO WORLD'), 5), loop(responseList, responseData))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'), svg({ height: 150, width: 400 }, defs(linearGradient({ id: 'grad1', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, Stop({ offset: '0%', style: { 'stop-color': 'rgb(255,0,0)', 'stop-opacity': 1 } }), Stop({ offset: '100%', style: { 'stop-color': 'rgb(255,255,0)', 'stop-opacity': 1 } }))), ellipse({ cx: 200, cy: 70, rx: 85, ry: 55, fill: 'url(#grad1)' }), 'Sorry, your browser does not support inline SVG.'), `@This is a single line comment`];
 
 const createAndAppendNode = (fragment, node) => {
     console.log('node', node);
@@ -1404,6 +1547,7 @@ const createAndAppendNode = (fragment, node) => {
                 case 'style':
                     Object.assign(element.style, attributes$$1[attributeKey]);
                     break;
+                case 'c':
                 case 'class':
                     element.className = attributes$$1.class;
                     break;
@@ -1428,7 +1572,7 @@ const renderPartial = selector => {
     const container = document.querySelector(selector);
     const fragment = document.createDocumentFragment();
     return (newNode, cache) => {
-
+        count = 0; // reset counter used for node ids.
         // 1st render.
         // container
         if (cache === undefined) {
@@ -1511,5 +1655,5 @@ document.addEventListener('click', () => {
 
 **/
 
-export { a, abbr, address, area, article, aside, audio, childNodes, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, Var, video, svg, altGlyph, altGlyphDef, altGlyphItem, animate, animateColor, animateMotion, animateTransform, animation, circle, clipPath, colorProfile, cursor, defs, desc, discard, ellipse, feBlend, feColorMatrix, feComponentTransfer, feComposite, feConvolveMatrix, feDiffuseLighting, feDisplacementMap, feDistantLight, feDropShadow, feFlood, feFuncA, feFuncB, feFuncG, feFuncR, feGaussianBlur, feImage, feMerge, feMergeNode, feMorphology, feOffset, fePointLight, feSpecularLighting, feSpotLight, feTile, feTurbulence, filter, font, fontFace, fontFaceFormat, fontFaceName, fontFaceSrc, fontFaceUri, foreignObject, g, glyph, glyphRef, handler, hatch, hatchpath, hkern, image, line, linearGradient, listener, marker, mask, mesh, meshgradient, meshpatch, meshrow, metadata, missingGlyph, mpath, path, pattern, polygon, polyline, prefetch, radialGradient, rect, set, solidColor, solidcolor, Stop, Switch, symbol, tbreak, text, textArea, textPath, tref, tspan, unknown, use, view, vkern };
+export { a, abbr, address, area, article, aside, audio, childNodes, base, bdi, bdo, blockquote, body, br, button, canvas, caption, cite, code, col, colgroup, command, dd, del, dfn, div, dl, doctype, dt, em, embed, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, html, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, map, mark, menu, meta, nav, noscript, object, ol, optgroup, option, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strong, style, sub, sup, table, tbody, td, textarea, tfoot, th, thead, title, tr, ul, Var, video, svg, altGlyph, altGlyphDef, altGlyphItem, animate, animateColor, animateMotion, animateTransform, animation, circle, clipPath, colorProfile, cursor, defs, desc, discard, ellipse, feBlend, feColorMatrix, feComponentTransfer, feComposite, feConvolveMatrix, feDiffuseLighting, feDisplacementMap, feDistantLight, feDropShadow, feFlood, feFuncA, feFuncB, feFuncG, feFuncR, feGaussianBlur, feImage, feMerge, feMergeNode, feMorphology, feOffset, fePointLight, feSpecularLighting, feSpotLight, feTile, feTurbulence, filter, font, fontFace, fontFaceFormat, fontFaceName, fontFaceSrc, fontFaceUri, foreignObject, g, glyph, glyphRef, handler, hatch, hatchpath, hkern, image, line, linearGradient, listener, marker, mask, mesh, meshgradient, meshpatch, meshrow, metadata, missingGlyph, mpath, path, pattern, polygon, polyline, prefetch, radialGradient, rect, set, solidColor, solidcolor, Stop, Switch, symbol, tbreak, text, textArea, textPath, tref, tspan, unknown, use, view, vkern, or, loop };
 //# sourceMappingURL=wavefront.es.js.map

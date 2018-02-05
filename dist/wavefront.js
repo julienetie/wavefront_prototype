@@ -1368,6 +1368,158 @@ var use = assembly('use', true);
 var view = assembly('view', true);
 var vkern = assembly('vkern', true);
 
+/** 
+ * or is used when you explicitly want the to inidicate
+ * a condition is being made in the template. 
+ * @param {Array} vNodes - An array of vNodes 
+ * @param {Number|Array} switch - A number or series of inidcators (as an array) of what elements to display.
+ * @exclude {Boolean} exclude - 
+ * 
+ */
+var or = function or(vNodes, $witch, exclude) {
+    var includeVNodes = [];
+    var includeIndexes = [];
+
+    // Return the vNode of a given index.
+    if (typeof $witch === 'number') {
+        return vNodes[$witch];
+    }
+
+    // Treat toggle as an array. 
+    var toggle = typeof $witch === 'string' ? [$witch] : $witch;
+
+    // If toggle is not an array or empty do nothing.
+    if (!Array.isArray(toggle) || toggle.length === 0) {
+        return vNodes;
+    }
+
+    var classes = toggle.filter(function (e) {
+        return e.indexOf('.') > -1;
+    });
+    var ids = toggle.filter(function (e) {
+        return e.indexOf('#') === 0;
+    });
+    var tags = toggle.filter(function (e) {
+        return (/^[a-z0-9]+$/i.test(e)
+        );
+    });
+    var numberOfChildren = toggle.filter(function (e) {
+        return e.indexOf('~') === 0;
+    });
+    var indexes = toggle.filter(function (e) {
+        return typeof e === 'number';
+    });
+
+    var _loop = function _loop(_i) {
+
+        var vNode = vNodes[_i];
+        var attribute = vNode.at;
+
+        // Check class
+        if (classes.length > 0) {
+            classes.forEach(function (c) {
+                if (attribute.class.includes(c.slice(1))) {
+                    includeIndexes.push(_i);
+                }
+            });
+        }
+
+        // Check ids
+        if (ids.length > 0) {
+            ids.forEach(function (c) {
+                if (attribute.id === c.slice(1)) {
+                    includeIndexes.push(_i);
+                }
+            });
+        }
+
+        // Check tags
+        if (tags.length > 0) {
+            tags.forEach(function (c) {
+                if (vNode.t.toUpperCase() === c.toUpperCase()) {
+                    includeIndexes.push(_i);
+                }
+            });
+        }
+
+        // Check numberOfChildren
+        if (numberOfChildren.length > 0) {
+            numberOfChildren.forEach(function (x) {
+                var childrenLength = vNode.ch.filter(function (c) {
+                    return c.t !== 'TEXT' && c.t !== 'COM';
+                }).length;
+                console.log('childrenLength', childrenLength);
+                if (childrenLength == x.slice(1)) {
+                    includeIndexes.push(_i);
+                }
+            });
+        }
+    };
+
+    for (var _i = 0; _i < vNodes.length; _i++) {
+        _loop(_i);
+    }
+    console.log('includeIndexes', includeIndexes);
+    // Remove duplicates
+    var indexList = [].concat(toConsumableArray(new Set(includeIndexes)));
+
+    console.log('indexList', indexList);
+    if (exclude === true) {
+        return vNodes.filter(function (item, i) {
+            return indexList.indexOf(i) === -1;
+        });
+    } else {
+        indexList.forEach(function (index) {
+            includeVNodes.push(vNodes[index]);
+        });
+        return includeVNodes;
+    }
+};
+
+/** 
+ * or is used when you explicitly want the to inidicate
+ * that an item is being looped by n times or via data
+ * 
+ * @param {Object|Array} vNodes 
+ * @param {*} Data 
+ */
+var loop = function loop(vNodes, data) {
+    var singleVnode = isPlainObject(vNodes);
+    var groupVnodes = Array.isArray(vNodes);
+    var hasNumber = typeof data === 'number';
+
+    var loopedVnodes = [];
+
+    if (hasNumber) {
+        // Single vnode looped by an integer.
+        if (singleVnode) {
+            for (var _i2 = 0; _i2 < data; _i2++) {
+                loopedVnodes.push(vNodes);
+            }
+        }
+
+        // Grouped vnode looped by an integer.
+        if (groupVnodes) {
+            for (var _i3 = 0; _i3 < data; _i3++) {
+                var _loopedVnodes;
+
+                (_loopedVnodes = loopedVnodes).push.apply(_loopedVnodes, toConsumableArray(vNodes));
+            }
+        }
+    } else {
+        if (typeof vNodes === 'function') {
+            loopedVnodes = vNodes(data);
+
+            if (!Array.isArray(loopedVnodes)) {
+                throw new Error('loop() should return an Array of vnodes');
+            }
+        }
+    }
+
+    console.log('loop', loopedVnodes);
+    return loopedVnodes;
+};
+
 var lotsData = buildData(10000);
 
 // console.log(lotsData[0])
@@ -1395,6 +1547,18 @@ var lotsData = buildData(10000);
 // console.log('thing',thing)
 
 
+var responseData = ['I\'m fine how are you?', 'Not bad thanks', 'La La La', 'I am well thank you', 'Excusemoi'];
+var responseList = function responseList(data) {
+    return data.map(function (response, i) {
+        return span({
+            style: {
+                'color': 'rgb(' + parseInt(i * 50, 10) + ',' + 255 + ',' + parseInt(500 / i, 10) + ')',
+                display: 'block'
+            }
+        }, response);
+    });
+};
+
 var twitterHref = 'http://google.com';
 var facebookHref = 'http://facebook.com';
 var someUI = [div({ id: 'block-social-responsive', class: 'footer__social' }, ul({ class: 'menu' }, li({ class: 'menu-item' }, a({ href: twitterHref, class: 'icon-twitter', target: '_blank' }, 'TWITTER')), li({ class: 'menu-item' }, a({
@@ -1406,9 +1570,9 @@ var someUI = [div({ id: 'block-social-responsive', class: 'footer__social' }, ul
     $: { backgroundColor: 'red', color: 'yellow' },
     'd-foijfwoeifjw': 2000000000,
     name: 'jack'
-}, 'FACEBOOK')),
+}, 'FACEBOOK')), or([div({ class: 'hello', id: 'yeaa' }, 'HELLO'), div({ class: 'foo' }, 'FOO'), a({ class: 'bar', id: 'yeaa' }, h1('This is H TAG 1'), h2('This is H TAG 2'), 'BAR'), div({ class: 'baz' }, 'BAZ'), section({ class: 'hello' }, h1('This is H TAG 1'), h2('This is H TAG 2')), section({ class: 'world' }, 'WORLD')], ['~2', '.world'], true),
 // Without variables...
-li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin'), '@This is a single line comment'))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'), svg({ height: 150, width: 400 }, defs(linearGradient({ id: 'grad1', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, Stop({ offset: '0%', style: { 'stop-color': 'rgb(255,0,0)', 'stop-opacity': 1 } }), Stop({ offset: '100%', style: { 'stop-color': 'rgb(255,255,0)', 'stop-opacity': 1 } }))), ellipse({ cx: 200, cy: 70, rx: 85, ry: 55, fill: 'url(#grad1)' }), 'Sorry, your browser does not support inline SVG.'), '@This is a single line comment'];
+li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin'), '@This is a single line comment'), loop(li({ style: { backgroundColor: 'pink', fontSize: 20 } }, 'HELLO WORLD'), 5), loop(responseList, responseData))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'), svg({ height: 150, width: 400 }, defs(linearGradient({ id: 'grad1', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, Stop({ offset: '0%', style: { 'stop-color': 'rgb(255,0,0)', 'stop-opacity': 1 } }), Stop({ offset: '100%', style: { 'stop-color': 'rgb(255,255,0)', 'stop-opacity': 1 } }))), ellipse({ cx: 200, cy: 70, rx: 85, ry: 55, fill: 'url(#grad1)' }), 'Sorry, your browser does not support inline SVG.'), '@This is a single line comment'];
 
 var createAndAppendNode = function createAndAppendNode(fragment, node) {
     console.log('node', node);
@@ -1434,9 +1598,9 @@ var createAndAppendNode = function createAndAppendNode(fragment, node) {
         var attributeKeys = Object.keys(_attributes);
         var attributesLength = attributeKeys.length;
 
-        for (var _i = 0; _i < attributesLength; _i++) {
+        for (var _i4 = 0; _i4 < attributesLength; _i4++) {
 
-            var attributeKey = attributeKeys[_i];
+            var attributeKey = attributeKeys[_i4];
 
             // Standard dataset syntax.
             if (attributeKey.indexOf('data-') === 0) {
@@ -1466,6 +1630,7 @@ var createAndAppendNode = function createAndAppendNode(fragment, node) {
                 case 'style':
                     Object.assign(element.style, _attributes[attributeKey]);
                     break;
+                case 'c':
                 case 'class':
                     element.className = _attributes.class;
                     break;
@@ -1490,14 +1655,14 @@ var renderPartial = function renderPartial(selector) {
     var container = document.querySelector(selector);
     var fragment = document.createDocumentFragment();
     return function (newNode, cache) {
-
+        count = 0; // reset counter used for node ids.
         // 1st render.
         // container
         if (cache === undefined) {
             if (Array.isArray(newNode)) {
                 // Group of elements 
-                for (var _i2 = 0; _i2 < newNode.length; _i2++) {
-                    var currentNewNode = newNode[_i2];
+                for (var _i5 = 0; _i5 < newNode.length; _i5++) {
+                    var currentNewNode = newNode[_i5];
                     // console.log('currentNewNode', currentNewNode)
                     /*
                         We are not handeling string and comment nodes in 
@@ -1765,6 +1930,8 @@ exports.unknown = unknown;
 exports.use = use;
 exports.view = view;
 exports.vkern = vkern;
+exports.or = or;
+exports.loop = loop;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
