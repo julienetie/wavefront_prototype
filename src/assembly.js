@@ -6,7 +6,7 @@ import {
     isPrimitive,
     isFunction,
     isElement,
-    isVNode, 
+    isVNode,
     removeChildren
 } from './helpers';
 
@@ -140,13 +140,13 @@ const render = (initalRootElement, vNode, isPartial) => {
     // const renderFragment = isPartial === true ? (document.createDocumentFragment()) : fragment; 
     // console.log('renderFragment', document.createDocumentFragment())
     let renderFragment;
-    if(isPartial === true){
+    if (isPartial === true) {
         renderFragment = document.createDocumentFragment()
-    }else{
+    } else {
         renderFragment = fragment;
     }
 
-    const node = isPartial === true ? vNode : vDOM; 
+    const node = isPartial === true ? vNode : vDOM;
     console.log('node', node)
     count = 0; // reset counter used for node ids.
 
@@ -192,9 +192,9 @@ const render = (initalRootElement, vNode, isPartial) => {
         });
     } else {
         // Wrapped element
-        console.log('1', renderFragment,)
+        console.log('1', renderFragment, )
         createAndAppendNode(renderFragment, node);
-        console.log('renderFragmentdd',renderFragment)
+        console.log('renderFragmentdd', renderFragment)
         // console.log('elementCache', elementCache)
         requestAnimationFrame(() => {
             // if (isPartial) {
@@ -216,7 +216,7 @@ const render = (initalRootElement, vNode, isPartial) => {
             **/
             // const staticRender = rootElement.outerHTML;
             // console.log(staticRender)
-            return; 
+            return;
         });
     }
 
@@ -387,61 +387,33 @@ const fullTemplate = {
     ]
 }
 
-const searchAndReplace = (selector, newVNode) => {
-    const queriedParent =  fragment.querySelector(selector);
-    // console.log('queriedParent', queriedParent, selector)
-
-    // convert the node to an element
-    const partialElement = render(undefined, newVNode, true); 
-    console.log('partialElement', partialElement)
-
-    // Remove children
-    removeChildren(queriedParent); 
-
+const searchAndReplace = (selector, newVNode, retrieveAll) => {
+    const exchangeChildren = (queriedParent) => {
+        // convert the node to an element
+        const partialElement = render(undefined, newVNode, true);
+        // Remove children
+        removeChildren(queriedParent);
+        // Adopt the new element 
+        queriedParent.appendChild(partialElement)
+    }
 
 
-    // Adopt the new element 
-    queriedParent.appendChild(partialElement)
+    if (retrieveAll) {
+        const queriedParents = fragment.querySelectorAll(selector);
 
-    // Remove children
-    removeChildren(rootElement);
+        const queriedParentsLength = queriedParents.length;
 
-    // Append modified fragment.
-    const fragmentClone = document.importNode(fragment, true);
-     rootElement.appendChild(fragmentClone); 
-    // console.info('searchAndReplace')
-    // console.log('vDOM', vDOM)
-    // console.log('newVNode', newVNode)
-    // if (Array.isArray(vDOM)) {
-
-    // } else {
-    //     console.log('OBJECT')
-    //     // If the first node contains the selector of the given type
-    //     // replace the first node's child.
-
-    //     const traverse = (node) => {
-    //         if (node.at[type].indexOf(selector) >= 0) {
-    //             node.ch = [newVNode];
-    //             node.chx = 1;
-    //         } else {
-    //             const nodeChildren = node.ch;
-    //             const nodeChildLength = nodeChildren.length; 
-    //             for(i = 0; i < nodeChildLength; i++){
-    //                 nodeChildren
-    //             }
-    //         }
-    //     }
-
-    //     traverse(vDOM);
-    // }
-    // console.log('final vDOM', vDOM)
-    // render(undefined, true);
-
-
+        for (let i = 0; i < queriedParentsLength; i++) {
+            exchangeChildren(queriedParents[i])
+        }
+    } else {
+        const queriedParent = fragment.querySelector(selector);
+        exchangeChildren(queriedParent)
+    }
 }
 
 
-const partialRender = (partialNodes) => {
+const partialRenderInner = (partialNodes, retrieveAll) => {
     // console.log('elementCache', elementCache)
     const partialNodesKeys = Object.keys(partialNodes);
     const partialNodesLength = partialNodesKeys.length;
@@ -453,33 +425,20 @@ const partialRender = (partialNodes) => {
         const partialNodeKey = partialNodesKeys[i];
         const newVNode = partialNodes[partialNodeKey];
         console.log('partialNodeKey', newVNode, partialNodeKey)
-        // console.log('newVNode', newVNode)
 
-        // Check if class
-        // if (partialNodeKey[0] === '.') {
-        //     type = 'class';
-        //     selector = partialNodeKey.slice(1);
-        // }
-        // // Check if class
-        // if (partialNodeKey[0] === '#') {
-        //     type = 'id';
-        //     selector = partialNodeKey.slice(1);
-        // }
-
-
-        searchAndReplace(partialNodeKey, newVNode);
-        // searchAndReplace(type, selector, newVNode);
-
-        // const elementsIndex = elementCachekeys.indexOf(partialNodesKeys[i])
-        // const parentsToUpdate = elementCache[elementCachekeys[elementsIndex]];
-        // const parentsToUpdateLength = parentsToUpdate.length;
-
-        // for (let j = 0; j < parentsToUpdateLength; j++) {
-        //     render(parentsToUpdate[j], partialNodes[partialNodesKeys[i]], undefined, true);
-        // }
+        searchAndReplace(partialNodeKey, newVNode, retrieveAll);
 
     }
+
+
+    // Append modified fragment.
+    // Remove children
+    removeChildren(rootElement);
+    const fragmentClone = document.importNode(fragment, true);
+    rootElement.appendChild(fragmentClone);
 }
+const partialRender = (partialNodes) => partialRenderInner(partialNodes, false);
+partialRender.all = (partialNodes) => partialRenderInner(partialNodes, true);
 
 
 

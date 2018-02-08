@@ -138,7 +138,7 @@ const someUI = div({ class: 'wrapper' },
                 section({ class: 'world' }, 'WORLD'),
             ], ['~2', '.world'], true),
             // Without variables...
-            li({ class: 'menu-item' },
+            li({ class: 'linkedin' },
                 a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' },
                     'Linkedin'
                 ),
@@ -163,18 +163,18 @@ const someUI = div({ class: 'wrapper' },
 )
 
 document.addEventListener('click', () => {
-    startMeasure('Wavefront')
+    // startMeasure('Wavefront')
     const render = initialize('#root', someUI);
-    stopMeasure();
+    // stopMeasure();
 
 
-    setTimeout(() => {
-        startMeasure('Wavefront')
+    // setTimeout(() => {
+        console.time('renderAll')
         render({
-            '.menu': li({ style: { backgroundColor: 'blue' } }, 'ONE LIST ITEM ')
+            'li': li({ style: { backgroundColor: 'blue' } }, 'ONE LIST ITEM ')
         });
-            stopMeasure();
-    }, 2000)
+         console.timeEnd('renderAll')
+    // }, 2000)
 }, false);
 
 

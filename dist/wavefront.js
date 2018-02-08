@@ -362,57 +362,31 @@ var createAndAppendNode = function createAndAppendNode(frag, node) {
     }
 };
 
-var searchAndReplace = function searchAndReplace(selector, newVNode) {
-    var queriedParent = fragment.querySelector(selector);
-    // console.log('queriedParent', queriedParent, selector)
+var searchAndReplace = function searchAndReplace(selector, newVNode, retrieveAll) {
+    var exchangeChildren = function exchangeChildren(queriedParent) {
+        // convert the node to an element
+        var partialElement = render(undefined, newVNode, true);
+        // Remove children
+        removeChildren(queriedParent);
+        // Adopt the new element 
+        queriedParent.appendChild(partialElement);
+    };
 
-    // convert the node to an element
-    var partialElement = render(undefined, newVNode, true);
-    console.log('partialElement', partialElement);
+    if (retrieveAll) {
+        var queriedParents = fragment.querySelectorAll(selector);
 
-    // Remove children
-    removeChildren(queriedParent);
+        var queriedParentsLength = queriedParents.length;
 
-    // Adopt the new element 
-    queriedParent.appendChild(partialElement);
-
-    // Remove children
-    removeChildren(rootElement);
-
-    // Append modified fragment.
-    var fragmentClone = document.importNode(fragment, true);
-    rootElement.appendChild(fragmentClone);
-    // console.info('searchAndReplace')
-    // console.log('vDOM', vDOM)
-    // console.log('newVNode', newVNode)
-    // if (Array.isArray(vDOM)) {
-
-    // } else {
-    //     console.log('OBJECT')
-    //     // If the first node contains the selector of the given type
-    //     // replace the first node's child.
-
-    //     const traverse = (node) => {
-    //         if (node.at[type].indexOf(selector) >= 0) {
-    //             node.ch = [newVNode];
-    //             node.chx = 1;
-    //         } else {
-    //             const nodeChildren = node.ch;
-    //             const nodeChildLength = nodeChildren.length; 
-    //             for(i = 0; i < nodeChildLength; i++){
-    //                 nodeChildren
-    //             }
-    //         }
-    //     }
-
-    //     traverse(vDOM);
-    // }
-    // console.log('final vDOM', vDOM)
-    // render(undefined, true);
-
+        for (var i$$1 = 0; i$$1 < queriedParentsLength; i$$1++) {
+            exchangeChildren(queriedParents[i$$1]);
+        }
+    } else {
+        var queriedParent = fragment.querySelector(selector);
+        exchangeChildren(queriedParent);
+    }
 };
 
-var partialRender = function partialRender(partialNodes) {
+var partialRenderInner = function partialRenderInner(partialNodes, retrieveAll) {
     // console.log('elementCache', elementCache)
     var partialNodesKeys = Object.keys(partialNodes);
     var partialNodesLength = partialNodesKeys.length;
@@ -424,31 +398,21 @@ var partialRender = function partialRender(partialNodes) {
         var partialNodeKey = partialNodesKeys[i$$1];
         var newVNode = partialNodes[partialNodeKey];
         console.log('partialNodeKey', newVNode, partialNodeKey);
-        // console.log('newVNode', newVNode)
 
-        // Check if class
-        // if (partialNodeKey[0] === '.') {
-        //     type = 'class';
-        //     selector = partialNodeKey.slice(1);
-        // }
-        // // Check if class
-        // if (partialNodeKey[0] === '#') {
-        //     type = 'id';
-        //     selector = partialNodeKey.slice(1);
-        // }
-
-
-        searchAndReplace(partialNodeKey, newVNode);
-        // searchAndReplace(type, selector, newVNode);
-
-        // const elementsIndex = elementCachekeys.indexOf(partialNodesKeys[i])
-        // const parentsToUpdate = elementCache[elementCachekeys[elementsIndex]];
-        // const parentsToUpdateLength = parentsToUpdate.length;
-
-        // for (let j = 0; j < parentsToUpdateLength; j++) {
-        //     render(parentsToUpdate[j], partialNodes[partialNodesKeys[i]], undefined, true);
-        // }
+        searchAndReplace(partialNodeKey, newVNode, retrieveAll);
     }
+
+    // Append modified fragment.
+    // Remove children
+    removeChildren(rootElement);
+    var fragmentClone = document.importNode(fragment, true);
+    rootElement.appendChild(fragmentClone);
+};
+var partialRender = function partialRender(partialNodes) {
+    return partialRenderInner(partialNodes, false);
+};
+partialRender.all = function (partialNodes) {
+    return partialRenderInner(partialNodes, true);
 };
 
 var initialize = function initialize(rootSelector, vNode) {
@@ -836,26 +800,6 @@ var loop = function loop(vNodes, data) {
     }
 };
 
-//////////////////
-// test.
-var startTime;
-var lastMeasure;
-var startMeasure = function startMeasure(name) {
-    startTime = performance.now();
-    lastMeasure = name;
-};
-var stopMeasure = function stopMeasure() {
-    var last = lastMeasure;
-    if (lastMeasure) {
-        window.setTimeout(function () {
-            lastMeasure = null;
-            var stop = performance.now();
-            var duration = 0;
-            console.log(last + " took " + (stop - startTime));
-        }, 0);
-    }
-};
-
 function _random(max) {
     return Math.round(Math.random() * 1000) % max;
 }
@@ -906,20 +850,21 @@ var someUI = div({ class: 'wrapper' }, div({ id: 'block-social-responsive', clas
     name: 'jack'
 }, 'FACEBOOK')), or([div({ class: 'hello', id: 'yeaa' }, 'HELLO'), div({ class: 'foo' }, 'FOO'), a({ class: 'bar', id: 'yeaa' }, h1('This is H TAG 1'), h2('This is H TAG 2'), 'BAR'), div({ class: 'baz' }, 'BAZ'), section({ class: 'hello' }, h1('This is H TAG 1'), h2('This is H TAG 2')), section({ class: 'world' }, 'WORLD')], ['~2', '.world'], true),
 // Without variables...
-li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin'), '@This is a single line comment'), loop(li({ style: { backgroundColor: 'pink', fontSize: 20 } }, 'HELLO WORLD'), 5), loop(buildTable, lotsData))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'), svg({ height: 150, width: 400 }, defs(linearGradient({ id: 'grad1', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, Stop({ offset: '0%', style: { 'stop-color': 'rgb(255,0,0)', 'stop-opacity': 1 } }), Stop({ offset: '100%', style: { 'stop-color': 'rgb(255,255,0)', 'stop-opacity': 1 } }))), ellipse({ cx: 200, cy: 70, rx: 85, ry: 55, fill: 'url(#grad1)' }), 'Sorry, your browser does not support inline SVG.'), '@This comment is outside');
+li({ class: 'linkedin' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin'), '@This is a single line comment'), loop(li({ style: { backgroundColor: 'pink', fontSize: 20 } }, 'HELLO WORLD'), 5), loop(buildTable, lotsData))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'), svg({ height: 150, width: 400 }, defs(linearGradient({ id: 'grad1', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, Stop({ offset: '0%', style: { 'stop-color': 'rgb(255,0,0)', 'stop-opacity': 1 } }), Stop({ offset: '100%', style: { 'stop-color': 'rgb(255,255,0)', 'stop-opacity': 1 } }))), ellipse({ cx: 200, cy: 70, rx: 85, ry: 55, fill: 'url(#grad1)' }), 'Sorry, your browser does not support inline SVG.'), '@This comment is outside');
 
 document.addEventListener('click', function () {
-    startMeasure('Wavefront');
+    // startMeasure('Wavefront')
     var render = initialize('#root', someUI);
-    stopMeasure();
+    // stopMeasure();
 
-    setTimeout(function () {
-        startMeasure('Wavefront');
-        render({
-            '.menu': li({ style: { backgroundColor: 'blue' } }, 'ONE LIST ITEM ')
-        });
-        stopMeasure();
-    }, 2000);
+
+    // setTimeout(() => {
+    console.time('renderAll');
+    render({
+        'li': li({ style: { backgroundColor: 'blue' } }, 'ONE LIST ITEM ')
+    });
+    console.timeEnd('renderAll');
+    // }, 2000)
 }, false);
 
 // () => {
