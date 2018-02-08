@@ -1,6 +1,19 @@
 const isPlaneObject$1 = value => ({}).toString.call(value) === '[object Object]';
 const isString$1 = value => typeof value === 'string';
 const isPrimitive$1 = value => isString$1(value) || typeof value === 'number';
+
+const isElement$1 = value => value instanceof Element;
+const isVNode = value => value.hasOwnProperty('t') && value.hasOwnProperty('id');
+const removeChildren = parentNode => {
+  while (parentNode.firstChild) {
+    parentNode.removeChild(parentNode.firstChild);
+  }
+};
+
+let vDOM;
+let rootElement;
+const fragment = document.createDocumentFragment();
+
 var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 /** 
@@ -107,92 +120,134 @@ const assembly = (tagName, isSVG) => {
     };
 };
 
-const renderPartial = selector => {
-    const container = document.querySelector(selector);
-    const fragment = document.createDocumentFragment();
-    return (newNode, cache) => {
-        count = 0; // reset counter used for node ids.
+const render = (initalRootElement, vNode, isPartial) => {
+    // Cache root element 
+    if (rootElement === undefined) {
+        rootElement = initalRootElement;
+    }
+    // Creates a new fragment for partials but uses 
+    // the fragment cache for the inital render.
+    // const renderFragment = isPartial === true ? (document.createDocumentFragment()) : fragment; 
+    // console.log('renderFragment', document.createDocumentFragment())
+    let renderFragment;
+    if (isPartial === true) {
+        renderFragment = document.createDocumentFragment();
+    } else {
+        renderFragment = fragment;
+    }
 
-        if (cache === undefined) {
-            if (Array.isArray(newNode)) {
-                const wrappedVTree = div({ id: 'dummy' }, newNode);
-                const unWrappedVTree = wrappedVTree.ch;
+    const node = isPartial === true ? vNode : vDOM;
+    console.log('node', node);
+    count = 0; // reset counter used for node ids.
 
-                function appendMultipleNodes() {
-                    var args = [].slice.call(arguments);
-                    for (var x = 1; x < args.length; x++) {
-                        args[0].appendChild(args[x]);
-                    }
-                    return args[0];
-                }
 
-                createAndAppendNode(fragment, wrappedVTree);
-                // }
-                const dummy = fragment.firstElementChild;
-                const innerNodes = dummy.childNodes;
-                const outerNodeList = [];
-                for (let i$$1 = 0; i$$1 < innerNodes.length; i$$1++) {
-                    outerNodeList.push(innerNodes[i$$1]);
-                }
-                fragment.removeChild(dummy);
+    if (Array.isArray(node)) {
+        const dummyVDOM = div({ id: 'dummy' }, node);
 
-                appendMultipleNodes(fragment, ...outerNodeList);
-
-                requestAnimationFrame(() => {
-                    container.appendChild(fragment);
-
-                    /** 
-                       Static Rendering:
-                       This will generate the inital state
-                       of the HTML as a string. headers 
-                       and other content can be generated 
-                       from the front side or modified on the
-                       back end...
-                    **/
-                    // const staticRender = container.outerHTML;
-                    // console.log(staticRender)
-                });
-            } else {
-                // Wrapped element
-                createAndAppendNode(fragment, newNode);
-
-                requestAnimationFrame(() => {
-                    container.appendChild(fragment);
-
-                    /** 
-                       Static Rendering:
-                       This will generate the inital state
-                       of the HTML as a string. headers 
-                       and other content can be generated 
-                       from the front side or modified on the
-                       back end...
-                    **/
-                    // const staticRender = container.outerHTML;
-                    // console.log(staticRender)
-                });
+        function appendMultipleNodes() {
+            var args = [].slice.call(arguments);
+            for (var x = 1; x < args.length; x++) {
+                args[0].appendChild(args[x]);
             }
+            return args[0];
         }
-    };
+
+        createAndAppendNode(renderFragment, dummyVDOM);
+        // }
+        const dummy = renderFragment.firstElementChild;
+        const innerNodes = dummy.childNodes;
+        const outerNodeList = [];
+        for (let i$$1 = 0; i$$1 < innerNodes.length; i$$1++) {
+            outerNodeList.push(innerNodes[i$$1]);
+        }
+        renderFragment.removeChild(dummy);
+
+        appendMultipleNodes(renderFragment, ...outerNodeList);
+
+        requestAnimationFrame(() => {
+            rootElement.appendChild(renderFragment);
+
+            /** 
+               Static Rendering:
+               This will generate the inital state
+               of the HTML as a string. headers 
+               and other content can be generated 
+               from the front side or modified on the
+               back end...
+            **/
+            // const staticRender = rootElement.outerHTML;
+            // console.log(staticRender)
+        });
+    } else {
+        // Wrapped element
+        console.log('1', renderFragment);
+        createAndAppendNode(renderFragment, node);
+        console.log('renderFragmentdd', renderFragment);
+        // console.log('elementCache', elementCache)
+        requestAnimationFrame(() => {
+            // if (isPartial) {
+            //     removeChilds(rootElement)
+            // }
+            if (!isPartial) {
+                console.log();
+                const fragmentClone = document.importNode(renderFragment, true);
+                rootElement.appendChild(fragmentClone);
+            }
+            // console.log('FINAL FRAGMENT', renderFragment)
+            /** 
+               Static Rendering:
+               This will generate the inital state
+               of the HTML as a string. headers 
+               and other content can be generated 
+               from the front side or modified on the
+               back end...
+            **/
+            // const staticRender = rootElement.outerHTML;
+            // console.log(staticRender)
+            return;
+        });
+    }
+
+    return renderFragment;
 };
 
-const createAndAppendNode = (fragment, node) => {
+// const elementCache = {
+//     class: {},
+//     id: {},
+//     nonexistent: []
+// }
+const elementCache = {};
+
+const createAndAppendNode = (frag, node) => {
     const isSVG = node.svg === true;
+    // const shouldCacheElements = selectorsToCache.length > 0;
     // TEXT_NODE        3
     if (node.t === 'TEXT') {
         const textNode = document.createTextNode(node.val);
-        fragment.appendChild(textNode);
+        frag.appendChild(textNode);
         return;
     }
     // // COMMENT_NODE     8
     if (node.t === 'COM') {
-        console.log('node.val', node.val);
+        // console.log('node.val', node.val)
         const commentNode = document.createComment(node.val);
-        fragment.appendChild(commentNode);
+        frag.appendChild(commentNode);
         return;
     }
 
     // ELEMENT_NODE     1
     const element = isSVG ? document.createElementNS(SVG_NAMESPACE, node.t) : document.createElement(node.t);
+
+    // const cacheSelectedElements = (attributeValue, element) => {
+    //     if (selectorsToCache.indexOf('#' + attributeValue) >= 0) {
+    //         elementCache.id[attributeValue] = element;
+    //     }
+
+    //     if (selectorsToCache.indexOf('.' + attributeValue) >= 0) {
+    //         elementCache.class[attributeValue] = element;
+    //     }
+    // }
+
 
     // Add attributes
     if (node.at) {
@@ -201,7 +256,6 @@ const createAndAppendNode = (fragment, node) => {
         const attributesLength = attributeKeys.length;
 
         for (let i$$1 = 0; i$$1 < attributesLength; i$$1++) {
-
             const attributeKey = attributeKeys[i$$1];
 
             // Standard dataset syntax.
@@ -223,28 +277,52 @@ const createAndAppendNode = (fragment, node) => {
                 continue;
             }
 
+            const attributeValue = attributes[attributeKey];
+
             switch (attributeKey) {
+                // case '#':
+                // case 'id':
+                //     if (shouldCacheElements && selectorsToCache.indexOf('#' + attributeValue) >= 0) {
+                //         // console.log('TEST', attributeKey)
+                //         if (!Array.isArray(elementCache['#' + attributeValue])) {
+                //             elementCache['#' + attributeValue] = [];
+                //         }
+                //         // elementCache.id[attributeValue].push(element);
+                //         elementCache['#' + attributeValue].push(element);
+                //     }
+                //     element.setAttribute(attributeKey, attributes[attributeKey]);
+                //     break;
                 case 'e':
                 case 'event':
-                    element.addEventListener(...attributes[attributeKey]);
+                    element.addEventListener(...attributeValue);
                     break;
                 case '$':
                 case 'style':
-                    Object.assign(element.style, attributes[attributeKey]);
+                    Object.assign(element.style, attributeValue);
                     break;
                 case 'c':
                 case 'class':
+                    // if (shouldCacheElements && selectorsToCache.indexOf('.' + attributeValue) >= 0) {
+
+                    //     if (!Array.isArray(elementCache['.' + attributes.class])) {
+                    //         elementCache['.' + attributes.class] = [];
+                    //     }
+                    //     // elementCache.class[attributes.class].push(element);
+                    //     elementCache['.' + attributes.class].push(element);
+
+                    //     // console.log('class', attributes.class)
+                    // }
                     element.className = attributes.class;
                     break;
                 default:
-                    element.setAttribute(attributeKey, attributes[attributeKey]);
+                    element.setAttribute(attributeKey, attributeValue);
                     break;
             }
         }
     }
 
     // Add children
-    fragment.appendChild(element);
+    frag.appendChild(element);
 
     if (Array.isArray(node.ch)) {
         node.ch.forEach(childNode => {
@@ -252,6 +330,144 @@ const createAndAppendNode = (fragment, node) => {
         });
     }
 };
+
+const searchAndReplace = (selector, newVNode) => {
+    const queriedParent = fragment.querySelector(selector);
+    // console.log('queriedParent', queriedParent, selector)
+
+    // convert the node to an element
+    const partialElement = render(undefined, newVNode, true);
+    console.log('partialElement', partialElement);
+
+    // Remove children
+    removeChildren(queriedParent);
+
+    // Adopt the new element 
+    queriedParent.appendChild(partialElement);
+
+    // Remove children
+    removeChildren(rootElement);
+
+    // Append modified fragment.
+    const fragmentClone = document.importNode(fragment, true);
+    rootElement.appendChild(fragmentClone);
+    // console.info('searchAndReplace')
+    // console.log('vDOM', vDOM)
+    // console.log('newVNode', newVNode)
+    // if (Array.isArray(vDOM)) {
+
+    // } else {
+    //     console.log('OBJECT')
+    //     // If the first node contains the selector of the given type
+    //     // replace the first node's child.
+
+    //     const traverse = (node) => {
+    //         if (node.at[type].indexOf(selector) >= 0) {
+    //             node.ch = [newVNode];
+    //             node.chx = 1;
+    //         } else {
+    //             const nodeChildren = node.ch;
+    //             const nodeChildLength = nodeChildren.length; 
+    //             for(i = 0; i < nodeChildLength; i++){
+    //                 nodeChildren
+    //             }
+    //         }
+    //     }
+
+    //     traverse(vDOM);
+    // }
+    // console.log('final vDOM', vDOM)
+    // render(undefined, true);
+
+};
+
+const partialRender = partialNodes => {
+    // console.log('elementCache', elementCache)
+    const partialNodesKeys = Object.keys(partialNodes);
+    const partialNodesLength = partialNodesKeys.length;
+    const elementCachekeys = Object.keys(elementCache);
+    let selector;
+    let type;
+
+    for (let i$$1 = 0; i$$1 < partialNodesLength; i$$1++) {
+        const partialNodeKey = partialNodesKeys[i$$1];
+        const newVNode = partialNodes[partialNodeKey];
+        console.log('partialNodeKey', newVNode, partialNodeKey);
+        // console.log('newVNode', newVNode)
+
+        // Check if class
+        // if (partialNodeKey[0] === '.') {
+        //     type = 'class';
+        //     selector = partialNodeKey.slice(1);
+        // }
+        // // Check if class
+        // if (partialNodeKey[0] === '#') {
+        //     type = 'id';
+        //     selector = partialNodeKey.slice(1);
+        // }
+
+
+        searchAndReplace(partialNodeKey, newVNode);
+        // searchAndReplace(type, selector, newVNode);
+
+        // const elementsIndex = elementCachekeys.indexOf(partialNodesKeys[i])
+        // const parentsToUpdate = elementCache[elementCachekeys[elementsIndex]];
+        // const parentsToUpdateLength = parentsToUpdate.length;
+
+        // for (let j = 0; j < parentsToUpdateLength; j++) {
+        //     render(parentsToUpdate[j], partialNodes[partialNodesKeys[i]], undefined, true);
+        // }
+    }
+};
+
+const initialize = (rootSelector, vNode) => {
+    // allow a string or element as a querySelector value.
+    const container = isElement$1(rootSelector) ? rootSelector : document.querySelector(rootSelector);
+
+    // Shallowly validate vNode.
+    const initalVNode = isVNode(vNode) ? vNode : false;
+
+    if (initalVNode === false) {
+        throw new Error(`vNode ${vDOM} is not valid`);
+    }
+
+    // Cache valid vDOM
+    vDOM = initalVNode;
+
+    // Render the inital virual DOM and cache the selectors.
+    render(container, false);
+
+    // console.log('initialize', container, vNode, selectors)
+    return partialRender;
+};
+
+// const r = initialize('#root', fullTemplate, '#thisID', '.thisClass', '.childClass');
+
+
+// setTimeout(() => {
+// r({
+//     '.thisClass': {
+//         "t": "DIV",
+//         "id": 90046,
+//         "at": {
+//             "class": "new-shit",
+//             "style": {
+//                 "display": "block",
+//                 "background": 'yellow',
+//                 "padding": "1rem"
+//             }
+//         },
+//         "chx": 1,
+//         "ch": [{
+//             "t": "TEXT",
+//             "id": 90045,
+//             "val": "NEW SHIT NEW SHIT",
+//             "pid": 90046,
+//             "ix": 0
+//         }]
+//     }
+// });
+// }, 2000)
 
 const a = assembly('a');
 
@@ -639,8 +855,111 @@ li({ class: 'menu-item' }, a({ href: 'https://www.linkedin.com/company/208777', 
 
 document.addEventListener('click', () => {
     startMeasure('Wavefront');
-    const render = renderPartial('#root');
-    render(someUI);
+    const render = initialize('#root', someUI);
     stopMeasure();
+
+    setTimeout(() => {
+        startMeasure('Wavefront');
+        render({
+            '.menu': li({ style: { backgroundColor: 'blue' } }, 'ONE LIST ITEM ')
+        });
+        stopMeasure();
+    }, 2000);
 }, false);
+
+// () => {
+//     /**
+//         Two types of templates: 
+//         1) Full Templates
+//         2) Partial Templates
+
+//         A full template for example a completely new view/ page 
+//         It will be rendered entirely from scratch.
+
+//         A partial template takes the existing cached DOM and patches it with
+//         the minimal number of changes.
+
+//         The difference is that all elements that need to be chached are chached 
+//         before each render. There are no dom lookups. 
+
+//         - Render full template
+//         -   Chaches
+//         -     
+
+
+//         Full render: 
+//          - Updates vDom 
+//          - Upda
+//     **/
+
+//     // Reverse DOM.
+//     // getHTML
+//     // This function will only run once on each page refresh.
+//     const serverTemplate = Wavefront.getHTML('#root'); // a vDom to be used as a full template
+
+//     // Static DOM rendering.
+//     // createHTMLString
+//     // Creates HTML string of the DOM from the cache, a given vNode or an element (document) 
+//     // This function will only run once on each page refresh.
+//     const serverTemplate = Wavefront.createHTMLString('#root'); // Must match cache 
+//     const serverTemplate = Wavefront.createHTMLString(serverTemplate); // From a vNode
+//     const serverTemplate = Wavefront.createHTMLString(document); // The entire document
+
+//     // Initalize. 
+//     // i) Take an existing container, 
+//     // ii) Cache selectors 
+//     // iii) Render a template to the container, 
+//     // iv) Returns a render function  
+//     const render = Wavefront.initialize('#root', fullTemplate, '.selector1',
+//         '#selector2', 'nonExistant', '.notExisting') // vnode or element
+
+
+//     /** 
+//         render(<function>) // Render cached root selector
+//         render(vNode1, vNode2, vnode3,<function>)  // Renders to the pre-defined selectors 
+//         If a selector has not been pre-deined it will throw an error.
+
+//         render.selectors // List all existing selectors as array
+
+//        ....automatic render.replenish() // Updates the cached elements & selectors list (reads from DOM) 
+//     */
+
+//     // Example
+//     const increment = (n) => {
+//         n++;
+//         return render('#selector2', () => h1({ class: 'whatever' }, `increment ${n}`))
+//     };
+
+//     document.addEventListener('click', () => increment(4))
+
+
+//     // Updates multiple selectors at once with one template
+//     render('#selector2', '.selector1', () => {
+//             return h2({ class: 'nonExistant' },
+//                 nonExistant('nonExistant'),
+//                 span({ class: '.notExisting' }, 'WHAT')
+//             });
+//     })
+
+
+// // Update newly created selectors with single template
+// render('nonExistant', '.notExisting', () => {
+//     return a({ href: '#', class: 'some-class' })
+// });
+
+
+// // Updates multiple templates for multiple selectors
+// render(() => ({
+//     '.some-selector': div({ class: 'someTemplate' }),
+//     '#some-selector': div({ class: 'someTemplate' }),
+//     'some-selector': div({ class: 'someTemplate' }),
+// }));
+
+
+// // Render all on root
+// render(() => {
+//     return div({ class: 'wrapper' }, 'WHAT')
+// });
+
+// }
 //# sourceMappingURL=wavefront.es.js.map
