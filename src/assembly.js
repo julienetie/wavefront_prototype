@@ -1,5 +1,3 @@
-import { div } from './tags';
-
 import {
     isPlaneObject,
     isString,
@@ -60,7 +58,17 @@ let count = 0;
 
 
 **/
-export const assembly = (tagName, isSVG) => {
+export const assembly = (tagName, nodeType) => {
+    const isSVG = nodeType === true;
+
+    // if (typeof nodeType === 'function') {
+    //     if (tagName.indexOf('-') >= 0) {
+    //         // Define the custom element. 
+    //         window.customElements.define(tagName, nodeType);
+    //     } else {
+    //         throw new Error(`Invalid custom element name ${tagName}`);
+    //     }
+    // }
 
     return function inner(...args) {
         const tagNameStr = `${tagName}`;
@@ -75,7 +83,7 @@ export const assembly = (tagName, isSVG) => {
 
             // Check if item is a plane object = attribute.
             if (isItemObject && !isItemVnode) {
-                // let isSelector = false;
+                // let isSelector = false; 
                 attributes = item;
                 continue;
             }
@@ -88,9 +96,17 @@ export const assembly = (tagName, isSVG) => {
             }
 
             // check if item is not an object, array or function = child element.
-            if (isItemObject && isItemVnode || isPrimitive) {
+            if (isItemObject && isItemVnode || isPrimitive(item)) {
                 childNodes.push(item);
                 continue;
+            }
+
+
+            if (item instanceof Node) {
+                //@TODO Convert item to vNode and push;
+                console.log('item in assembly', item)
+                childNodes.push({ el: item });
+                // continue;
             }
         }
 
@@ -131,6 +147,7 @@ var removeChilds = function(node) {
 
 
 const render = (initalRootElement, vNode, isPartial) => {
+    console.log('X',vNode)
     // Cache root element 
     if (rootElement === undefined) {
         rootElement = initalRootElement;
@@ -147,14 +164,22 @@ const render = (initalRootElement, vNode, isPartial) => {
     }
 
     const node = isPartial === true ? vNode : vDOM;
-    console.log('node', node)
+
     count = 0; // reset counter used for node ids.
 
 
 
     if (Array.isArray(node)) {
-        const dummyVDOM = div({ id: 'dummy' }, node);
 
+        const dummyVDOM = {
+            "t": "div",
+            "id": 2,
+            "at": {
+                "id": "dummy"
+            },
+            "chx": 1,
+            "ch": node
+        }
 
         function appendMultipleNodes() {
             var args = [].slice.call(arguments);
@@ -192,9 +217,9 @@ const render = (initalRootElement, vNode, isPartial) => {
         });
     } else {
         // Wrapped element
-        console.log('1', renderFragment, )
+
         createAndAppendNode(renderFragment, node);
-        console.log('renderFragmentdd', renderFragment)
+
         // console.log('elementCache', elementCache)
         requestAnimationFrame(() => {
             // if (isPartial) {
@@ -232,7 +257,7 @@ const elementCache = {}
 
 const createAndAppendNode = (frag, node) => {
     const isSVG = node.svg === true;
-    // const shouldCacheElements = selectorsToCache.length > 0;
+
     // TEXT_NODE        3
     if (node.t === 'TEXT') {
         const textNode = document.createTextNode(node.val);
@@ -246,97 +271,72 @@ const createAndAppendNode = (frag, node) => {
         frag.appendChild(commentNode);
         return;
     }
+    // console.log('notAnElement', node)
+    const notAnElement = !node.hasOwnProperty('el');
 
-    // ELEMENT_NODE     1
-    const element = isSVG ? document.createElementNS(SVG_NAMESPACE, node.t) : document.createElement(node.t);
+    let element;
 
-    // const cacheSelectedElements = (attributeValue, element) => {
-    //     if (selectorsToCache.indexOf('#' + attributeValue) >= 0) {
-    //         elementCache.id[attributeValue] = element;
-    //     }
+    if (notAnElement) {
+        // ELEMENT_NODE     1
+        element = isSVG ? document.createElementNS(SVG_NAMESPACE, node.t) : document.createElement(node.t);
 
-    //     if (selectorsToCache.indexOf('.' + attributeValue) >= 0) {
-    //         elementCache.class[attributeValue] = element;
-    //     }
-    // }
+        // Add attributes
+        if (node.at) {
+            const attributes = node.at;
+            const attributeKeys = Object.keys(attributes);
+            const attributesLength = attributeKeys.length;
 
+            for (let i = 0; i < attributesLength; i++) {
+                const attributeKey = attributeKeys[i];
 
-    // Add attributes
-    if (node.at) {
-        const attributes = node.at;
-        const attributeKeys = Object.keys(attributes);
-        const attributesLength = attributeKeys.length;
+                // Standard dataset syntax.
+                if (attributeKey.indexOf('data-') === 0) {
+                    const dataKey = attributeKey.replace('data-', '');
+                    element.dataset[dataKey] = attributes[attributeKey];
+                    continue;
+                }
+                // Shorthand dataset syntax.
+                if (attributeKey.indexOf('d-') === 0) {
+                    const dataKey = attributeKey.replace('d-', '');
+                    element.dataset[dataKey] = attributes[attributeKey];
+                    continue;
+                }
+                // Props: _
+                if (attributeKey[0] === '_') {
+                    const cleanKey = attributeKey.replace('_', '');
+                    element[cleanKey] = attributes[attributeKey];
+                    continue;
+                }
 
-        for (let i = 0; i < attributesLength; i++) {
-            const attributeKey = attributeKeys[i];
+                const attributeValue = attributes[attributeKey];
 
-            // Standard dataset syntax.
-            if (attributeKey.indexOf('data-') === 0) {
-                const dataKey = attributeKey.replace('data-', '');
-                element.dataset[dataKey] = attributes[attributeKey];
-                continue;
-            }
-            // Shorthand dataset syntax.
-            if (attributeKey.indexOf('d-') === 0) {
-                const dataKey = attributeKey.replace('d-', '');
-                element.dataset[dataKey] = attributes[attributeKey];
-                continue;
-            }
-            // Props: _
-            if (attributeKey[0] === '_') {
-                const cleanKey = attributeKey.replace('_', '');
-                element[cleanKey] = attributes[attributeKey];
-                continue;
-            }
-
-            const attributeValue = attributes[attributeKey];
-
-            switch (attributeKey) {
-                // case '#':
-                // case 'id':
-                //     if (shouldCacheElements && selectorsToCache.indexOf('#' + attributeValue) >= 0) {
-                //         // console.log('TEST', attributeKey)
-                //         if (!Array.isArray(elementCache['#' + attributeValue])) {
-                //             elementCache['#' + attributeValue] = [];
-                //         }
-                //         // elementCache.id[attributeValue].push(element);
-                //         elementCache['#' + attributeValue].push(element);
-                //     }
-                //     element.setAttribute(attributeKey, attributes[attributeKey]);
-                //     break;
-                case 'e':
-                case 'event':
-                    element.addEventListener(...attributeValue);
-                    break;
-                case '$':
-                case 'style':
-                    Object.assign(element.style, attributeValue);
-                    break;
-                case 'c':
-                case 'class':
-                    // if (shouldCacheElements && selectorsToCache.indexOf('.' + attributeValue) >= 0) {
-
-                    //     if (!Array.isArray(elementCache['.' + attributes.class])) {
-                    //         elementCache['.' + attributes.class] = [];
-                    //     }
-                    //     // elementCache.class[attributes.class].push(element);
-                    //     elementCache['.' + attributes.class].push(element);
-
-                    //     // console.log('class', attributes.class)
-                    // }
-                    element.className = attributes.class;
-                    break;
-                default:
-                    element.setAttribute(attributeKey, attributeValue);
-                    break;
+                switch (attributeKey) {
+                    case 'e':
+                    case 'event':
+                        element.addEventListener(...attributeValue);
+                        break;
+                    case '$':
+                    case 'style':
+                        Object.assign(element.style, attributeValue);
+                        break;
+                    case 'c':
+                    case 'class':
+                        element.className = attributes.class;
+                        break;
+                    default:
+                        element.setAttribute(attributeKey, attributeValue);
+                        break;
+                }
             }
         }
+    } else {
+        console.log('ELEMENT', node.el)
+        element = node.el;
     }
-
     // Add children
     frag.appendChild(element);
 
-    if (Array.isArray(node.ch)) {
+    if (notAnElement && Array.isArray(node.ch)) {
         node.ch.forEach(childNode => {
             createAndAppendNode(element, childNode)
         });
@@ -408,18 +408,17 @@ const searchAndReplace = (selector, newVNode, retrieveAll) => {
         }
     } else {
         const queriedParent = fragment.querySelector(selector);
+        // console.log('queriedParent',queriedParent)
         exchangeChildren(queriedParent)
     }
 }
 
 
 const partialRenderInner = (partialNodes, retrieveAll) => {
-    // console.log('elementCache', elementCache)
+
     const partialNodesKeys = Object.keys(partialNodes);
     const partialNodesLength = partialNodesKeys.length;
     const elementCachekeys = Object.keys(elementCache);
-    let selector;
-    let type;
 
     for (let i = 0; i < partialNodesLength; i++) {
         const partialNodeKey = partialNodesKeys[i];

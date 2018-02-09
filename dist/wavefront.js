@@ -1,20 +1,20 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory() :
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
-	(factory());
+	(global.wavefront = factory());
 }(this, (function () { 'use strict';
 
-var isPlaneObject$1 = function isPlaneObject(value) {
+var isPlaneObject = function isPlaneObject(value) {
   return {}.toString.call(value) === '[object Object]';
 };
-var isString$1 = function isString(value) {
+var isString = function isString(value) {
   return typeof value === 'string';
 };
-var isPrimitive$1 = function isPrimitive(value) {
-  return isString$1(value) || typeof value === 'number';
+var isPrimitive = function isPrimitive(value) {
+  return isString(value) || typeof value === 'number';
 };
 
-var isElement$1 = function isElement(value) {
+var isElement = function isElement(value) {
   return value instanceof Element;
 };
 var isVNode = function isVNode(value) {
@@ -85,47 +85,64 @@ var count = 0;
 
 
 **/
-var assembly = function assembly(tagName, isSVG) {
+var assembly = function assembly(tagName, nodeType) {
+    var isSVG = nodeType === true;
+
+    // if (typeof nodeType === 'function') {
+    //     if (tagName.indexOf('-') >= 0) {
+    //         // Define the custom element. 
+    //         window.customElements.define(tagName, nodeType);
+    //     } else {
+    //         throw new Error(`Invalid custom element name ${tagName}`);
+    //     }
+    // }
 
     return function inner() {
         var tagNameStr = '' + tagName;
         var attributes = void 0;
         var item = void 0;
-        var childNodes$$1 = [];
-        var i$$1 = void 0;
+        var childNodes = [];
+        var i = void 0;
 
         for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
             args[_key] = arguments[_key];
         }
 
-        for (i$$1 = 0; i$$1 < args.length; i$$1++) {
-            item = args[i$$1] || {};
-            var isItemObject = isPlaneObject$1(item);
+        for (i = 0; i < args.length; i++) {
+            item = args[i] || {};
+            var isItemObject = isPlaneObject(item);
             var isItemVnode = item.hasOwnProperty('t');
 
             // Check if item is a plane object = attribute.
             if (isItemObject && !isItemVnode) {
-                // let isSelector = false;
+                // let isSelector = false; 
                 attributes = item;
                 continue;
             }
 
             // Check if item is an array = group of child elements.
             if (Array.isArray(item)) {
-                childNodes$$1 = [].concat(toConsumableArray(childNodes$$1), toConsumableArray(item));
+                childNodes = [].concat(toConsumableArray(childNodes), toConsumableArray(item));
                 continue;
             }
 
             // check if item is not an object, array or function = child element.
-            if (isItemObject && isItemVnode || isPrimitive$1) {
-                childNodes$$1.push(item);
+            if (isItemObject && isItemVnode || isPrimitive(item)) {
+                childNodes.push(item);
                 continue;
+            }
+
+            if (item instanceof Node) {
+                //@TODO Convert item to vNode and push;
+                console.log('item in assembly', item);
+                childNodes.push({ el: item });
+                // continue;
             }
         }
 
-        for (i$$1 = 0; i$$1 < childNodes$$1.length; ++i$$1) {
-            var childNode = childNodes$$1[i$$1];
-            if (isPrimitive$1(childNode)) {
+        for (i = 0; i < childNodes.length; ++i) {
+            var childNode = childNodes[i];
+            if (isPrimitive(childNode)) {
                 var type = void 0;
                 var value = void 0;
                 if (childNode[0] === '@') {
@@ -136,22 +153,23 @@ var assembly = function assembly(tagName, isSVG) {
                     value = childNode;
                 }
                 count++;
-                childNodes$$1[i$$1] = node(type, count, value, null, isSVG);
+                childNodes[i] = node(type, count, value, null, isSVG);
             }
         }
 
         count++;
         // Update child nodes with parentId
-        for (i$$1 = 0; i$$1 < childNodes$$1.length; ++i$$1) {
-            childNodes$$1[i$$1].pid = count;
-            childNodes$$1[i$$1].ix = i$$1;
+        for (i = 0; i < childNodes.length; ++i) {
+            childNodes[i].pid = count;
+            childNodes[i].ix = i;
         }
 
-        return node(tagNameStr, count, attributes, childNodes$$1, isSVG);
+        return node(tagNameStr, count, attributes, childNodes, isSVG);
     };
 };
 
 var render = function render(initalRootElement, vNode, isPartial) {
+    console.log('X', vNode);
     // Cache root element 
     if (rootElement === undefined) {
         rootElement = initalRootElement;
@@ -168,7 +186,7 @@ var render = function render(initalRootElement, vNode, isPartial) {
     }
 
     var node = isPartial === true ? vNode : vDOM;
-    console.log('node', node);
+
     count = 0; // reset counter used for node ids.
 
 
@@ -181,15 +199,23 @@ var render = function render(initalRootElement, vNode, isPartial) {
             return args[0];
         };
 
-        var dummyVDOM = div({ id: 'dummy' }, node);
+        var dummyVDOM = {
+            "t": "div",
+            "id": 2,
+            "at": {
+                "id": "dummy"
+            },
+            "chx": 1,
+            "ch": node
+        };
 
         createAndAppendNode(renderFragment, dummyVDOM);
         // }
         var dummy = renderFragment.firstElementChild;
         var innerNodes = dummy.childNodes;
         var outerNodeList = [];
-        for (var i$$1 = 0; i$$1 < innerNodes.length; i$$1++) {
-            outerNodeList.push(innerNodes[i$$1]);
+        for (var i = 0; i < innerNodes.length; i++) {
+            outerNodeList.push(innerNodes[i]);
         }
         renderFragment.removeChild(dummy);
 
@@ -211,9 +237,9 @@ var render = function render(initalRootElement, vNode, isPartial) {
         });
     } else {
         // Wrapped element
-        console.log('1', renderFragment);
+
         createAndAppendNode(renderFragment, node);
-        console.log('renderFragmentdd', renderFragment);
+
         // console.log('elementCache', elementCache)
         requestAnimationFrame(function () {
             // if (isPartial) {
@@ -250,8 +276,10 @@ var render = function render(initalRootElement, vNode, isPartial) {
 var elementCache = {};
 
 var createAndAppendNode = function createAndAppendNode(frag, node) {
+    var _element;
+
     var isSVG = node.svg === true;
-    // const shouldCacheElements = selectorsToCache.length > 0;
+
     // TEXT_NODE        3
     if (node.t === 'TEXT') {
         var textNode = document.createTextNode(node.val);
@@ -265,97 +293,72 @@ var createAndAppendNode = function createAndAppendNode(frag, node) {
         frag.appendChild(commentNode);
         return;
     }
+    // console.log('notAnElement', node)
+    var notAnElement = !node.hasOwnProperty('el');
 
-    // ELEMENT_NODE     1
-    var element = isSVG ? document.createElementNS(SVG_NAMESPACE, node.t) : document.createElement(node.t);
+    var element = void 0;
 
-    // const cacheSelectedElements = (attributeValue, element) => {
-    //     if (selectorsToCache.indexOf('#' + attributeValue) >= 0) {
-    //         elementCache.id[attributeValue] = element;
-    //     }
+    if (notAnElement) {
+        // ELEMENT_NODE     1
+        element = isSVG ? document.createElementNS(SVG_NAMESPACE, node.t) : document.createElement(node.t);
 
-    //     if (selectorsToCache.indexOf('.' + attributeValue) >= 0) {
-    //         elementCache.class[attributeValue] = element;
-    //     }
-    // }
+        // Add attributes
+        if (node.at) {
+            var attributes = node.at;
+            var attributeKeys = Object.keys(attributes);
+            var attributesLength = attributeKeys.length;
 
+            for (var i = 0; i < attributesLength; i++) {
+                var attributeKey = attributeKeys[i];
 
-    // Add attributes
-    if (node.at) {
-        var attributes = node.at;
-        var attributeKeys = Object.keys(attributes);
-        var attributesLength = attributeKeys.length;
+                // Standard dataset syntax.
+                if (attributeKey.indexOf('data-') === 0) {
+                    var dataKey = attributeKey.replace('data-', '');
+                    element.dataset[dataKey] = attributes[attributeKey];
+                    continue;
+                }
+                // Shorthand dataset syntax.
+                if (attributeKey.indexOf('d-') === 0) {
+                    var _dataKey = attributeKey.replace('d-', '');
+                    element.dataset[_dataKey] = attributes[attributeKey];
+                    continue;
+                }
+                // Props: _
+                if (attributeKey[0] === '_') {
+                    var cleanKey = attributeKey.replace('_', '');
+                    element[cleanKey] = attributes[attributeKey];
+                    continue;
+                }
 
-        for (var i$$1 = 0; i$$1 < attributesLength; i$$1++) {
-            var attributeKey = attributeKeys[i$$1];
+                var attributeValue = attributes[attributeKey];
 
-            // Standard dataset syntax.
-            if (attributeKey.indexOf('data-') === 0) {
-                var dataKey = attributeKey.replace('data-', '');
-                element.dataset[dataKey] = attributes[attributeKey];
-                continue;
-            }
-            // Shorthand dataset syntax.
-            if (attributeKey.indexOf('d-') === 0) {
-                var _dataKey = attributeKey.replace('d-', '');
-                element.dataset[_dataKey] = attributes[attributeKey];
-                continue;
-            }
-            // Props: _
-            if (attributeKey[0] === '_') {
-                var cleanKey = attributeKey.replace('_', '');
-                element[cleanKey] = attributes[attributeKey];
-                continue;
-            }
-
-            var attributeValue = attributes[attributeKey];
-
-            switch (attributeKey) {
-                // case '#':
-                // case 'id':
-                //     if (shouldCacheElements && selectorsToCache.indexOf('#' + attributeValue) >= 0) {
-                //         // console.log('TEST', attributeKey)
-                //         if (!Array.isArray(elementCache['#' + attributeValue])) {
-                //             elementCache['#' + attributeValue] = [];
-                //         }
-                //         // elementCache.id[attributeValue].push(element);
-                //         elementCache['#' + attributeValue].push(element);
-                //     }
-                //     element.setAttribute(attributeKey, attributes[attributeKey]);
-                //     break;
-                case 'e':
-                case 'event':
-                    element.addEventListener.apply(element, toConsumableArray(attributeValue));
-                    break;
-                case '$':
-                case 'style':
-                    Object.assign(element.style, attributeValue);
-                    break;
-                case 'c':
-                case 'class':
-                    // if (shouldCacheElements && selectorsToCache.indexOf('.' + attributeValue) >= 0) {
-
-                    //     if (!Array.isArray(elementCache['.' + attributes.class])) {
-                    //         elementCache['.' + attributes.class] = [];
-                    //     }
-                    //     // elementCache.class[attributes.class].push(element);
-                    //     elementCache['.' + attributes.class].push(element);
-
-                    //     // console.log('class', attributes.class)
-                    // }
-                    element.className = attributes.class;
-                    break;
-                default:
-                    element.setAttribute(attributeKey, attributeValue);
-                    break;
+                switch (attributeKey) {
+                    case 'e':
+                    case 'event':
+                        (_element = element).addEventListener.apply(_element, toConsumableArray(attributeValue));
+                        break;
+                    case '$':
+                    case 'style':
+                        Object.assign(element.style, attributeValue);
+                        break;
+                    case 'c':
+                    case 'class':
+                        element.className = attributes.class;
+                        break;
+                    default:
+                        element.setAttribute(attributeKey, attributeValue);
+                        break;
+                }
             }
         }
+    } else {
+        console.log('ELEMENT', node.el);
+        element = node.el;
     }
-
     // Add children
     frag.appendChild(element);
 
-    if (Array.isArray(node.ch)) {
+    if (notAnElement && Array.isArray(node.ch)) {
         node.ch.forEach(function (childNode) {
             createAndAppendNode(element, childNode);
         });
@@ -377,25 +380,24 @@ var searchAndReplace = function searchAndReplace(selector, newVNode, retrieveAll
 
         var queriedParentsLength = queriedParents.length;
 
-        for (var i$$1 = 0; i$$1 < queriedParentsLength; i$$1++) {
-            exchangeChildren(queriedParents[i$$1]);
+        for (var i = 0; i < queriedParentsLength; i++) {
+            exchangeChildren(queriedParents[i]);
         }
     } else {
         var queriedParent = fragment.querySelector(selector);
+        // console.log('queriedParent',queriedParent)
         exchangeChildren(queriedParent);
     }
 };
 
 var partialRenderInner = function partialRenderInner(partialNodes, retrieveAll) {
-    // console.log('elementCache', elementCache)
+
     var partialNodesKeys = Object.keys(partialNodes);
     var partialNodesLength = partialNodesKeys.length;
     var elementCachekeys = Object.keys(elementCache);
-    var selector = void 0;
-    var type = void 0;
 
-    for (var i$$1 = 0; i$$1 < partialNodesLength; i$$1++) {
-        var partialNodeKey = partialNodesKeys[i$$1];
+    for (var i = 0; i < partialNodesLength; i++) {
+        var partialNodeKey = partialNodesKeys[i];
         var newVNode = partialNodes[partialNodeKey];
         console.log('partialNodeKey', newVNode, partialNodeKey);
 
@@ -417,7 +419,7 @@ partialRender.all = function (partialNodes) {
 
 var initialize = function initialize(rootSelector, vNode) {
     // allow a string or element as a querySelector value.
-    var container = isElement$1(rootSelector) ? rootSelector : document.querySelector(rootSelector);
+    var container = isElement(rootSelector) ? rootSelector : document.querySelector(rootSelector);
 
     // Shallowly validate vNode.
     var initalVNode = isVNode(vNode) ? vNode : false;
@@ -464,191 +466,7 @@ var initialize = function initialize(rootSelector, vNode) {
 // });
 // }, 2000)
 
-var a = assembly('a');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var div = assembly('DIV');
-
-
-
-
-
-
-
-
-
-
-var h1 = assembly('h1');
-var h2 = assembly('h2');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var li = assembly('li');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var section = assembly('section');
-
-
-
-var span = assembly('span');
-
-
-
-
-
-
-var td = assembly('td');
-
-
-
-
-
-var tr = assembly('tr');
-var ul = assembly('ul');
- // First capital
-
-
-// SVG Elements.
-var svg = assembly('svg', true);
-
-
-
-
-
-
-
-
-
-
- // color-profile
-
-var defs = assembly('defs', true);
-
-
-var ellipse = assembly('ellipse', true);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- // fontFace
- // fontFaceFormat
- // fontFaceName
- // fontFaceSrc
- // fontFaceUri
-
-
-
-
-
-
-
-
-
-
-var linearGradient = assembly('linearGradient', true);
-
-
-
-
-
-
-
-
- // missing-glyph
-
-
-
-
-
-
-
-
-
-
-
-var Stop = assembly('stop', true); // First capital
- // First capital
-
-var isPlaneObject$2 = function isPlaneObject(value) {
+var isPlaneObject$1 = function isPlaneObject(value) {
     return {}.toString.call(value) === '[object Object]';
 };
 
@@ -773,7 +591,7 @@ var loop = function loop(vNodes, data) {
 
     if (hasNumber) {
         var _loopedVnodes = [];
-        var singleVnode = isPlaneObject$2(vNodes);
+        var singleVnode = isPlaneObject$1(vNodes);
 
         // Single vnode looped by an integer.
         if (singleVnode) {
@@ -800,168 +618,209 @@ var loop = function loop(vNodes, data) {
     }
 };
 
-function _random(max) {
-    return Math.round(Math.random() * 1000) % max;
-}
+// HTML Elements.
+var tags$1 = {
+    a: assembly('a'),
+    abbr: assembly('abbr'),
+    address: assembly('address'),
+    area: assembly('area'),
+    article: assembly('article'),
+    aside: assembly('aside'),
+    assembly: assembly,
+    audio: assembly('audio'),
+    childNodes: assembly('childNodes'),
+    base: assembly('base'),
+    bdi: assembly('bdi'),
+    bdo: assembly('bdo'),
+    blockquote: assembly('blockquote'),
+    body: assembly('body'),
+    br: assembly('br'),
+    button: assembly('button'),
+    canvas: assembly('canvas'),
+    caption: assembly('caption'),
+    cite: assembly('cite'),
+    code: assembly('code'),
+    col: assembly('col'),
+    colgroup: assembly('colgroup'),
+    command: assembly('command'),
+    dd: assembly('dd'),
+    del: assembly('del'),
+    dfn: assembly('dfn'),
+    div: assembly('div'),
+    dl: assembly('dl'),
+    doctype: assembly('doctype'),
+    dt: assembly('dt'),
+    em: assembly('em'),
+    embed: assembly('embed'),
+    fieldset: assembly('fieldset'),
+    figcaption: assembly('figcaption'),
+    figure: assembly('figure'),
+    footer: assembly('footer'),
+    form: assembly('form'),
+    h1: assembly('h1'),
+    h2: assembly('h2'),
+    h3: assembly('h3'),
+    h4: assembly('h4'),
+    h5: assembly('h5'),
+    h6: assembly('h6'),
+    header: assembly('header'),
+    hgroup: assembly('hgroup'),
+    hr: assembly('hr'),
+    html: assembly('html'),
+    i: assembly('i'),
+    iframe: assembly('iframe'),
+    img: assembly('img'),
+    initialize: initialize,
+    input: assembly('input'),
+    ins: assembly('ins'),
+    kbd: assembly('kbd'),
+    keygen: assembly('keygen'),
+    label: assembly('label'),
+    legend: assembly('legend'),
+    li: assembly('li'),
+    link: assembly('link'),
+    loop: loop,
+    map: assembly('map'),
+    mark: assembly('mark'),
+    menu: assembly('menu'),
+    meta: assembly('meta'),
+    nav: assembly('nav'),
+    noscript: assembly('noscript'),
+    object: assembly('object'),
+    ol: assembly('ol'),
+    optgroup: assembly('optgroup'),
+    option: assembly('option'),
+    or: or,
+    p: assembly('p'),
+    param: assembly('param'),
+    pre: assembly('pre'),
+    progress: assembly('progress'),
+    q: assembly('q'),
+    rp: assembly('rp'),
+    rt: assembly('rt'),
+    ruby: assembly('ruby'),
+    s: assembly('s'),
+    samp: assembly('samp'),
+    script: assembly('script'),
+    section: assembly('section'),
+    select: assembly('select'),
+    small: assembly('small'),
+    source: assembly('source'),
+    span: assembly('span'),
+    strong: assembly('strong'),
+    style: assembly('style'),
+    sub: assembly('sub'),
+    sup: assembly('sup'),
+    table: assembly('table'),
+    tbody: assembly('tbody'),
+    td: assembly('td'),
+    textarea: assembly('textarea'),
+    tfoot: assembly('tfoot'),
+    th: assembly('th'),
+    thead: assembly('thead'),
+    title: assembly('title'),
+    tr: assembly('tr'),
+    ul: assembly('ul'),
+    Var: assembly('var'), // First capital
+    video: assembly('video'),
 
-var buildData = function buildData() {
-    var count = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1000;
-
-    var id = 0;
-    var adjectives = ["pretty", "large", "big", "small", "tall", "short", "long", "handsome", "plain", "quaint", "clean", "elegant", "easy", "angry", "crazy", "helpful", "mushy", "odd", "unsightly", "adorable", "important", "inexpensive", "cheap", "expensive", "fancy"];
-    var colours = ["red", "yellow", "blue", "green", "pink", "brown", "purple", "brown", "white", "black", "orange"];
-    var nouns = ["table", "chair", "house", "bbq", "desk", "car", "pony", "cookie", "sandwich", "burger", "pizza", "mouse", "keyboard"];
-    var data = [];
-    for (var i$$1 = 0; i$$1 < count; i$$1++) {
-        data.push({ id: id, label: adjectives[_random(adjectives.length)] + " " + colours[_random(colours.length)] + " " + nouns[_random(nouns.length)] });
-    }return data;
+    // SVG Elements.
+    svg: assembly('svg', true),
+    altGlyph: assembly('altGlyph', true),
+    altGlyphDef: assembly('altGlyphDef', true),
+    altGlyphItem: assembly('altGlyphItem', true),
+    animate: assembly('animate'),
+    animateColor: assembly('animateColor', true),
+    animateMotion: assembly('animateMotion', true),
+    animateTransform: assembly('animateTransform', true),
+    animation: assembly('animation', true),
+    circle: assembly('circle', true),
+    clipPath: assembly('clipPath', true),
+    colorProfile: assembly('color-profile', true), // color-profile
+    cursor: assembly('cursor', true),
+    defs: assembly('defs', true),
+    desc: assembly('desc', true),
+    discard: assembly('discard', true),
+    ellipse: assembly('ellipse', true),
+    feBlend: assembly('feBlend', true),
+    feColorMatrix: assembly('feComposite', true),
+    feComponentTransfer: assembly('feComponentTransfer', true),
+    feComposite: assembly('feComposite', true),
+    feConvolveMatrix: assembly('feConvolveMatrix', true),
+    feDiffuseLighting: assembly('feDiffuseLighting', true),
+    feDisplacementMap: assembly('feDistantLight', true),
+    feDistantLight: assembly('feDistantLight', true),
+    feDropShadow: assembly('feDropShadow', true),
+    feFlood: assembly('feFlood', true),
+    feFuncA: assembly('feFuncA', true),
+    feFuncB: assembly('feFuncB', true),
+    feFuncG: assembly('feFuncG', true),
+    feFuncR: assembly('feFuncR', true),
+    feGaussianBlur: assembly('feGaussianBlur', true),
+    feImage: assembly('feImage', true),
+    feMerge: assembly('feMerge', true),
+    feMergeNode: assembly('feMergeNode', true),
+    feMorphology: assembly('feMorphology', true),
+    feOffset: assembly('feOffset', true),
+    fePointLight: assembly('fePointLight', true),
+    feSpecularLighting: assembly('feSpecularLighting', true),
+    feSpotLight: assembly('feSpotLight', true),
+    feTile: assembly('feTile', true),
+    feTurbulence: assembly('feTurbulence', true),
+    filter: assembly('filter', true),
+    font: assembly('font', true),
+    fontFace: assembly('font-face', true), // fontFace
+    fontFaceFormat: assembly('font-face-format', true), // fontFaceFormat
+    fontFaceName: assembly('font-face-name', true), // fontFaceName
+    fontFaceSrc: assembly('font-face-src', true), // fontFaceSrc
+    fontFaceUri: assembly('font-face-uri', true), // fontFaceUri
+    foreignObject: assembly('foreignObject', true),
+    g: assembly('g', true),
+    glyph: assembly('glyph', true),
+    glyphRef: assembly('glyphRef', true),
+    handler: assembly('handler', true),
+    hatch: assembly('hatch', true),
+    hatchpath: assembly('hatchpath', true),
+    hkern: assembly('hkern', true),
+    image: assembly('image', true),
+    line: assembly('line', true),
+    linearGradient: assembly('linearGradient', true),
+    listener: assembly('listener'),
+    marker: assembly('marker', true),
+    mask: assembly('mask', true),
+    mesh: assembly('mesh', true),
+    meshgradient: assembly('meshgradient', true),
+    meshpatch: assembly('meshpatch', true),
+    meshrow: assembly('meshrow', true),
+    metadata: assembly('metadata', true),
+    missingGlyph: assembly('missing-glyph', true), // missing-glyph
+    mpath: assembly('mpath', true),
+    path: assembly('path', true),
+    pattern: assembly('pattern', true),
+    polygon: assembly('polygon', true),
+    polyline: assembly('polyline', true),
+    prefetch: assembly('prefetch', true),
+    radialGradient: assembly('radialGradient', true),
+    rect: assembly('rect', true),
+    set: assembly('set', true),
+    solidColor: assembly('solidColor', true),
+    solidcolor: assembly('solidcolor', true),
+    Stop: assembly('stop', true), // First capital
+    Switch: assembly('switch', true), // First capital
+    symbol: assembly('symbol', true),
+    tbreak: assembly('tbreak', true),
+    text: assembly('text', true),
+    textArea: assembly('textArea', true),
+    textPath: assembly('textPath', true),
+    tref: assembly('tref', true),
+    tspan: assembly('tspan', true),
+    unknown: assembly('unknown', true),
+    use: assembly('use', true),
+    view: assembly('view', true),
+    vkern: assembly('vkern', true)
 };
 
-var lotsData = buildData(10000);
-console.log('lotsData', lotsData);
-var table$$1 = function table$$1(dat) {
-    return tr({ class: 'menu-item' }, [td({ class: 'col-md-1' }, dat.id), td({ class: 'col-md-4' }, a({ class: 'lbl' }, dat.label)), td({ class: 'col-md-1' }, a({ class: 'remove' }, span({
-        class: 'glyphicon glyphicon-remove remove'
-    }))), td({ class: 'col-md-6' })]);
-};
-
-var buildTable = function buildTable(data) {
-    var arrayOfChildren = [];
-    for (var i$$1 = 0; i$$1 < data.length; i$$1++) {
-        arrayOfChildren.push(table$$1(data[i$$1]));
-    }
-    console.log('arrayOfChildren', arrayOfChildren);
-    return arrayOfChildren;
-};
-
-//////////////////
-
-
-var twitterHref = 'http://google.com';
-var facebookHref = 'http://facebook.com';
-var someUI = div({ class: 'wrapper' }, div({ id: 'block-social-responsive', class: 'footer__social' }, ul({ class: 'menu' }, li({ class: 'menu-item' }, a({ href: twitterHref, class: 'icon-twitter', target: '_blank' }, 'TWITTER')), li({ class: 'menu-item' }, a({
-    href: facebookHref,
-    class: 'icon-fb',
-    target: '_blank',
-    _innerHTML: 'HELOOOOOOO',
-    // event: ['mouseover', (e) => { console.log('THIS ELEMENT', e.target) }, false],
-    $: { backgroundColor: 'red', color: 'yellow' },
-    'd-foijfwoeifjw': 2000000000,
-    name: 'jack'
-}, 'FACEBOOK')), or([div({ class: 'hello', id: 'yeaa' }, 'HELLO'), div({ class: 'foo' }, 'FOO'), a({ class: 'bar', id: 'yeaa' }, h1('This is H TAG 1'), h2('This is H TAG 2'), 'BAR'), div({ class: 'baz' }, 'BAZ'), section({ class: 'hello' }, h1('This is H TAG 1'), h2('This is H TAG 2')), section({ class: 'world' }, 'WORLD')], ['~2', '.world'], true),
-// Without variables...
-li({ class: 'linkedin' }, a({ href: 'https://www.linkedin.com/company/208777', class: 'icon-in', target: '_blank' }, 'Linkedin'), '@This is a single line comment'), loop(li({ style: { backgroundColor: 'pink', fontSize: 20 } }, 'HELLO WORLD'), 5), loop(buildTable, lotsData))), section({ id: 'blah', class: 'wefw' }, 'TEST SECTION'), svg({ height: 150, width: 400 }, defs(linearGradient({ id: 'grad1', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, Stop({ offset: '0%', style: { 'stop-color': 'rgb(255,0,0)', 'stop-opacity': 1 } }), Stop({ offset: '100%', style: { 'stop-color': 'rgb(255,255,0)', 'stop-opacity': 1 } }))), ellipse({ cx: 200, cy: 70, rx: 85, ry: 55, fill: 'url(#grad1)' }), 'Sorry, your browser does not support inline SVG.'), '@This comment is outside');
-
-document.addEventListener('click', function () {
-    // startMeasure('Wavefront')
-    var render = initialize('#root', someUI);
-    // stopMeasure();
-
-
-    // setTimeout(() => {
-    console.time('renderAll');
-    render({
-        'li': li({ style: { backgroundColor: 'blue' } }, 'ONE LIST ITEM ')
-    });
-    console.timeEnd('renderAll');
-    // }, 2000)
-}, false);
-
-// () => {
-//     /**
-//         Two types of templates: 
-//         1) Full Templates
-//         2) Partial Templates
-
-//         A full template for example a completely new view/ page 
-//         It will be rendered entirely from scratch.
-
-//         A partial template takes the existing cached DOM and patches it with
-//         the minimal number of changes.
-
-//         The difference is that all elements that need to be chached are chached 
-//         before each render. There are no dom lookups. 
-
-//         - Render full template
-//         -   Chaches
-//         -     
-
-
-//         Full render: 
-//          - Updates vDom 
-//          - Upda
-//     **/
-
-//     // Reverse DOM.
-//     // getHTML
-//     // This function will only run once on each page refresh.
-//     const serverTemplate = Wavefront.getHTML('#root'); // a vDom to be used as a full template
-
-//     // Static DOM rendering.
-//     // createHTMLString
-//     // Creates HTML string of the DOM from the cache, a given vNode or an element (document) 
-//     // This function will only run once on each page refresh.
-//     const serverTemplate = Wavefront.createHTMLString('#root'); // Must match cache 
-//     const serverTemplate = Wavefront.createHTMLString(serverTemplate); // From a vNode
-//     const serverTemplate = Wavefront.createHTMLString(document); // The entire document
-
-//     // Initalize. 
-//     // i) Take an existing container, 
-//     // ii) Cache selectors 
-//     // iii) Render a template to the container, 
-//     // iv) Returns a render function  
-//     const render = Wavefront.initialize('#root', fullTemplate, '.selector1',
-//         '#selector2', 'nonExistant', '.notExisting') // vnode or element
-
-
-//     /** 
-//         render(<function>) // Render cached root selector
-//         render(vNode1, vNode2, vnode3,<function>)  // Renders to the pre-defined selectors 
-//         If a selector has not been pre-deined it will throw an error.
-
-//         render.selectors // List all existing selectors as array
-
-//        ....automatic render.replenish() // Updates the cached elements & selectors list (reads from DOM) 
-//     */
-
-//     // Example
-//     const increment = (n) => {
-//         n++;
-//         return render('#selector2', () => h1({ class: 'whatever' }, `increment ${n}`))
-//     };
-
-//     document.addEventListener('click', () => increment(4))
-
-
-//     // Updates multiple selectors at once with one template
-//     render('#selector2', '.selector1', () => {
-//             return h2({ class: 'nonExistant' },
-//                 nonExistant('nonExistant'),
-//                 span({ class: '.notExisting' }, 'WHAT')
-//             });
-//     })
-
-
-// // Update newly created selectors with single template
-// render('nonExistant', '.notExisting', () => {
-//     return a({ href: '#', class: 'some-class' })
-// });
-
-
-// // Updates multiple templates for multiple selectors
-// render(() => ({
-//     '.some-selector': div({ class: 'someTemplate' }),
-//     '#some-selector': div({ class: 'someTemplate' }),
-//     'some-selector': div({ class: 'someTemplate' }),
-// }));
-
-
-// // Render all on root
-// render(() => {
-//     return div({ class: 'wrapper' }, 'WHAT')
-// });
-
-// }
+return tags$1;
 
 })));
 //# sourceMappingURL=wavefront.js.map
