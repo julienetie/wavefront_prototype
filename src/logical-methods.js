@@ -1,4 +1,4 @@
-const isPlaneObject = value => ({}).toString.call(value) === '[object Object]';
+import { isPlaneObject, isString, filter} from './helpers';
 
 /** 
  * The or method explicitly defines a condition between an array of nodes. 
@@ -11,7 +11,6 @@ export const or = (vNodes, conditions, exclude) => {
     const filteredVNodes = [];
     const filteredIndexes = [];
 
-
     // Return the vNode of a given index.
     if (typeof conditions === 'number') {
         return vNodes[conditions];
@@ -19,7 +18,7 @@ export const or = (vNodes, conditions, exclude) => {
 
 
     // Ensure toggle is an array. 
-    const toggle = typeof conditions === 'string' ? [conditions] : conditions;
+    const toggle = isString(conditions) ? [conditions] : conditions;
 
 
     // Non-operational.
@@ -28,26 +27,25 @@ export const or = (vNodes, conditions, exclude) => {
     }
 
     // Define conditions required.
-    const classes = toggle.filter(e => e.indexOf('.') > -1);
-    const ids = toggle.filter(e => e.indexOf('#') === 0);
-    const tags = toggle.filter(e => /^[a-z0-9]+$/i.test(e));
-    const children = toggle.filter(e => e.indexOf('~') === 0);
-    const indexes = toggle.filter(e => typeof e === 'number');
-
+    const classes = filter(toggle, e => e.indexOf('.') > -1);
+    const classesLength = classes.length
+    const ids = filter(toggle, e => e.indexOf('#') === 0);
+    const tags = filter(toggle, e => /^[a-z0-9]+$/i.test(e));
+    const children = filter(toggle, e => e.indexOf('~') === 0);
+    const indexes = filter(toggle, e => typeof e === 'number');
     const vNodesLength = vNodes.length;
 
     for (let i = 0; i < vNodesLength; i++) {
-
         const vNode = vNodes[i];
         const attributes = vNode.at;
 
         // Check class.
-        if (classes.length > 0) {
-            classes.forEach(c => {
-                if (attributes.class.includes(c.slice(1))) {
+        if (classesLength > 0) {
+              for (let j = 0; j < classesLength; j++) {
+                  if (attributes.class.includes(classes[j].slice(1))) {
                     filteredIndexes.push(i);
                 }
-            });
+              }
         }
 
         // Check ids.
@@ -87,9 +85,7 @@ export const or = (vNodes, conditions, exclude) => {
 
 
     if (exclude === true) {
-        return vNodes.filter(function(item, i) {
-            return indexList.indexOf(i) === -1;
-        });
+        return filter(vNodes, (item, i) => indexList.indexOf(i) === -1);
     } else {
         indexList.forEach(index => {
             filteredVNodes.push(vNodes[index]);

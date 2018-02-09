@@ -5,25 +5,40 @@
 }(this, (function () { 'use strict';
 
 var isPlaneObject = function isPlaneObject(value) {
-  return {}.toString.call(value) === '[object Object]';
+    return {}.toString.call(value) === '[object Object]';
 };
 var isString = function isString(value) {
-  return typeof value === 'string';
+    return typeof value === 'string';
 };
 var isPrimitive = function isPrimitive(value) {
-  return isString(value) || typeof value === 'number';
+    return isString(value) || typeof value === 'number';
 };
 
 var isElement = function isElement(value) {
-  return value instanceof Element;
+    return value instanceof Element;
 };
 var isVNode = function isVNode(value) {
-  return value.hasOwnProperty('t') && value.hasOwnProperty('id');
+    return value.hasOwnProperty('t') && value.hasOwnProperty('id');
 };
 var removeChildren = function removeChildren(parentNode) {
-  while (parentNode.firstChild) {
-    parentNode.removeChild(parentNode.firstChild);
-  }
+    while (parentNode.firstChild) {
+        parentNode.removeChild(parentNode.firstChild);
+    }
+};
+/** 
+ * Filter by loop 
+ * @param {Array} arr 
+ * @param {Function} callback 
+**/
+var filter = function filter(arr, callback) {
+    var store = [];
+    var arrLength = arr.length;
+    for (var i = 0; i < arrLength; i++) {
+        if (callback(arr[i])) {
+            store.push(arr[i]);
+        }
+    }
+    return store;
 };
 
 var toConsumableArray = function (arr) {
@@ -82,20 +97,9 @@ var count = 0;
 
  The deepest nested tag of the youngest index is
  the first executed tag function.
-
-
 **/
 var assembly = function assembly(tagName, nodeType) {
     var isSVG = nodeType === true;
-
-    // if (typeof nodeType === 'function') {
-    //     if (tagName.indexOf('-') >= 0) {
-    //         // Define the custom element. 
-    //         window.customElements.define(tagName, nodeType);
-    //     } else {
-    //         throw new Error(`Invalid custom element name ${tagName}`);
-    //     }
-    // }
 
     return function inner() {
         var tagNameStr = '' + tagName;
@@ -108,7 +112,9 @@ var assembly = function assembly(tagName, nodeType) {
             args[_key] = arguments[_key];
         }
 
-        for (i = 0; i < args.length; i++) {
+        var argsLength = args.length;
+
+        for (i = 0; i < argsLength; i++) {
             item = args[i] || {};
             var isItemObject = isPlaneObject(item);
             var isItemVnode = item.hasOwnProperty('t');
@@ -136,7 +142,6 @@ var assembly = function assembly(tagName, nodeType) {
                 //@TODO Convert item to vNode and push;
                 console.log('item in assembly', item);
                 childNodes.push({ el: item });
-                // continue;
             }
         }
 
@@ -176,8 +181,7 @@ var render = function render(initalRootElement, vNode, isPartial) {
     }
     // Creates a new fragment for partials but uses 
     // the fragment cache for the inital render.
-    // const renderFragment = isPartial === true ? (document.createDocumentFragment()) : fragment; 
-    // console.log('renderFragment', document.createDocumentFragment())
+
     var renderFragment = void 0;
     if (isPartial === true) {
         renderFragment = document.createDocumentFragment();
@@ -199,6 +203,9 @@ var render = function render(initalRootElement, vNode, isPartial) {
             return args[0];
         };
 
+        /** 
+         * Dummy wrapper to treat a non-wrap node as wrapped.
+         */
         var dummyVDOM = {
             "t": "div",
             "id": 2,
@@ -210,11 +217,13 @@ var render = function render(initalRootElement, vNode, isPartial) {
         };
 
         createAndAppendNode(renderFragment, dummyVDOM);
-        // }
+
         var dummy = renderFragment.firstElementChild;
         var innerNodes = dummy.childNodes;
+        var innerNodesLength = innerNodes.length;
         var outerNodeList = [];
-        for (var i = 0; i < innerNodes.length; i++) {
+
+        for (var i = 0; i < innerNodesLength; i++) {
             outerNodeList.push(innerNodes[i]);
         }
         renderFragment.removeChild(dummy);
@@ -223,44 +232,16 @@ var render = function render(initalRootElement, vNode, isPartial) {
 
         requestAnimationFrame(function () {
             rootElement.appendChild(renderFragment);
-
-            /** 
-               Static Rendering:
-               This will generate the inital state
-               of the HTML as a string. headers 
-               and other content can be generated 
-               from the front side or modified on the
-               back end...
-            **/
-            // const staticRender = rootElement.outerHTML;
-            // console.log(staticRender)
         });
     } else {
         // Wrapped element
-
         createAndAppendNode(renderFragment, node);
-
-        // console.log('elementCache', elementCache)
         requestAnimationFrame(function () {
-            // if (isPartial) {
-            //     removeChilds(rootElement)
-            // }
             if (!isPartial) {
                 console.log();
                 var fragmentClone = document.importNode(renderFragment, true);
                 rootElement.appendChild(fragmentClone);
             }
-            // console.log('FINAL FRAGMENT', renderFragment)
-            /** 
-               Static Rendering:
-               This will generate the inital state
-               of the HTML as a string. headers 
-               and other content can be generated 
-               from the front side or modified on the
-               back end...
-            **/
-            // const staticRender = rootElement.outerHTML;
-            // console.log(staticRender)
             return;
         });
     }
@@ -268,11 +249,6 @@ var render = function render(initalRootElement, vNode, isPartial) {
     return renderFragment;
 };
 
-// const elementCache = {
-//     class: {},
-//     id: {},
-//     nonexistent: []
-// }
 var elementCache = {};
 
 var createAndAppendNode = function createAndAppendNode(frag, node) {
@@ -352,7 +328,6 @@ var createAndAppendNode = function createAndAppendNode(frag, node) {
             }
         }
     } else {
-        console.log('ELEMENT', node.el);
         element = node.el;
     }
     // Add children
@@ -434,40 +409,7 @@ var initialize = function initialize(rootSelector, vNode) {
     // Render the inital virual DOM and cache the selectors.
     render(container, false);
 
-    // console.log('initialize', container, vNode, selectors)
     return partialRender;
-};
-
-// const r = initialize('#root', fullTemplate, '#thisID', '.thisClass', '.childClass');
-
-
-// setTimeout(() => {
-// r({
-//     '.thisClass': {
-//         "t": "DIV",
-//         "id": 90046,
-//         "at": {
-//             "class": "new-shit",
-//             "style": {
-//                 "display": "block",
-//                 "background": 'yellow',
-//                 "padding": "1rem"
-//             }
-//         },
-//         "chx": 1,
-//         "ch": [{
-//             "t": "TEXT",
-//             "id": 90045,
-//             "val": "NEW SHIT NEW SHIT",
-//             "pid": 90046,
-//             "ix": 0
-//         }]
-//     }
-// });
-// }, 2000)
-
-var isPlaneObject$1 = function isPlaneObject(value) {
-    return {}.toString.call(value) === '[object Object]';
 };
 
 /** 
@@ -487,7 +429,7 @@ var or = function or(vNodes, conditions, exclude) {
     }
 
     // Ensure toggle is an array. 
-    var toggle = typeof conditions === 'string' ? [conditions] : conditions;
+    var toggle = isString(conditions) ? [conditions] : conditions;
 
     // Non-operational.
     if (!Array.isArray(toggle) || toggle.length === 0) {
@@ -495,37 +437,36 @@ var or = function or(vNodes, conditions, exclude) {
     }
 
     // Define conditions required.
-    var classes = toggle.filter(function (e) {
+    var classes = filter(toggle, function (e) {
         return e.indexOf('.') > -1;
     });
-    var ids = toggle.filter(function (e) {
+    var classesLength = classes.length;
+    var ids = filter(toggle, function (e) {
         return e.indexOf('#') === 0;
     });
-    var tags = toggle.filter(function (e) {
+    var tags = filter(toggle, function (e) {
         return (/^[a-z0-9]+$/i.test(e)
         );
     });
-    var children = toggle.filter(function (e) {
+    var children = filter(toggle, function (e) {
         return e.indexOf('~') === 0;
     });
-    var indexes = toggle.filter(function (e) {
+    var indexes = filter(toggle, function (e) {
         return typeof e === 'number';
     });
-
     var vNodesLength = vNodes.length;
 
     var _loop = function _loop(i) {
-
         var vNode = vNodes[i];
         var attributes = vNode.at;
 
         // Check class.
-        if (classes.length > 0) {
-            classes.forEach(function (c) {
-                if (attributes.class.includes(c.slice(1))) {
+        if (classesLength > 0) {
+            for (var j = 0; j < classesLength; j++) {
+                if (attributes.class.includes(classes[j].slice(1))) {
                     filteredIndexes.push(i);
                 }
-            });
+            }
         }
 
         // Check ids.
@@ -567,7 +508,7 @@ var or = function or(vNodes, conditions, exclude) {
     var indexList = [].concat(toConsumableArray(new Set(filteredIndexes)));
 
     if (exclude === true) {
-        return vNodes.filter(function (item, i) {
+        return filter(vNodes, function (item, i) {
             return indexList.indexOf(i) === -1;
         });
     } else {
@@ -591,7 +532,7 @@ var loop = function loop(vNodes, data) {
 
     if (hasNumber) {
         var _loopedVnodes = [];
-        var singleVnode = isPlaneObject$1(vNodes);
+        var singleVnode = isPlaneObject(vNodes);
 
         // Single vnode looped by an integer.
         if (singleVnode) {

@@ -1,5 +1,6 @@
 import { initialize, assembly } from './assembly';
-import { loop, or } from './logic';
+import { loop, or } from './logical-methods';
+
 // HTML Elements.
 const tags = ({
     a: assembly('a'),

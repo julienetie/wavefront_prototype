@@ -12,29 +12,28 @@
     </div>
     <script src="dist/wavefront.js"></script>
     <script>
-
     const {
-    	assembly, 
-    	initialize, 
-    	loop, 
-    	or, 
-    	div, 
-    	ul,
-    	li, 
-    	span,
-    	a,
-    	h1, 
-    	h2, 
-    	h3, 
-    	section,
-    	tr,
-    	td, 
-    	tbody,
-    	svg,
-    	defs,
-    	linearGradient,
-    	Stop,
-    	ellipse
+        assembly,
+        initialize,
+        loop,
+        or,
+        div,
+        ul,
+        li,
+        span,
+        a,
+        h1,
+        h2,
+        h3,
+        section,
+        tr,
+        td,
+        tbody,
+        svg,
+        defs,
+        linearGradient,
+        Stop,
+        ellipse
     } = wavefront
 
 
@@ -172,7 +171,7 @@
                 ),
                 loop(li({ style: { backgroundColor: 'pink', fontSize: 20 } }, 'HELLO WORLD'), 5),
                 div({ class: 'table-salt' },
-                    loop(buildTable, buildData(10))
+                    loop(buildTable, buildData(1000))
                 )
 
             )
@@ -190,23 +189,36 @@
         ),
         `@This comment is outside`,
     )
+    console.time('renderAll')
     const render = initialize('#root', someUI);
-
+    console.timeEnd('renderAll')
 
 
     document.addEventListener('click', () => {
 
-    	const newLoop = loop(buildTable, buildData(10));
-    	console.log('newLoop',newLoop)
-        console.time('renderAll')
-        render({
-            '.table-salt': newLoop
+        const newLoop = loop(buildTable, buildData(10000));
+        console.time('renderAgain')
+        render.all({
+            // '.table-salt': newLoop
+            '.menu-item:nth-of-type(9n+1)': div({ style: { backgroundColor: 'red' } }, [
+                td({ class: 'col-md-1' },
+                    Math.random()
+                ),
+                td({ class: 'col-md-4' },
+                    a({ class: 'lbl' }, Math.random())
+                ),
+                td({ class: 'col-md-1' },
+                    a({ class: 'remove' },
+                        span({
+                            class: 'glyphicon glyphicon-remove remove'
+                        })
+                    )
+                ),
+                td({ class: 'col-md-6' })
+            ])
         });
-        console.timeEnd('renderAll')
+        console.timeEnd('renderAgain')
     }, false);
-
-
-
     </script>
 </body>
 

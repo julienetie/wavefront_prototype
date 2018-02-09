@@ -55,20 +55,9 @@ let count = 0;
 
  The deepest nested tag of the youngest index is
  the first executed tag function.
-
-
 **/
 export const assembly = (tagName, nodeType) => {
     const isSVG = nodeType === true;
-
-    // if (typeof nodeType === 'function') {
-    //     if (tagName.indexOf('-') >= 0) {
-    //         // Define the custom element. 
-    //         window.customElements.define(tagName, nodeType);
-    //     } else {
-    //         throw new Error(`Invalid custom element name ${tagName}`);
-    //     }
-    // }
 
     return function inner(...args) {
         const tagNameStr = `${tagName}`;
@@ -76,7 +65,9 @@ export const assembly = (tagName, nodeType) => {
         let item;
         let childNodes = [];
         let i;
-        for (i = 0; i < args.length; i++) {
+        const argsLength = args.length;
+
+        for (i = 0; i < argsLength; i++) {
             item = args[i] || {};
             let isItemObject = isPlaneObject(item);
             let isItemVnode = item.hasOwnProperty('t');
@@ -106,7 +97,6 @@ export const assembly = (tagName, nodeType) => {
                 //@TODO Convert item to vNode and push;
                 console.log('item in assembly', item)
                 childNodes.push({ el: item });
-                // continue;
             }
         }
 
@@ -154,8 +144,7 @@ const render = (initalRootElement, vNode, isPartial) => {
     }
     // Creates a new fragment for partials but uses 
     // the fragment cache for the inital render.
-    // const renderFragment = isPartial === true ? (document.createDocumentFragment()) : fragment; 
-    // console.log('renderFragment', document.createDocumentFragment())
+
     let renderFragment;
     if (isPartial === true) {
         renderFragment = document.createDocumentFragment()
@@ -170,7 +159,9 @@ const render = (initalRootElement, vNode, isPartial) => {
 
 
     if (Array.isArray(node)) {
-
+        /** 
+         * Dummy wrapper to treat a non-wrap node as wrapped.
+         */
         const dummyVDOM = {
             "t": "div",
             "id": 2,
@@ -190,11 +181,13 @@ const render = (initalRootElement, vNode, isPartial) => {
         }
 
         createAndAppendNode(renderFragment, dummyVDOM);
-        // }
+
         const dummy = renderFragment.firstElementChild;
         const innerNodes = dummy.childNodes;
+        const innerNodesLength = innerNodes.length;
         const outerNodeList = [];
-        for (let i = 0; i < innerNodes.length; i++) {
+
+        for (let i = 0; i < innerNodesLength; i++) {
             outerNodeList.push(innerNodes[i]);
         }
         renderFragment.removeChild(dummy);
@@ -203,44 +196,16 @@ const render = (initalRootElement, vNode, isPartial) => {
 
         requestAnimationFrame(() => {
             rootElement.appendChild(renderFragment)
-
-            /** 
-               Static Rendering:
-               This will generate the inital state
-               of the HTML as a string. headers 
-               and other content can be generated 
-               from the front side or modified on the
-               back end...
-            **/
-            // const staticRender = rootElement.outerHTML;
-            // console.log(staticRender)
         });
     } else {
         // Wrapped element
-
         createAndAppendNode(renderFragment, node);
-
-        // console.log('elementCache', elementCache)
         requestAnimationFrame(() => {
-            // if (isPartial) {
-            //     removeChilds(rootElement)
-            // }
             if (!isPartial) {
                 console.log()
                 const fragmentClone = document.importNode(renderFragment, true);
                 rootElement.appendChild(fragmentClone)
             }
-            // console.log('FINAL FRAGMENT', renderFragment)
-            /** 
-               Static Rendering:
-               This will generate the inital state
-               of the HTML as a string. headers 
-               and other content can be generated 
-               from the front side or modified on the
-               back end...
-            **/
-            // const staticRender = rootElement.outerHTML;
-            // console.log(staticRender)
             return;
         });
     }
@@ -248,11 +213,6 @@ const render = (initalRootElement, vNode, isPartial) => {
     return renderFragment;
 }
 
-// const elementCache = {
-//     class: {},
-//     id: {},
-//     nonexistent: []
-// }
 const elementCache = {}
 
 const createAndAppendNode = (frag, node) => {
@@ -330,7 +290,6 @@ const createAndAppendNode = (frag, node) => {
             }
         }
     } else {
-        console.log('ELEMENT', node.el)
         element = node.el;
     }
     // Add children
@@ -343,49 +302,6 @@ const createAndAppendNode = (frag, node) => {
     }
 }
 
-
-const fullTemplate = {
-    "t": "DIV",
-    "id": 90046,
-    "at": {
-        "class": "thisClass",
-        "id": "thisID",
-        "style": {
-            "display": "block",
-            "background": 'red',
-            "padding": "1rem"
-        }
-    },
-    "chx": 1,
-    "ch": [{
-            "t": "TEXT",
-            "id": 90045,
-            "val": "THIS IS A FULL TEMPLATE",
-            "pid": 90046,
-            "ix": 0
-        },
-        {
-            "t": "DIV",
-            "id": 90046,
-            "at": {
-                "class": "thisClass",
-                "style": {
-                    "display": "block",
-                    "background": 'red',
-                    "padding": "1rem"
-                }
-            },
-            "chx": 1,
-            "ch": [{
-                "t": "TEXT",
-                "id": 90045,
-                "val": "THIS IS A child text node",
-                "pid": 90046,
-                "ix": 0
-            }]
-        }
-    ]
-}
 
 const searchAndReplace = (selector, newVNode, retrieveAll) => {
     const exchangeChildren = (queriedParent) => {
@@ -458,34 +374,5 @@ export const initialize = (rootSelector, vNode) => {
     // Render the inital virual DOM and cache the selectors.
     render(container, false);
 
-    // console.log('initialize', container, vNode, selectors)
     return partialRender;
 }
-
-// const r = initialize('#root', fullTemplate, '#thisID', '.thisClass', '.childClass');
-
-
-// setTimeout(() => {
-// r({
-//     '.thisClass': {
-//         "t": "DIV",
-//         "id": 90046,
-//         "at": {
-//             "class": "new-shit",
-//             "style": {
-//                 "display": "block",
-//                 "background": 'yellow',
-//                 "padding": "1rem"
-//             }
-//         },
-//         "chx": 1,
-//         "ch": [{
-//             "t": "TEXT",
-//             "id": 90045,
-//             "val": "NEW SHIT NEW SHIT",
-//             "pid": 90046,
-//             "ix": 0
-//         }]
-//     }
-// });
-// }, 2000)
