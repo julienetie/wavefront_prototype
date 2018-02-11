@@ -193,29 +193,112 @@
     const render = initialize('#root', someUI);
     console.timeEnd('renderAll')
 
+    let col = 0;
 
-    document.addEventListener('click', () => {
-
+    document.addEventListener('mousedown', () => {
+        col += 40;
         const newLoop = loop(buildTable, buildData(10000));
         console.time('renderAgain')
-        render.all({
+        render({
+            /**
+			SearchType | NodeType	| Action | presedence
+				-@ -t -i -b
+			 SearchType: 
+ 				All: 	 @ all
+ 				Single:  $ single
+				// Default is single
+
+ 			 NodeType: 
+			 	Text:    t  text	 
+				Comment: c  comment
+				element: e  element
+				node: 	 n  node
+				// Default is element
+
+             Actions: 
+             	Insert:  i  -insert
+             	Remove:  -rm -remove
+             	Replace: -r -replace
+             	ReplaceAll: -rA -replaceAll
+			 
+			 Presedence:
+			 	Before:  -b -before 
+			 	After:   -a -after
+				Index: 	 -i=0 -index=0
+				Offset:  +3 offset=3
+
+
+				rmTA
+				-rm -A -t
+             */
+
             // '.table-salt': newLoop
-            '.menu-item:nth-of-type(9n+1)': div({ style: { backgroundColor: 'red' } }, [
-                td({ class: 'col-md-1' },
-                    Math.random()
-                ),
-                td({ class: 'col-md-4' },
-                    a({ class: 'lbl' }, Math.random())
-                ),
-                td({ class: 'col-md-1' },
-                    a({ class: 'remove' },
-                        span({
-                            class: 'glyphicon glyphicon-remove remove'
-                        })
-                    )
-                ),
-                td({ class: 'col-md-6' })
-            ])
+
+
+
+            // render & render.all   (for all nodes including text);
+            // |b0    // Insert Before child 0 						|ib 
+            // |b0    // Insert Before child 0 						|ib e
+            // |b0    // Insert Before child 0 						|ib e i0  
+            // |b0+1  // Insert Before child with offset 1			|ib e i0 +1  
+            // |bT    // Insert before textNodes					|ib t
+            // |bT+1  // Insert before textNode with offset         |ib t +1
+
+            // |a0    // Insert after child x                       |ia e i0  
+            // |a0+1  // Insert after child with offset 1			|ia e i0 +1 
+            // |aT    // Insert after textNode					    |ia t
+            // |aT+1  // Insert after textNode with offset          |ia t +1
+
+            // |r5    // replace child by Index                     |r e i5 
+            // |r.some-selector  // Replace a child by its selector |r e=.some-selector
+
+            // |rb.some-selector   // Replace selector before child |rb e=.some-selector
+            // |ra.some-selector   // Replace selector after child  |ra e=.some-selector
+
+            // |rA.some-selector:nth-of-type(7n+1) // Replace all selectors within parent.
+            //|rA e=.some~~qSquery
+            // |rAa. // Replace slectors for all childs after 		//|rAa e=.~~ 
+            // |rAb. // Replace slectors for all childs before      //|rAb e=.~~
+            // |rT   // Replace textNode                            //|r t
+            // |rTA.   // Replace textNodes that match all PARENTS  //|rA t=.~~ 
+
+            // |rm5    // remove child by index 					//|rm e i5
+            // |rm.some-selector  // remove a child by its selector //|rm e=.~~ 
+
+            // |rmb.some-selector   // remove selector before child //|rmb e=.~~
+            // |rma.some-selector   // remove selector after child  //|rma e=.~~
+
+            // |rmA.some-selector:nth-of-type(7n+1) // remove all selectors within parent.
+            // rmA e=.~~
+            // |rmAa. // remove slectors for all childs After       //| rmAa e=
+            // |rmAb. // remove slectors for all childs before      //| rmAb e=
+            // |rmT   // remove textNode                            //| rmA t
+            // |rmTA.   // remove textNodes that match all PARENTS  //| rmA t=.~~
+
+            // Find text via regex
+            // replace text via regex 
+            // Find text All via regex
+            // replace text All via regex 
+
+
+            // '.menu-item:nth-of-type(9n+1)': div({ style: { backgroundColor: 'red' } }, [
+            //     td({ class: 'col-md-1' },
+            //         Math.random()
+            //     ),
+            //     td({ class: 'col-md-4' },
+            //         a({ class: 'lbl' }, Math.random())
+            //     ),
+            //     td({ class: 'col-md-1' },
+            //         a({ class: 'remove' },
+            //             span({
+            //                 class: 'glyphicon glyphicon-remove remove'
+            //             })
+            //         )
+            //     ),
+            //     td({ class: 'col-md-6' })
+            // ])
+
+            '.table-salt tr:nth-of-type(4) td:nth-of-type(2)|ia e +3': h1({ style: { backgroundColor: `rgb(${col},200,100)` } }, 'YOOOOOOOOOO')
         });
         console.timeEnd('renderAgain')
     }, false);

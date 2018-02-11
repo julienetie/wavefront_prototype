@@ -5,7 +5,8 @@ import {
     isFunction,
     isElement,
     isVNode,
-    removeChildren
+    removeChildren,
+    filter
 } from './helpers';
 
 
@@ -137,7 +138,7 @@ var removeChilds = function(node) {
 
 
 const render = (initalRootElement, vNode, isPartial) => {
-    console.log('X',vNode)
+    console.log('X', vNode)
     // Cache root element 
     if (rootElement === undefined) {
         rootElement = initalRootElement;
@@ -301,37 +302,220 @@ const createAndAppendNode = (frag, node) => {
         });
     }
 }
+const getReferenceNode = (parent, selector) => {
+
+}
 
 
-const searchAndReplace = (selector, newVNode, retrieveAll) => {
-    const exchangeChildren = (queriedParent) => {
-        // convert the node to an element
-        const partialElement = render(undefined, newVNode, true);
-        // Remove children
-        removeChildren(queriedParent);
-        // Adopt the new element 
-        queriedParent.appendChild(partialElement)
-    }
+const elmentModifier = (selector, CMD, queriedParent, partialDOMNode) => {
+    const CMDList = CMD.split(' ');
+    const CMDListLength = CMDList.length;
+    const CMDHasMany = CMDListLength > 1;
+    const lastCommand = CMDList[CMDListLength - 1];
+    const thirdCommand = CMDList[2];
+    const secondCommand = CMDList[1];
+    const firstCommand = CMDList[0];
+
+    // offset. 
+    const hasOffset = CMDHasMany ? lastCommand[0] === '+' : false;
+    let offset = hasOffset ? parseInt(lastCommand.slice(1), 10) : 0;
 
 
-    if (retrieveAll) {
-        const queriedParents = fragment.querySelectorAll(selector);
+    // index.
+    const hasIndex = !!thirdCommand ? thirdCommand[0] === 'i' : false;
+    let index = hasIndex ? parseInt(thirdCommand.slice(1), 10) : 0;
 
-        const queriedParentsLength = queriedParents.length;
+    // nodeType.
+    const nodeType = !!secondCommand ? secondCommand[0] : 'e';
 
-        for (let i = 0; i < queriedParentsLength; i++) {
-            exchangeChildren(queriedParents[i])
+
+    // query.
+    const hasQuery = !!secondCommand ? secondCommand.indexOf('=') >= 0 : false;
+    const query = hasQuery ? secondCommand.split('=')[1] : null;
+
+
+    // Action
+    const action = firstCommand;
+
+    // NodeType|Index|Offset|Query
+    const CMDcode = parseInt([
+        (true) + 0,
+        hasIndex + 0,
+        hasOffset + 0,
+        hasQuery + 0
+    ].join(''), 2);
+
+    console.log('CMDcode', CMDcode)
+    console.log('action', action)
+    console.log('nodeType', nodeType)
+    console.log('index', index)
+    console.log('offset', offset)
+    console.log('query', query)
+
+    // Define insert functions, 
+    const insertBefore = (parent, newNode, refNode) => parent.insertBefore(newNode, refNode);
+
+    function insertAfter(parent, newElement, refNode) {
+        console.log(parent, newElement, refNode)
+        if (parent.lastChild === refNode) {
+            parent.appendChild(newElement);
+        } else {
+            parent.insertBefore(newElement, refNode.nextSibling);
         }
-    } else {
-        const queriedParent = fragment.querySelector(selector);
-        // console.log('queriedParent',queriedParent)
-        exchangeChildren(queriedParent)
+    };
+    const childNodes = queriedParent.childNodes;
+    const childNodesLength = childNodes.length;
+    const childLengthAsIndex = childNodesLength - 1;
+    // Limit the index to the child nodes length.
+    index = index + offset > childLengthAsIndex ? childLengthAsIndex : index;
+    offset = index + offset > childLengthAsIndex ? 0 : offset;
+    // First command 
+    switch (action) {
+        /**
+         Insert before without an index will insert the new node
+         before the parent. 
+         **/
+        case 'ib':
+        case 'ia':
+            const insert = action === 'ib' ? insertBefore : insertAfter;
+            switch (CMDcode) {
+                case 0: // ib
+                case 8: // ib e
+                    if (nodeType === 't') {
+                        let textNode;
+                        for (let i = 0; i < childNodesLength; i++) {
+                            const childNode = childNodes[i];
+                            if (childNode.nodeType === 3) {
+                                console.log('@', childNode, childNodes[i + offset], offset, i)
+                                textNode = offset === 0 ? childNode : childNodes[i + offset];
+                                break;
+                            }
+                        }
+                        insert(queriedParent, partialDOMNode, textNode);
+                        return;
+                    }
+
+                    insert(
+                        queriedParent.parentElement,
+                        partialDOMNode,
+                        queriedParent
+                    );
+                    return;
+                case 10: // ib e +1
+                case 12: // ib e i0
+                case 14: // ib e i0 +1
+                    if (nodeType === 't') {
+                        let textNode;
+                        for (let i = 0; i < childNodesLength; i++) {
+                            const childNode = childNodes[i];
+                            if (childNode.nodeType === 3) {
+                                console.log('@', childNode, childNodes[i + offset], offset, i)
+                                textNode = offset === 0 ? childNode : childNodes[i + offset];
+                                break;
+                            }
+                        }
+                        insert(
+                            queriedParent,
+                            partialDOMNode,
+                            textNode
+                        );
+                        return;
+                    }
+                    insert(
+                        queriedParent,
+                        partialDOMNode,
+                        queriedParent.children[index + offset]
+                    );
+                    return;
+            }
+            return;
+        case 'r':
+            //
+            break;
+        case 'rb':
+            //
+            break;
+        case 'ra':
+            //
+            break;
+        case 'rA':
+            //
+            break;
+        case 'rAa':
+            //
+            break;
+        case 'rAb':
+            //
+            break;
+        case 'rm':
+            //
+            break;
+        case 'rmb':
+            //
+            break;
+        case 'rma':
+            //
+            break;
+        case 'rmAa':
+            //
+            break;
+        case 'rmAb':
+            //
+            break;
+        case 'rmA':
+            //
+            break;
     }
 }
 
 
-const partialRenderInner = (partialNodes, retrieveAll) => {
+const exchangeChildren = (queriedParent, newVNode, hasCommand, selector, command) => {
+    // convert the node to an element
+    const partialDOMNode = render(undefined, newVNode, true);
 
+    // Update the queriedParent.
+    // This will remove children and carry out the partialDOMNode modification. 
+    if (hasCommand) {
+        elmentModifier(selector, command, queriedParent, partialDOMNode);
+    } else {
+        // Remove children
+        removeChildren(queriedParent);
+        // Modifier...
+        // // Adopt the new element 
+        queriedParent.appendChild(partialDOMNode);
+    }
+}
+
+
+
+const searchAndReplace = (query, newVNode, type) => {
+    let parts;
+    const hasCommand = (parts = query.split('|')).length === 2;
+    const selector = parts[0];
+    const command = parts[1];
+    console.log('XXXX', hasCommand, selector, command)
+    if (type === 'single') {
+        const queriedParent = fragment.querySelector(selector);
+        // console.log(queriedParent, newVNode, hasCommand, selector, command)
+        exchangeChildren(queriedParent, newVNode, hasCommand, selector, command);
+        return;
+    }
+
+    // if (type === 'all') {
+    //     const queriedParents = fragment.querySelectorAll(selector);
+
+    //     const queriedParentsLength = queriedParents.length;
+
+    //     for (let i = 0; i < queriedParentsLength; i++) {
+    //         exchangeChildren(queriedParents[i], newVNode)
+    //     }
+    //     return;
+    // }
+}
+
+
+const partialRenderInner = (partialNodes, type) => {
+    console.log('yea')
     const partialNodesKeys = Object.keys(partialNodes);
     const partialNodesLength = partialNodesKeys.length;
     const elementCachekeys = Object.keys(elementCache);
@@ -339,10 +523,8 @@ const partialRenderInner = (partialNodes, retrieveAll) => {
     for (let i = 0; i < partialNodesLength; i++) {
         const partialNodeKey = partialNodesKeys[i];
         const newVNode = partialNodes[partialNodeKey];
-        console.log('partialNodeKey', newVNode, partialNodeKey)
-
-        searchAndReplace(partialNodeKey, newVNode, retrieveAll);
-
+        console.log(partialNodeKey, newVNode, type);
+        searchAndReplace(partialNodeKey, newVNode, type);
     }
 
 
@@ -352,10 +534,13 @@ const partialRenderInner = (partialNodes, retrieveAll) => {
     const fragmentClone = document.importNode(fragment, true);
     rootElement.appendChild(fragmentClone);
 }
-const partialRender = (partialNodes) => partialRenderInner(partialNodes, false);
-partialRender.all = (partialNodes) => partialRenderInner(partialNodes, true);
+const partialRender = (partialNodes) => partialRenderInner(partialNodes, 'single');
+partialRender.all = (partialNodes) => partialRenderInner(partialNodes, 'all');
 
-
+// partialRender.attr = (partialNodes) => partialRenderInner(partialNodes, 'attr');
+// partialRender.attrAll = (partialNodes) => partialRenderInner(partialNodes, 'attr-all');
+// partialRender.attr = (partialNodes) => partialRenderInner(partialNodes, 'attr');
+// partialRender.attrAll = (partialNodes) => partialRenderInner(partialNodes, 'attr-all');
 
 export const initialize = (rootSelector, vNode) => {
     // allow a string or element as a querySelector value.
