@@ -199,7 +199,7 @@
         col += 40;
         const newLoop = loop(buildTable, buildData(10000));
         console.time('renderAgain')
-        render({
+        render.all({
             /**
 			SearchType | NodeType	| Action | presedence
 				-@ -t -i -b
@@ -249,6 +249,8 @@
             // |aT    // Insert after textNode					    |ia t
             // |aT+1  // Insert after textNode with offset          |ia t +1
 
+
+            // |r5    // replace parent 		                    |r
             // |r5    // replace child by Index                     |r e i5 
             // |r.some-selector  // Replace a child by its selector |r e=.some-selector
 
@@ -256,11 +258,11 @@
             // |ra.some-selector   // Replace selector after child  |ra e=.some-selector
 
             // |rA.some-selector:nth-of-type(7n+1) // Replace all selectors within parent.
-            //|rA e=.some~~qSquery
-            // |rAa. // Replace slectors for all childs after 		//|rAa e=.~~ 
-            // |rAb. // Replace slectors for all childs before      //|rAb e=.~~
             // |rT   // Replace textNode                            //|r t
             // |rTA.   // Replace textNodes that match all PARENTS  //|rA t=.~~ 
+
+
+
 
             // |rm5    // remove child by index 					//|rm e i5
             // |rm.some-selector  // remove a child by its selector //|rm e=.~~ 
@@ -297,8 +299,8 @@
             //     ),
             //     td({ class: 'col-md-6' })
             // ])
-
-            '.table-salt tr:nth-of-type(4) td:nth-of-type(2)|ia e +3': h1({ style: { backgroundColor: `rgb(${col},200,100)` } }, 'YOOOOOOOOOO')
+ '.table-salt .menu-item:nth-of-type(10n+2) |r ': tr({ style: { class: 'ddd', backgroundColor: `rgb(${col},200,100)` } }, 'YOOOOOOOOOO')
+            // '.table-salt .menu-item:nth-of-type(10n+2) td:nth-of-type(2) a|r t': 'HEllo it\'s me mario'
         });
         console.timeEnd('renderAgain')
     }, false);

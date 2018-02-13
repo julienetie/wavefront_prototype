@@ -306,7 +306,7 @@ const createAndAppendNode = (frag, node) => {
         });
     }
 };
-const elmentModifier = (selector, CMD, queriedParent, partialDOMNode) => {
+const elmentModifier = (selector, CMD, queriedParent, partialDOMNode, type) => {
     const CMDList = CMD.split(' ');
     const CMDListLength = CMDList.length;
     const CMDHasMany = CMDListLength > 1;
@@ -346,44 +346,41 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode) => {
     // Define insert functions, 
     const insertBefore = (parent, newNode, refNode) => parent.insertBefore(newNode, refNode);
 
-    function insertAfter(parent, newElement, refNode) {
+    const insertAfter = (parent, newElement, refNode) => {
         console.log(parent, newElement, refNode);
         if (parent.lastChild === refNode) {
             parent.appendChild(newElement);
         } else {
             parent.insertBefore(newElement, refNode.nextSibling);
         }
-    }
+    };
     const childNodes = queriedParent.childNodes;
     const childNodesLength = childNodes.length;
     const childLengthAsIndex = childNodesLength - 1;
     // Limit the index to the child nodes length.
     index = index + offset > childLengthAsIndex ? childLengthAsIndex : index;
     offset = index + offset > childLengthAsIndex ? 0 : offset;
+
+    // defaults to insert before. 
+    const insert = action === 'ia' ? insertAfter : insertBefore;
+
     // First command 
     switch (action) {
         /**
-         Insert before without an index will insert the new node
-         before the parent. 
+        Insert Before 
+        Insert After
+         Insert before|after without an index will insert the new node
+         before the parent.
          **/
         case 'ib':
         case 'ia':
-            const insert = action === 'ib' ? insertBefore : insertAfter;
+
             switch (CMDcode) {
                 case 0: // ib
                 case 8:
                     // ib e
                     if (nodeType === 't') {
-                        let textNode;
-                        for (let i = 0; i < childNodesLength; i++) {
-                            const childNode = childNodes[i];
-                            if (childNode.nodeType === 3) {
-                                console.log('@', childNode, childNodes[i + offset], offset, i);
-                                textNode = offset === 0 ? childNode : childNodes[i + offset];
-                                break;
-                            }
-                        }
-                        insert(queriedParent, partialDOMNode, textNode);
+                        insert(queriedParent, partialDOMNode, childNode);
                         return;
                     }
 
@@ -410,23 +407,147 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode) => {
                     return;
             }
             return;
+        /** 
+            Replace Node
+        **/
         case 'r':
-            //
+
+            switch (CMDcode) {
+                case 8:
+                    // r e
+                    // Ensures only the r char is defined. 
+                    if (type === 'all') {
+                        const children = queriedParent.querySelectorAll(selector);
+                        console.log('children', children);
+                        const childrenLength = children.length;
+                        const clones = [];
+
+                        if (nodeType !== 't') {
+                            for (let i = 0; i < childrenLength; i++) {
+                                clones.push(partialDOMNode.cloneNode(true));
+                            }
+                        }
+
+                        for (let i = 0; i < childrenLength; i++) {
+                            console.log();
+                            if (nodeType === 't') {
+                                children[i].innerHTML = partialDOMNode;
+                                // const currentNode = children[i];
+                                // console.log(currentNode.textContent)
+                                // const currNodeLength = currentNode.length;
+                                // let textNode;
+                                // for (let j = 0; j < currNodeLength; j++) {
+                                //     const cn = childNodes[j];
+                                //     if (cn.nodeType === 3) {
+                                //         // console.log('@', childNode, childNodes[i + offset], offset, i)
+                                //           console.log('TTT', cn)                       
+                                //          children[i].replaceWith(cn);
+                                //         break;
+                                //     }
+                                // }
+                                // insert(
+                                //     queriedParent,
+                                //     partialDOMNode,
+                                //     textNode
+                                // );
+                            } else {
+                                children[i].replaceWith(clones[i]);
+                            }
+                        }
+                    } else {
+                        if (!CMDHasMany) {
+                            console.log(queriedParent.parentElement.childNodes);
+                            queriedParent.parentElement.replaceChild(partialDOMNode, queriedParent);
+                        }
+                    }
+                    return;
+                case 12:
+                case 14:
+                    switch (nodeType) {
+                        case 'e':
+                            let refNode = queriedParent.children[index + offset];
+                            queriedParent.replaceChild(partialDOMNode, refNode);
+                            return;
+                        case 'n':
+                            refNode = queriedParent.childNodes[index + offset];
+                            queriedParent.replaceChild(partialDOMNode, refNode);
+                            return;
+                        case 't':
+                            let textNode;
+                            for (let i = 0; i < childNodesLength; i++) {
+                                const childNode = childNodes[i];
+                                if (childNode.nodeType === 3) {
+                                    console.log('@', childNode, childNodes[i + offset], offset, i);
+                                    textNode = offset === 0 ? childNode : childNodes[i + offset];
+                                    break;
+                                }
+                            }
+                            queriedParent.replaceChild(partialDOMNode, textNode);
+                            return;
+                    }
+                    return;
+                case 9:
+                    const child = queriedParent.querySelector(query);
+                    child.replaceWith(partialDOMNode);
+                    return;
+            }
+
             break;
         case 'rb':
-            //
+            switch (CMDcode) {
+                case 9:
+                    const child = queriedParent.querySelector(query);
+                    child.previousSibling.replaceWith(partialDOMNode);
+                    return;
+            }
             break;
         case 'ra':
-            //
+            switch (CMDcode) {
+                case 9:
+                    const child = queriedParent.querySelector(query);
+                    child.nextSibling.replaceWith(partialDOMNode);
+                    return;
+            }
             break;
-        case 'rA':
-            //
-            break;
-        case 'rAa':
-            //
-            break;
-        case 'rAb':
-            //
+            // case 'rA':
+            //     switch (CMDcode) {
+            //         case 8:
+            //             // Ensures only the r char is defined. 
+            //             if (!CMDHasMany) {
+            //                 console.log(queriedParent.parentElement.childNodes)
+            //                 queriedParent.parentElement.replaceChild(partialDOMNode, queriedParent);
+            //             }
+            //         return;
+            //         case 9:
+
+            //         if(nodeType === 't'){
+            //             const children = Array.from(queriedParent.querySelectorAll(query));
+            //             const childrenLength = children.length;
+            //             const clones = [];
+
+            //             for(let i =0;i< childrenLength;i++){
+            //                 clones.push(partialDOMNode.cloneNode(true));
+            //             }
+
+            //             for(let i =0;i< childrenLength;i++){
+            //                 children[i].replaceWith(clones[i]);
+            //             }
+            //         }
+
+            //             const children = Array.from(queriedParent.querySelectorAll(query));
+            //             const childrenLength = children.length;
+            //             const clones = [];
+
+            //             for(let i =0;i< childrenLength;i++){
+            //                 clones.push(partialDOMNode.cloneNode(true));
+            //             }
+
+            //             for(let i =0;i< childrenLength;i++){
+            //                 children[i].replaceWith(clones[i]);
+            //             }
+
+            //             return;
+            //     }
             break;
         case 'rm':
             //
@@ -449,35 +570,29 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode) => {
     }
 };
 
-const exchangeChildren = (queriedParent, newVNode, hasCommand, selector, command) => {
-    // convert the node to an element
-    const partialDOMNode = render(undefined, newVNode, true);
-
-    // Update the queriedParent.
-    // This will remove children and carry out the partialDOMNode modification. 
-    if (hasCommand) {
-        elmentModifier(selector, command, queriedParent, partialDOMNode);
-    } else {
-        // Remove children
-        removeChildren(queriedParent);
-        // Modifier...
-        // // Adopt the new element 
-        queriedParent.appendChild(partialDOMNode);
-    }
-};
-
 const searchAndReplace = (query, newVNode, type) => {
     let parts;
     const hasCommand = (parts = query.split('|')).length === 2;
     const selector = parts[0];
     const command = parts[1];
     console.log('XXXX', hasCommand, selector, command);
-    if (type === 'single') {
-        const queriedParent = fragment.querySelector(selector);
-        // console.log(queriedParent, newVNode, hasCommand, selector, command)
-        exchangeChildren(queriedParent, newVNode, hasCommand, selector, command);
-        return;
+    // if (type === 'single') {
+    const queriedParent = type === 'all' ? fragment : fragment.querySelector(selector);
+    // console.log(queriedParent, newVNode, hasCommand, selector, command)
+    const partialDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true);
+
+    // Update the queriedParent.
+    // This will remove children and carry out the partialDOMNode modification. 
+    if (hasCommand) {
+        elmentModifier(selector, command, queriedParent, partialDOMNode, type);
+    } else {
+        // Remove children
+        removeChildren(queriedParent);
+        // // Adopt the new element 
+        queriedParent.appendChild(partialDOMNode);
     }
+    // return;
+    // }
 
     // if (type === 'all') {
     //     const queriedParents = fragment.querySelectorAll(selector);
@@ -485,7 +600,7 @@ const searchAndReplace = (query, newVNode, type) => {
     //     const queriedParentsLength = queriedParents.length;
 
     //     for (let i = 0; i < queriedParentsLength; i++) {
-    //         exchangeChildren(queriedParents[i], newVNode)
+    //         exchangeChildren(queriedParents[i], newVNode, hasCommand, selector, command);
     //     }
     //     return;
     // }
@@ -538,6 +653,13 @@ const initialize = (rootSelector, vNode) => {
     return partialRender;
 };
 
+/** 
+ * The or method explicitly defines a condition between an array of nodes. 
+ * @param {Array} vNodes - An array of vNodes 
+ * @param {Number|Array} switch - A number or series of inidcators (as an array) of what elements to display.
+ * @exclude {Boolean} exclude - 
+ * 
+ */
 const or = (vNodes, conditions, exclude) => {
     const filteredVNodes = [];
     const filteredIndexes = [];
@@ -659,6 +781,7 @@ const loop = (vNodes, data) => {
     }
 };
 
+// HTML Elements.
 const tags$1 = {
     a: assembly('a'),
     abbr: assembly('abbr'),
