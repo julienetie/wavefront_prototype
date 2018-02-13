@@ -307,7 +307,7 @@ const getReferenceNode = (parent, selector) => {
 }
 
 
-const elmentModifier = (selector, CMD, queriedParent, partialDOMNode, type) => {
+const elmentModifier = (selector, CMD, queriedParent, newDOMNode, type) => {
     const CMDList = CMD.split(' ');
     const CMDListLength = CMDList.length;
     const CMDHasMany = CMDListLength > 1;
@@ -388,13 +388,13 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode, type) => {
                 case 0: // ib
                 case 8: // ib e
                     if (nodeType === 't') {
-                        insert(queriedParent, partialDOMNode, childNode);
+                        insert(queriedParent, newDOMNode, childNode);
                         return;
                     }
 
                     insert(
                         queriedParent.parentElement,
-                        partialDOMNode,
+                        newDOMNode,
                         queriedParent
                     );
                     return;
@@ -413,14 +413,14 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode, type) => {
                         }
                         insert(
                             queriedParent,
-                            partialDOMNode,
+                            newDOMNode,
                             textNode
                         );
                         return;
                     }
                     insert(
                         queriedParent,
-                        partialDOMNode,
+                        newDOMNode,
                         queriedParent.children[index + offset]
                     );
                     return;
@@ -442,32 +442,14 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode, type) => {
 
                         if (nodeType !== 't') {
                             for (let i = 0; i < childrenLength; i++) {
-                                clones.push(partialDOMNode.cloneNode(true));
+                                clones.push(newDOMNode.cloneNode(true));
                             }
                         }
 
                         for (let i = 0; i < childrenLength; i++) {
                             console.log()
                             if (nodeType === 't') {
-                                children[i].innerHTML = partialDOMNode;
-                                // const currentNode = children[i];
-                                // console.log(currentNode.textContent)
-                                // const currNodeLength = currentNode.length;
-                                // let textNode;
-                                // for (let j = 0; j < currNodeLength; j++) {
-                                //     const cn = childNodes[j];
-                                //     if (cn.nodeType === 3) {
-                                //         // console.log('@', childNode, childNodes[i + offset], offset, i)
-                                //           console.log('TTT', cn)                       
-                                //          children[i].replaceWith(cn);
-                                //         break;
-                                //     }
-                                // }
-                                // insert(
-                                //     queriedParent,
-                                //     partialDOMNode,
-                                //     textNode
-                                // );
+                                children[i].innerHTML = newDOMNode;
 
                             } else {
                                 children[i].replaceWith(clones[i]);
@@ -478,7 +460,7 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode, type) => {
                     } else {
                         if (!CMDHasMany) {
                             console.log(queriedParent.parentElement.childNodes)
-                            queriedParent.parentElement.replaceChild(partialDOMNode, queriedParent);
+                            queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
                         }
                     }
                     return;
@@ -487,11 +469,11 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode, type) => {
                     switch (nodeType) {
                         case 'e':
                             let refNode = queriedParent.children[index + offset];
-                            queriedParent.replaceChild(partialDOMNode, refNode);
+                            queriedParent.replaceChild(newDOMNode, refNode);
                             return;
                         case 'n':
                             refNode = queriedParent.childNodes[index + offset];
-                            queriedParent.replaceChild(partialDOMNode, refNode);
+                            queriedParent.replaceChild(newDOMNode, refNode);
                             return;
                         case 't':
                             let textNode;
@@ -503,13 +485,13 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode, type) => {
                                     break;
                                 }
                             }
-                            queriedParent.replaceChild(partialDOMNode, textNode);
+                            queriedParent.replaceChild(newDOMNode, textNode);
                             return;
                     }
                     return;
                 case 9:
                     const child = queriedParent.querySelector(query);
-                    child.replaceWith(partialDOMNode);
+                    child.replaceWith(newDOMNode);
                     return;
             }
 
@@ -518,7 +500,7 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode, type) => {
             switch (CMDcode) {
                 case 9:
                     const child = queriedParent.querySelector(query);
-                    child.previousSibling.replaceWith(partialDOMNode);
+                    child.previousSibling.replaceWith(newDOMNode);
                     return;
             }
             break;
@@ -526,7 +508,7 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode, type) => {
             switch (CMDcode) {
                 case 9:
                     const child = queriedParent.querySelector(query);
-                    child.nextSibling.replaceWith(partialDOMNode);
+                    child.nextSibling.replaceWith(newDOMNode);
                     return;
             }
             break;
@@ -536,7 +518,7 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode, type) => {
             //             // Ensures only the r char is defined. 
             //             if (!CMDHasMany) {
             //                 console.log(queriedParent.parentElement.childNodes)
-            //                 queriedParent.parentElement.replaceChild(partialDOMNode, queriedParent);
+            //                 queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
             //             }
             //         return;
             //         case 9:
@@ -547,7 +529,7 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode, type) => {
             //             const clones = [];
 
             //             for(let i =0;i< childrenLength;i++){
-            //                 clones.push(partialDOMNode.cloneNode(true));
+            //                 clones.push(newDOMNode.cloneNode(true));
             //             }
 
             //             for(let i =0;i< childrenLength;i++){
@@ -560,7 +542,7 @@ const elmentModifier = (selector, CMD, queriedParent, partialDOMNode, type) => {
             //             const clones = [];
 
             //             for(let i =0;i< childrenLength;i++){
-            //                 clones.push(partialDOMNode.cloneNode(true));
+            //                 clones.push(newDOMNode.cloneNode(true));
             //             }
 
             //             for(let i =0;i< childrenLength;i++){
@@ -604,35 +586,20 @@ const searchAndReplace = (query, newVNode, type) => {
     const hasCommand = (parts = query.split('|')).length === 2;
     const selector = parts[0];
     const command = parts[1];
-    console.log('XXXX', hasCommand, selector, command)
-    // if (type === 'single') {
-    const queriedParent = type === 'all' ? fragment : fragment.querySelector(selector);
-    // console.log(queriedParent, newVNode, hasCommand, selector, command)
-    const partialDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true);
 
-    // Update the queriedParent.
-    // This will remove children and carry out the partialDOMNode modification. 
+    // The .all method uses the fragment for querySelectorAll and the queried node for querySelector
+    const cachedNode = type === 'all' ? fragment : fragment.querySelector(selector);
+
+    // When using `|r t` with .all() a string value will be expected.  
+    const newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true);
+
     if (hasCommand) {
-        elmentModifier(selector, command, queriedParent, partialDOMNode, type);
+        elmentModifier(selector, command, cachedNode, newDOMNode, type);
     } else {
-        // Remove children
-        removeChildren(queriedParent);
-        // // Adopt the new element 
-        queriedParent.appendChild(partialDOMNode);
+        removeChildren(cachedNode);
+        // Append the new node to the cached fragment.
+        cachedNode.appendChild(newDOMNode);
     }
-    // return;
-    // }
-
-    // if (type === 'all') {
-    //     const queriedParents = fragment.querySelectorAll(selector);
-
-    //     const queriedParentsLength = queriedParents.length;
-
-    //     for (let i = 0; i < queriedParentsLength; i++) {
-    //         exchangeChildren(queriedParents[i], newVNode, hasCommand, selector, command);
-    //     }
-    //     return;
-    // }
 }
 
 
