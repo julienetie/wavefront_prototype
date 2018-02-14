@@ -197,7 +197,7 @@
 
     document.addEventListener('mousedown', () => {
         col += 40;
-        const newLoop = loop(buildTable, buildData(10000));
+        const newLoop = loop(buildTable, buildData(100));
         console.time('renderAgain')
         render.all({
             /**
@@ -276,6 +276,8 @@
             // |rmAb. // remove slectors for all childs before      //| rmAb e=
             // |rmT   // remove textNode                            //| rmA t
             // |rmTA.   // remove textNodes that match all PARENTS  //| rmA t=.~~
+
+
 
             // Find text via regex
             // replace text via regex 

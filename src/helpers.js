@@ -13,7 +13,7 @@ export const removeChildren = parentNode => {
  * Filter by loop 
  * @param {Array} arr 
  * @param {Function} callback 
-**/
+ **/
 export const filter = (arr, callback) => {
     const store = [];
     const arrLength = arr.length;
@@ -24,3 +24,19 @@ export const filter = (arr, callback) => {
     }
     return store;
 }
+
+/** 
+ * Inserts a Node before a reference node.
+ */
+export const insertBefore = (parent, newNode, refNode) => parent.insertBefore(newNode, refNode);
+
+/** 
+ * Inserts a Node after a reference node.
+ */
+export const insertAfter = (parent, newElement, refNode) => {
+    if (parent.lastChild === refNode) {
+        parent.appendChild(newElement);
+    } else {
+        parent.insertBefore(newElement, refNode.nextSibling);
+    }
+};

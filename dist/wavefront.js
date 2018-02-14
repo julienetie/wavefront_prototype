@@ -29,7 +29,7 @@ var removeChildren = function removeChildren(parentNode) {
  * Filter by loop 
  * @param {Array} arr 
  * @param {Function} callback 
-**/
+ **/
 var filter = function filter(arr, callback) {
     var store = [];
     var arrLength = arr.length;
@@ -39,6 +39,24 @@ var filter = function filter(arr, callback) {
         }
     }
     return store;
+};
+
+/** 
+ * Inserts a Node before a reference node.
+ */
+var insertBefore = function insertBefore(parent, newNode, refNode) {
+    return parent.insertBefore(newNode, refNode);
+};
+
+/** 
+ * Inserts a Node after a reference node.
+ */
+var insertAfter = function insertAfter(parent, newElement, refNode) {
+    if (parent.lastChild === refNode) {
+        parent.appendChild(newElement);
+    } else {
+        parent.insertBefore(newElement, refNode.nextSibling);
+    }
 };
 
 var toConsumableArray = function (arr) {
@@ -249,8 +267,6 @@ var render = function render(initalRootElement, vNode, isPartial) {
     return renderFragment;
 };
 
-var elementCache = {};
-
 var createAndAppendNode = function createAndAppendNode(frag, node) {
     var _element;
 
@@ -339,22 +355,109 @@ var createAndAppendNode = function createAndAppendNode(frag, node) {
         });
     }
 };
-var elmentModifier = function elmentModifier(selector, CMD, queriedParent, partialDOMNode, type) {
+var ibIa1 = function ibIa1(nodeType, queriedParent, newDOMNode, childNode) {
+    if (nodeType === 't') {
+        insert(queriedParent, newDOMNode, childNode);
+    } else {
+        insert(queriedParent.parentElement, newDOMNode, queriedParent);
+    }
+};
+
+var ibIa2 = function ibIa2(nodeType, childNodesLength, childNode, offset, queriedParent, newDOMNode) {
+    if (nodeType === 't') {
+        var textNode = void 0;
+        for (var i = 0; i < childNodesLength; i++) {
+            var _childNode2 = childNodes[i];
+            if (_childNode2.nodeType === 3) {
+                textNode = offset === 0 ? _childNode2 : childNodes[i + offset];
+                break;
+            }
+        }
+        insert(queriedParent, newDOMNode, textNode);
+    } else {
+        insert(queriedParent, newDOMNode, queriedParent.children[index + offset]);
+    }
+};
+
+var r1 = function r1(type, selector, nodeType, newDOMNode, CMDHasMany, queriedParent) {
+    if (type === 'all') {
+        var children = queriedParent.querySelectorAll(selector);
+        var childrenLength = children.length;
+        var clones = [];
+
+        if (nodeType !== 't') {
+            for (var i = 0; i < childrenLength; i++) {
+                clones.push(newDOMNode.cloneNode(true));
+            }
+        }
+
+        for (var _i = 0; _i < childrenLength; _i++) {
+            if (nodeType === 't') {
+                children[_i].innerHTML = newDOMNode;
+            } else {
+                children[_i].replaceWith(clones[_i]);
+            }
+        }
+    } else {
+        if (!CMDHasMany) {
+            queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
+        }
+    }
+};
+
+var r2 = function r2(nodeType, queriedParent, offset, newDOMNode, refNode, childNode) {
+    switch (nodeType) {
+        case 'e':
+            var _refNode = queriedParent.children[index + offset];
+            queriedParent.replaceChild(newDOMNode, _refNode);
+            return;
+        case 'n':
+            _refNode = queriedParent.childNodes[index + offset];
+            queriedParent.replaceChild(newDOMNode, _refNode);
+            return;
+        case 't':
+            var textNode = void 0;
+            for (var i = 0; i < childNodesLength; i++) {
+                var _childNode3 = childNodes[i];
+                if (_childNode3.nodeType === 3) {
+                    textNode = offset === 0 ? _childNode3 : childNodes[i + offset];
+                    break;
+                }
+            }
+            queriedParent.replaceChild(newDOMNode, textNode);
+            return;
+    }
+};
+
+var replaceNode = function replaceNode(type, queriedParent, query, newDOMNode) {
+    var child = queriedParent.querySelector(query);
+    var childRelative = type ? child[type] : child;
+    childRelative.replaceWith(newDOMNode);
+};
+var updateCachedFragmentByCommand = function updateCachedFragmentByCommand(selector, CMD, queriedParent, newDOMNode, type) {
     var CMDList = CMD.split(' ');
     var CMDListLength = CMDList.length;
     var CMDHasMany = CMDListLength > 1;
     var lastCommand = CMDList[CMDListLength - 1];
     var thirdCommand = CMDList[2];
     var secondCommand = CMDList[1];
-    var firstCommand = CMDList[0];
+    var action = CMDList[0];
+    var insert = action === 'ia' ? insertAfter : insertBefore;
+    var childNodes = queriedParent.childNodes;
+    var childNodesLength = childNodes.length;
+    var childLengthAsIndex = childNodesLength - 1;
 
     // offset. 
     var hasOffset = CMDHasMany ? lastCommand[0] === '+' : false;
-    var offset = hasOffset ? parseInt(lastCommand.slice(1), 10) : 0;
+    var initialOffset = hasOffset ? parseInt(lastCommand.slice(1), 10) : 0;
 
     // index.
     var hasIndex = !!thirdCommand ? thirdCommand[0] === 'i' : false;
-    var index = hasIndex ? parseInt(thirdCommand.slice(1), 10) : 0;
+    var initalIndex = hasIndex ? parseInt(thirdCommand.slice(1), 10) : 0;
+
+    // Limit the index to the child nodes length.
+    var index = initalIndex + offset > childLengthAsIndex ? childLengthAsIndex : initalIndex;
+    var offset = index + initialOffset > childLengthAsIndex ? 0 : initialOffset;
 
     // nodeType.
     var nodeType = !!secondCommand ? secondCommand[0] : 'e';
@@ -363,226 +466,78 @@ var elmentModifier = function elmentModifier(selector, CMD, queriedParent, parti
     var hasQuery = !!secondCommand ? secondCommand.indexOf('=') >= 0 : false;
     var query = hasQuery ? secondCommand.split('=')[1] : null;
 
-    // Action
-    var action = firstCommand;
+    /** 
+     * NodeType|Index|Offset|Query
+     *  CMDcode is a binary representation of 
+     * the presetnt commands. 
+     * Action is present by default.
+     */
+    var CMDcode = parseInt([1, hasIndex + 0, hasOffset + 0, hasQuery + 0].join(''), 2);
 
-    // NodeType|Index|Offset|Query
-    var CMDcode = parseInt([true + 0, hasIndex + 0, hasOffset + 0, hasQuery + 0].join(''), 2);
+    // console.log('CMDcode', CMDcode)
+    // console.log('action', action)
+    // console.log('nodeType', nodeType)
+    // console.log('index', index)
+    // console.log('offset', offset)
+    // console.log('query', query)
 
-    console.log('CMDcode', CMDcode);
-    console.log('action', action);
-    console.log('nodeType', nodeType);
-    console.log('index', index);
-    console.log('offset', offset);
-    console.log('query', query);
-
-    // Define insert functions, 
-    var insertBefore = function insertBefore(parent, newNode, refNode) {
-        return parent.insertBefore(newNode, refNode);
-    };
-
-    var insertAfter = function insertAfter(parent, newElement, refNode) {
-        console.log(parent, newElement, refNode);
-        if (parent.lastChild === refNode) {
-            parent.appendChild(newElement);
-        } else {
-            parent.insertBefore(newElement, refNode.nextSibling);
+    var ibIa = function ibIa(CMDcode) {
+        switch (CMDcode) {
+            case 0: // ib
+            case 8:
+                // ib e
+                ibIa1(nodeType, queriedParent, newDOMNode, childNode);
+                return;
+            case 10: // ib e +1
+            case 12: // ib e i0
+            case 14:
+                // ib e i0 +1
+                ibIa2(nodeType, childNodesLength, childNode, offset, queriedParent, newDOMNode);
+                return;
         }
     };
-    var childNodes = queriedParent.childNodes;
-    var childNodesLength = childNodes.length;
-    var childLengthAsIndex = childNodesLength - 1;
-    // Limit the index to the child nodes length.
-    index = index + offset > childLengthAsIndex ? childLengthAsIndex : index;
-    offset = index + offset > childLengthAsIndex ? 0 : offset;
 
-    // defaults to insert before. 
-    var insert = action === 'ia' ? insertAfter : insertBefore;
+    var r = function r(CMDcode) {
+        switch (CMDcode) {
+            case 8:
+                // r e
+                r1(type, selector, nodeType, newDOMNode, CMDHasMany, queriedParent);
+                return;
+            case 12:
+            case 14:
+                r2(nodeType, queriedParent, offset, newDOMNode, refNode, childNode);
+                return;
+            case 9:
+                replaceNode(null, queriedParent, query, newDOMNode);
+                return;
+        }
+    };
 
-    // First command 
     switch (action) {
         /**
-        Insert Before 
-        Insert After
-         Insert before|after without an index will insert the new node
-         before the parent.
-         **/
+         * Insert Before Insert After
+         * Insert before|after without an index will insert the new node
+         * before the parent.
+         */
         case 'ib':
         case 'ia':
-
-            switch (CMDcode) {
-                case 0: // ib
-                case 8:
-                    // ib e
-                    if (nodeType === 't') {
-                        insert(queriedParent, partialDOMNode, childNode);
-                        return;
-                    }
-
-                    insert(queriedParent.parentElement, partialDOMNode, queriedParent);
-                    return;
-                case 10: // ib e +1
-                case 12: // ib e i0
-                case 14:
-                    // ib e i0 +1
-                    if (nodeType === 't') {
-                        var textNode = void 0;
-                        for (var i = 0; i < childNodesLength; i++) {
-                            var _childNode2 = childNodes[i];
-                            if (_childNode2.nodeType === 3) {
-                                console.log('@', _childNode2, childNodes[i + offset], offset, i);
-                                textNode = offset === 0 ? _childNode2 : childNodes[i + offset];
-                                break;
-                            }
-                        }
-                        insert(queriedParent, partialDOMNode, textNode);
-                        return;
-                    }
-                    insert(queriedParent, partialDOMNode, queriedParent.children[index + offset]);
-                    return;
-            }
+            ibIa(CMDcode);
             return;
         /** 
             Replace Node
         **/
         case 'r':
-
-            switch (CMDcode) {
-                case 8:
-                    // r e
-                    // Ensures only the r char is defined. 
-                    if (type === 'all') {
-                        var children = queriedParent.querySelectorAll(selector);
-                        console.log('children', children);
-                        var childrenLength = children.length;
-                        var clones = [];
-
-                        if (nodeType !== 't') {
-                            for (var _i = 0; _i < childrenLength; _i++) {
-                                clones.push(partialDOMNode.cloneNode(true));
-                            }
-                        }
-
-                        for (var _i2 = 0; _i2 < childrenLength; _i2++) {
-                            console.log();
-                            if (nodeType === 't') {
-                                children[_i2].innerHTML = partialDOMNode;
-                                // const currentNode = children[i];
-                                // console.log(currentNode.textContent)
-                                // const currNodeLength = currentNode.length;
-                                // let textNode;
-                                // for (let j = 0; j < currNodeLength; j++) {
-                                //     const cn = childNodes[j];
-                                //     if (cn.nodeType === 3) {
-                                //         // console.log('@', childNode, childNodes[i + offset], offset, i)
-                                //           console.log('TTT', cn)                       
-                                //          children[i].replaceWith(cn);
-                                //         break;
-                                //     }
-                                // }
-                                // insert(
-                                //     queriedParent,
-                                //     partialDOMNode,
-                                //     textNode
-                                // );
-                            } else {
-                                children[_i2].replaceWith(clones[_i2]);
-                            }
-                        }
-                    } else {
-                        if (!CMDHasMany) {
-                            console.log(queriedParent.parentElement.childNodes);
-                            queriedParent.parentElement.replaceChild(partialDOMNode, queriedParent);
-                        }
-                    }
-                    return;
-                case 12:
-                case 14:
-                    switch (nodeType) {
-                        case 'e':
-                            var refNode = queriedParent.children[index + offset];
-                            queriedParent.replaceChild(partialDOMNode, refNode);
-                            return;
-                        case 'n':
-                            refNode = queriedParent.childNodes[index + offset];
-                            queriedParent.replaceChild(partialDOMNode, refNode);
-                            return;
-                        case 't':
-                            var _textNode = void 0;
-                            for (var _i3 = 0; _i3 < childNodesLength; _i3++) {
-                                var _childNode3 = childNodes[_i3];
-                                if (_childNode3.nodeType === 3) {
-                                    console.log('@', _childNode3, childNodes[_i3 + offset], offset, _i3);
-                                    _textNode = offset === 0 ? _childNode3 : childNodes[_i3 + offset];
-                                    break;
-                                }
-                            }
-                            queriedParent.replaceChild(partialDOMNode, _textNode);
-                            return;
-                    }
-                    return;
-                case 9:
-                    var child = queriedParent.querySelector(query);
-                    child.replaceWith(partialDOMNode);
-                    return;
-            }
-
+            r(CMDcode);
             break;
         case 'rb':
-            switch (CMDcode) {
-                case 9:
-                    var _child = queriedParent.querySelector(query);
-                    _child.previousSibling.replaceWith(partialDOMNode);
-                    return;
+            if (CMDcode === 9) {
+                replaceNode('previousSibling', queriedParent, query, newDOMNode);
             }
             break;
         case 'ra':
-            switch (CMDcode) {
-                case 9:
-                    var _child2 = queriedParent.querySelector(query);
-                    _child2.nextSibling.replaceWith(partialDOMNode);
-                    return;
+            if (CMDcode === 9) {
+                replaceNode('nextSibling', queriedParent, query, newDOMNode);
             }
-            break;
-            // case 'rA':
-            //     switch (CMDcode) {
-            //         case 8:
-            //             // Ensures only the r char is defined. 
-            //             if (!CMDHasMany) {
-            //                 console.log(queriedParent.parentElement.childNodes)
-            //                 queriedParent.parentElement.replaceChild(partialDOMNode, queriedParent);
-            //             }
-            //         return;
-            //         case 9:
-
-            //         if(nodeType === 't'){
-            //             const children = Array.from(queriedParent.querySelectorAll(query));
-            //             const childrenLength = children.length;
-            //             const clones = [];
-
-            //             for(let i =0;i< childrenLength;i++){
-            //                 clones.push(partialDOMNode.cloneNode(true));
-            //             }
-
-            //             for(let i =0;i< childrenLength;i++){
-            //                 children[i].replaceWith(clones[i]);
-            //             }
-            //         }
-
-            //             const children = Array.from(queriedParent.querySelectorAll(query));
-            //             const childrenLength = children.length;
-            //             const clones = [];
-
-            //             for(let i =0;i< childrenLength;i++){
-            //                 clones.push(partialDOMNode.cloneNode(true));
-            //             }
-
-            //             for(let i =0;i< childrenLength;i++){
-            //                 children[i].replaceWith(clones[i]);
-            //             }
-
-            //             return;
-            //     }
             break;
         case 'rm':
             //
@@ -593,84 +548,70 @@ var elmentModifier = function elmentModifier(selector, CMD, queriedParent, parti
         case 'rma':
             //
             break;
+        case 'rmA':
+            //
+            break;
         case 'rmAa':
             //
             break;
         case 'rmAb':
             //
             break;
-        case 'rmA':
-            //
-            break;
+
     }
 };
 
-var searchAndReplace = function searchAndReplace(query, newVNode, type) {
+/** 
+ * Updates the cached fragment by creating the new node 
+ * and then replacing the childNodes. Updating by command
+ * will only modify portions of the cached DOM tree.
+ * @param {string} query - The selector and Wavefront query.  
+ * @param {Object|string} newVNode - The new node or text
+ * @param {Boolean} type - Truthy for .all()
+ */
+var updateCachedFragment = function updateCachedFragment(query, newVNode, type) {
     var parts = void 0;
     var hasCommand = (parts = query.split('|')).length === 2;
     var selector = parts[0];
     var command = parts[1];
-    console.log('XXXX', hasCommand, selector, command);
-    // if (type === 'single') {
-    var queriedParent = type === 'all' ? fragment : fragment.querySelector(selector);
-    // console.log(queriedParent, newVNode, hasCommand, selector, command)
-    var partialDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true);
 
-    // Update the queriedParent.
-    // This will remove children and carry out the partialDOMNode modification. 
+    // The .all method uses the fragment for querySelectorAll and the queried node for querySelector
+    var cachedNode = type === 'all' ? fragment : fragment.querySelector(selector);
+
+    // When using `|r t` with .all() a string value will be expected.  
+    var newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true);
+
     if (hasCommand) {
-        elmentModifier(selector, command, queriedParent, partialDOMNode, type);
+        updateCachedFragmentByCommand(selector, command, cachedNode, newDOMNode, type);
     } else {
-        // Remove children
-        removeChildren(queriedParent);
-        // // Adopt the new element 
-        queriedParent.appendChild(partialDOMNode);
+        removeChildren(cachedNode);
+        // Append the new node to the cached fragment.
+        cachedNode.appendChild(newDOMNode);
     }
-    // return;
-    // }
-
-    // if (type === 'all') {
-    //     const queriedParents = fragment.querySelectorAll(selector);
-
-    //     const queriedParentsLength = queriedParents.length;
-
-    //     for (let i = 0; i < queriedParentsLength; i++) {
-    //         exchangeChildren(queriedParents[i], newVNode, hasCommand, selector, command);
-    //     }
-    //     return;
-    // }
 };
 
 var partialRenderInner = function partialRenderInner(partialNodes, type) {
-    console.log('yea');
     var partialNodesKeys = Object.keys(partialNodes);
     var partialNodesLength = partialNodesKeys.length;
-    var elementCachekeys = Object.keys(elementCache);
 
     for (var i = 0; i < partialNodesLength; i++) {
         var partialNodeKey = partialNodesKeys[i];
         var newVNode = partialNodes[partialNodeKey];
-        console.log(partialNodeKey, newVNode, type);
-        searchAndReplace(partialNodeKey, newVNode, type);
+        updateCachedFragment(partialNodeKey, newVNode, type);
     }
 
-    // Append modified fragment.
-    // Remove children
+    // Render the DOM with the updated cachedFragment.
     removeChildren(rootElement);
     var fragmentClone = document.importNode(fragment, true);
     rootElement.appendChild(fragmentClone);
 };
+
 var partialRender = function partialRender(partialNodes) {
     return partialRenderInner(partialNodes, 'single');
 };
 partialRender.all = function (partialNodes) {
     return partialRenderInner(partialNodes, 'all');
 };
-
-// partialRender.attr = (partialNodes) => partialRenderInner(partialNodes, 'attr');
-// partialRender.attrAll = (partialNodes) => partialRenderInner(partialNodes, 'attr-all');
-// partialRender.attr = (partialNodes) => partialRenderInner(partialNodes, 'attr');
-// partialRender.attrAll = (partialNodes) => partialRenderInner(partialNodes, 'attr-all');
 
 var initialize = function initialize(rootSelector, vNode) {
     // allow a string or element as a querySelector value.
@@ -692,13 +633,6 @@ var initialize = function initialize(rootSelector, vNode) {
     return partialRender;
 };
 
-/** 
- * The or method explicitly defines a condition between an array of nodes. 
- * @param {Array} vNodes - An array of vNodes 
- * @param {Number|Array} switch - A number or series of inidcators (as an array) of what elements to display.
- * @exclude {Boolean} exclude - 
- * 
- */
 var or = function or(vNodes, conditions, exclude) {
     var filteredVNodes = [];
     var filteredIndexes = [];
@@ -839,7 +773,6 @@ var loop = function loop(vNodes, data) {
     }
 };
 
-// HTML Elements.
 var tags$1 = {
     a: assembly('a'),
     abbr: assembly('abbr'),

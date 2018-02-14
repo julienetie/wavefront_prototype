@@ -6,7 +6,9 @@ import {
     isElement,
     isVNode,
     removeChildren,
-    filter
+    filter,
+    insertBefore,
+    insertAfter
 } from './helpers';
 
 
@@ -307,250 +309,241 @@ const getReferenceNode = (parent, selector) => {
 }
 
 
-const elmentModifier = (selector, CMD, queriedParent, newDOMNode, type) => {
+const ibIa1 = (nodeType, queriedParent, newDOMNode, childNode) => {
+    if (nodeType === 't') {
+        insert(queriedParent, newDOMNode, childNode);
+    } else {
+        insert(
+            queriedParent.parentElement,
+            newDOMNode,
+            queriedParent
+        );
+    }
+}
+
+const ibIa2 = (nodeType, childNodesLength, childNode, offset, queriedParent, newDOMNode) => {
+    if (nodeType === 't') {
+        let textNode;
+        for (let i = 0; i < childNodesLength; i++) {
+            const childNode = childNodes[i];
+            if (childNode.nodeType === 3) {
+                textNode = offset === 0 ? childNode : childNodes[i + offset];
+                break;
+            }
+        }
+        insert(
+            queriedParent,
+            newDOMNode,
+            textNode
+        );
+    } else {
+        insert(
+            queriedParent,
+            newDOMNode,
+            queriedParent.children[index + offset]
+        );
+    }
+}
+
+const r1 = (type,selector, nodeType, newDOMNode, CMDHasMany, queriedParent) => {
+    if (type === 'all') {
+        const children = queriedParent.querySelectorAll(selector);
+        const childrenLength = children.length;
+        const clones = [];
+
+        if (nodeType !== 't') {
+            for (let i = 0; i < childrenLength; i++) {
+                clones.push(newDOMNode.cloneNode(true));
+            }
+        }
+
+        for (let i = 0; i < childrenLength; i++) {
+            if (nodeType === 't') {
+                children[i].innerHTML = newDOMNode;
+            } else {
+                children[i].replaceWith(clones[i]);
+            }
+        }
+    } else {
+        if (!CMDHasMany) {
+            queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
+        }
+    }
+}
+
+
+const r2 = (nodeType, queriedParent, offset, newDOMNode, refNode, childNode) => {
+    switch (nodeType) {
+        case 'e':
+            let refNode = queriedParent.children[index + offset];
+            queriedParent.replaceChild(newDOMNode, refNode);
+            return;
+        case 'n':
+            refNode = queriedParent.childNodes[index + offset];
+            queriedParent.replaceChild(newDOMNode, refNode);
+            return;
+        case 't':
+            let textNode;
+            for (let i = 0; i < childNodesLength; i++) {
+                const childNode = childNodes[i];
+                if (childNode.nodeType === 3) {
+                    textNode = offset === 0 ? childNode : childNodes[i + offset];
+                    break;
+                }
+            }
+            queriedParent.replaceChild(newDOMNode, textNode);
+            return;
+    }
+}
+
+const replaceNode = (type, queriedParent, query, newDOMNode) => {
+    const child = queriedParent.querySelector(query);
+    const childRelative = type ? child[type] : child;
+    childRelative.replaceWith(newDOMNode);
+}
+const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode, type) => {
     const CMDList = CMD.split(' ');
     const CMDListLength = CMDList.length;
     const CMDHasMany = CMDListLength > 1;
     const lastCommand = CMDList[CMDListLength - 1];
     const thirdCommand = CMDList[2];
     const secondCommand = CMDList[1];
-    const firstCommand = CMDList[0];
+    const action = CMDList[0];
+    const insert = action === 'ia' ? insertAfter : insertBefore;
+    const childNodes = queriedParent.childNodes;
+    const childNodesLength = childNodes.length;
+    const childLengthAsIndex = childNodesLength - 1;
 
     // offset. 
     const hasOffset = CMDHasMany ? lastCommand[0] === '+' : false;
-    let offset = hasOffset ? parseInt(lastCommand.slice(1), 10) : 0;
-
+    let initialOffset = hasOffset ? parseInt(lastCommand.slice(1), 10) : 0;
 
     // index.
     const hasIndex = !!thirdCommand ? thirdCommand[0] === 'i' : false;
-    let index = hasIndex ? parseInt(thirdCommand.slice(1), 10) : 0;
+    let initalIndex = hasIndex ? parseInt(thirdCommand.slice(1), 10) : 0;
+
+    // Limit the index to the child nodes length.
+    const index = initalIndex + offset > childLengthAsIndex ? childLengthAsIndex : initalIndex;
+    const offset = index + initialOffset > childLengthAsIndex ? 0 : initialOffset;
 
     // nodeType.
     const nodeType = !!secondCommand ? secondCommand[0] : 'e';
-
 
     // query.
     const hasQuery = !!secondCommand ? secondCommand.indexOf('=') >= 0 : false;
     const query = hasQuery ? secondCommand.split('=')[1] : null;
 
-
-    // Action
-    const action = firstCommand;
-
-    // NodeType|Index|Offset|Query
+    /** 
+     * NodeType|Index|Offset|Query
+     *  CMDcode is a binary representation of 
+     * the presetnt commands. 
+     * Action is present by default.
+     */
     const CMDcode = parseInt([
-        (true) + 0,
+        1,
         hasIndex + 0,
         hasOffset + 0,
         hasQuery + 0
     ].join(''), 2);
 
-    console.log('CMDcode', CMDcode)
-    console.log('action', action)
-    console.log('nodeType', nodeType)
-    console.log('index', index)
-    console.log('offset', offset)
-    console.log('query', query)
+    // console.log('CMDcode', CMDcode)
+    // console.log('action', action)
+    // console.log('nodeType', nodeType)
+    // console.log('index', index)
+    // console.log('offset', offset)
+    // console.log('query', query)
 
-    // Define insert functions, 
-    const insertBefore = (parent, newNode, refNode) => parent.insertBefore(newNode, refNode);
-
-    const insertAfter = (parent, newElement, refNode) => {
-        console.log(parent, newElement, refNode)
-        if (parent.lastChild === refNode) {
-            parent.appendChild(newElement);
-        } else {
-            parent.insertBefore(newElement, refNode.nextSibling);
+    const ibIa = CMDcode => {
+        switch (CMDcode) {
+            case 0: // ib
+            case 8: // ib e
+                ibIa1(
+                    nodeType,
+                    queriedParent,
+                    newDOMNode,
+                    childNode
+                );
+                return;
+            case 10: // ib e +1
+            case 12: // ib e i0
+            case 14: // ib e i0 +1
+                ibIa2(
+                    nodeType,
+                    childNodesLength,
+                    childNode,
+                    offset,
+                    queriedParent,
+                    newDOMNode
+                );
+                return;
         }
-    };
-    const childNodes = queriedParent.childNodes;
-    const childNodesLength = childNodes.length;
-    const childLengthAsIndex = childNodesLength - 1;
-    // Limit the index to the child nodes length.
-    index = index + offset > childLengthAsIndex ? childLengthAsIndex : index;
-    offset = index + offset > childLengthAsIndex ? 0 : offset;
+    }
 
-    // defaults to insert before. 
-    const insert = action === 'ia' ? insertAfter : insertBefore;
+    const r = (CMDcode) => {
+        switch (CMDcode) {
+            case 8: // r e
+                r1(
+                    type,
+                    selector,
+                    nodeType,
+                    newDOMNode,
+                    CMDHasMany,
+                    queriedParent
+                );
+                return;
+            case 12:
+            case 14:
+                r2(
+                    nodeType,
+                    queriedParent,
+                    offset,
+                    newDOMNode,
+                    refNode,
+                    childNode
+                );
+                return;
+            case 9:
+                replaceNode(null, queriedParent, query, newDOMNode);
+                return;
+        }
+    }
 
-    // First command 
+
     switch (action) {
         /**
-        Insert Before 
-        Insert After
-         Insert before|after without an index will insert the new node
-         before the parent.
-         **/
+         * Insert Before Insert After
+         * Insert before|after without an index will insert the new node
+         * before the parent.
+         */
         case 'ib':
         case 'ia':
-
-            switch (CMDcode) {
-                case 0: // ib
-                case 8: // ib e
-                    if (nodeType === 't') {
-                        insert(queriedParent, newDOMNode, childNode);
-                        return;
-                    }
-
-                    insert(
-                        queriedParent.parentElement,
-                        newDOMNode,
-                        queriedParent
-                    );
-                    return;
-                case 10: // ib e +1
-                case 12: // ib e i0
-                case 14: // ib e i0 +1
-                    if (nodeType === 't') {
-                        let textNode;
-                        for (let i = 0; i < childNodesLength; i++) {
-                            const childNode = childNodes[i];
-                            if (childNode.nodeType === 3) {
-                                console.log('@', childNode, childNodes[i + offset], offset, i)
-                                textNode = offset === 0 ? childNode : childNodes[i + offset];
-                                break;
-                            }
-                        }
-                        insert(
-                            queriedParent,
-                            newDOMNode,
-                            textNode
-                        );
-                        return;
-                    }
-                    insert(
-                        queriedParent,
-                        newDOMNode,
-                        queriedParent.children[index + offset]
-                    );
-                    return;
-            }
+            ibIa(CMDcode);
             return;
             /** 
                 Replace Node
             **/
         case 'r':
-
-            switch (CMDcode) {
-                case 8: // r e
-                    // Ensures only the r char is defined. 
-                    if (type === 'all') {
-                        const children = queriedParent.querySelectorAll(selector);
-                        console.log('children', children)
-                        const childrenLength = children.length;
-                        const clones = [];
-
-                        if (nodeType !== 't') {
-                            for (let i = 0; i < childrenLength; i++) {
-                                clones.push(newDOMNode.cloneNode(true));
-                            }
-                        }
-
-                        for (let i = 0; i < childrenLength; i++) {
-                            console.log()
-                            if (nodeType === 't') {
-                                children[i].innerHTML = newDOMNode;
-
-                            } else {
-                                children[i].replaceWith(clones[i]);
-                            }
-                        }
-
-
-                    } else {
-                        if (!CMDHasMany) {
-                            console.log(queriedParent.parentElement.childNodes)
-                            queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
-                        }
-                    }
-                    return;
-                case 12:
-                case 14:
-                    switch (nodeType) {
-                        case 'e':
-                            let refNode = queriedParent.children[index + offset];
-                            queriedParent.replaceChild(newDOMNode, refNode);
-                            return;
-                        case 'n':
-                            refNode = queriedParent.childNodes[index + offset];
-                            queriedParent.replaceChild(newDOMNode, refNode);
-                            return;
-                        case 't':
-                            let textNode;
-                            for (let i = 0; i < childNodesLength; i++) {
-                                const childNode = childNodes[i];
-                                if (childNode.nodeType === 3) {
-                                    console.log('@', childNode, childNodes[i + offset], offset, i)
-                                    textNode = offset === 0 ? childNode : childNodes[i + offset];
-                                    break;
-                                }
-                            }
-                            queriedParent.replaceChild(newDOMNode, textNode);
-                            return;
-                    }
-                    return;
-                case 9:
-                    const child = queriedParent.querySelector(query);
-                    child.replaceWith(newDOMNode);
-                    return;
-            }
-
+            r(CMDcode);
             break;
         case 'rb':
-            switch (CMDcode) {
-                case 9:
-                    const child = queriedParent.querySelector(query);
-                    child.previousSibling.replaceWith(newDOMNode);
-                    return;
+            if (CMDcode === 9) {
+                replaceNode(
+                    'previousSibling',
+                    queriedParent,
+                    query,
+                    newDOMNode
+                );
             }
             break;
         case 'ra':
-            switch (CMDcode) {
-                case 9:
-                    const child = queriedParent.querySelector(query);
-                    child.nextSibling.replaceWith(newDOMNode);
-                    return;
+            if (CMDcode === 9) {
+                replaceNode(
+                    'nextSibling',
+                    queriedParent,
+                    query,
+                    newDOMNode
+                );
             }
-            break;
-            // case 'rA':
-            //     switch (CMDcode) {
-            //         case 8:
-            //             // Ensures only the r char is defined. 
-            //             if (!CMDHasMany) {
-            //                 console.log(queriedParent.parentElement.childNodes)
-            //                 queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
-            //             }
-            //         return;
-            //         case 9:
-
-            //         if(nodeType === 't'){
-            //             const children = Array.from(queriedParent.querySelectorAll(query));
-            //             const childrenLength = children.length;
-            //             const clones = [];
-
-            //             for(let i =0;i< childrenLength;i++){
-            //                 clones.push(newDOMNode.cloneNode(true));
-            //             }
-
-            //             for(let i =0;i< childrenLength;i++){
-            //                 children[i].replaceWith(clones[i]);
-            //             }
-            //         }
-
-            //             const children = Array.from(queriedParent.querySelectorAll(query));
-            //             const childrenLength = children.length;
-            //             const clones = [];
-
-            //             for(let i =0;i< childrenLength;i++){
-            //                 clones.push(newDOMNode.cloneNode(true));
-            //             }
-
-            //             for(let i =0;i< childrenLength;i++){
-            //                 children[i].replaceWith(clones[i]);
-            //             }
-
-            //             return;
-            //     }
             break;
         case 'rm':
             //
@@ -561,27 +554,31 @@ const elmentModifier = (selector, CMD, queriedParent, newDOMNode, type) => {
         case 'rma':
             //
             break;
+        case 'rmA':
+            //
+            break;
         case 'rmAa':
             //
             break;
         case 'rmAb':
             //
             break;
-        case 'rmA':
-            //
-            break;
+
     }
 }
 
 
-const exchangeChildren = (queriedParent, newVNode, hasCommand, selector, command, all) => {
-    // convert the node to an element
-
-}
 
 
-
-const searchAndReplace = (query, newVNode, type) => {
+/** 
+ * Updates the cached fragment by creating the new node 
+ * and then replacing the childNodes. Updating by command
+ * will only modify portions of the cached DOM tree.
+ * @param {string} query - The selector and Wavefront query.  
+ * @param {Object|string} newVNode - The new node or text
+ * @param {Boolean} type - Truthy for .all()
+ */
+const updateCachedFragment = (query, newVNode, type) => {
     let parts;
     const hasCommand = (parts = query.split('|')).length === 2;
     const selector = parts[0];
@@ -594,7 +591,7 @@ const searchAndReplace = (query, newVNode, type) => {
     const newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true);
 
     if (hasCommand) {
-        elmentModifier(selector, command, cachedNode, newDOMNode, type);
+        updateCachedFragmentByCommand(selector, command, cachedNode, newDOMNode, type);
     } else {
         removeChildren(cachedNode);
         // Append the new node to the cached fragment.
@@ -604,32 +601,23 @@ const searchAndReplace = (query, newVNode, type) => {
 
 
 const partialRenderInner = (partialNodes, type) => {
-    console.log('yea')
     const partialNodesKeys = Object.keys(partialNodes);
     const partialNodesLength = partialNodesKeys.length;
-    const elementCachekeys = Object.keys(elementCache);
 
     for (let i = 0; i < partialNodesLength; i++) {
         const partialNodeKey = partialNodesKeys[i];
         const newVNode = partialNodes[partialNodeKey];
-        console.log(partialNodeKey, newVNode, type);
-        searchAndReplace(partialNodeKey, newVNode, type);
+        updateCachedFragment(partialNodeKey, newVNode, type);
     }
 
-
-    // Append modified fragment.
-    // Remove children
+    // Render the DOM with the updated cachedFragment.
     removeChildren(rootElement);
     const fragmentClone = document.importNode(fragment, true);
     rootElement.appendChild(fragmentClone);
 }
+
 const partialRender = (partialNodes) => partialRenderInner(partialNodes, 'single');
 partialRender.all = (partialNodes) => partialRenderInner(partialNodes, 'all');
-
-// partialRender.attr = (partialNodes) => partialRenderInner(partialNodes, 'attr');
-// partialRender.attrAll = (partialNodes) => partialRenderInner(partialNodes, 'attr-all');
-// partialRender.attr = (partialNodes) => partialRenderInner(partialNodes, 'attr');
-// partialRender.attrAll = (partialNodes) => partialRenderInner(partialNodes, 'attr-all');
 
 export const initialize = (rootSelector, vNode) => {
     // allow a string or element as a querySelector value.
