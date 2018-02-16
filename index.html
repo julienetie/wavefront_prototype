@@ -121,7 +121,7 @@
 
     const twitterHref = 'http://google.com';
     const facebookHref = 'http://facebook.com';
-    const someUI = div({ class: 'wrapper' },
+    const someUI = [
         div({ id: 'block-social-responsive', class: 'footer__social' },
             ul({ class: 'menu' },
                 li({ class: 'menu-item' },
@@ -188,7 +188,7 @@
             'Sorry, your browser does not support inline SVG.'
         ),
         `@This comment is outside`,
-    )
+    ]
     console.time('renderAll')
     const render = initialize('#root', someUI);
     console.timeEnd('renderAll')
@@ -262,11 +262,10 @@
             // |rTA.   // Replace textNodes that match all PARENTS  //|rA t=.~~ 
 
 
-
-
-            // |rm5    // remove child by index 					//|rm e i5
+            // rm    remove selector 
+            // rm t   remove text node witin selector
+            // remove child by index 					//|rm e i5
             // |rm.some-selector  // remove a child by its selector //|rm e=.~~ 
-
             // |rmb.some-selector   // remove selector before child //|rmb e=.~~
             // |rma.some-selector   // remove selector after child  //|rma e=.~~
 
@@ -301,9 +300,9 @@
             //     ),
             //     td({ class: 'col-md-6' })
             // ])
- '.table-salt .menu-item:nth-of-type(10n+2) |r ': tr({ style: { class: 'ddd', backgroundColor: `rgb(${col},200,100)` } }, 'YOOOOOOOOOO')
+ '.table-salt .menu-item:nth-of-type(3n) td a|rm t': tr({ style: { class: 'ddd', backgroundColor: `rgb(${col},200,100)` } }, 'YOOOOOOOOOO')
             // '.table-salt .menu-item:nth-of-type(10n+2) td:nth-of-type(2) a|r t': 'HEllo it\'s me mario'
-        });
+        }); 
         console.timeEnd('renderAgain')
     }, false);
     </script>

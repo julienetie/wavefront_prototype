@@ -98,7 +98,6 @@ export const assembly = (tagName, nodeType) => {
 
             if (item instanceof Node) {
                 //@TODO Convert item to vNode and push;
-                console.log('item in assembly', item)
                 childNodes.push({ el: item });
             }
         }
@@ -140,72 +139,56 @@ var removeChilds = function(node) {
 
 
 const render = (initalRootElement, vNode, isPartial) => {
-    console.log('X', vNode)
     // Cache root element 
     if (rootElement === undefined) {
         rootElement = initalRootElement;
     }
+
     // Creates a new fragment for partials but uses 
     // the fragment cache for the inital render.
-
-    let renderFragment;
-    if (isPartial === true) {
-        renderFragment = document.createDocumentFragment()
-    } else {
-        renderFragment = fragment;
-    }
+    const renderFragment = isPartial === true ? document.createDocumentFragment() : fragment;
 
     const node = isPartial === true ? vNode : vDOM;
 
+    /** 
+     * Dummy wrapper to treat a non-wrap node as wrapped.
+     */
+    const dummyVDOM = {
+        "t": "div",
+        "id": 2,
+        "at": {
+            "id": "dummy"
+        },
+        "chx": 1,
+        "ch": node
+    }
+
     count = 0; // reset counter used for node ids.
 
-
-
     if (Array.isArray(node)) {
-        /** 
-         * Dummy wrapper to treat a non-wrap node as wrapped.
-         */
-        const dummyVDOM = {
-            "t": "div",
-            "id": 2,
-            "at": {
-                "id": "dummy"
-            },
-            "chx": 1,
-            "ch": node
-        }
-
-        function appendMultipleNodes() {
-            var args = [].slice.call(arguments);
-            for (var x = 1; x < args.length; x++) {
-                args[0].appendChild(args[x])
-            }
-            return args[0]
-        }
 
         createAndAppendNode(renderFragment, dummyVDOM);
-
         const dummy = renderFragment.firstElementChild;
-        const innerNodes = dummy.childNodes;
+        const innerNodes = Array.from(dummy.childNodes);
         const innerNodesLength = innerNodes.length;
         const outerNodeList = [];
 
         for (let i = 0; i < innerNodesLength; i++) {
-            outerNodeList.push(innerNodes[i]);
+            renderFragment.appendChild(innerNodes[i])
         }
+
         renderFragment.removeChild(dummy);
 
-        appendMultipleNodes(renderFragment, ...outerNodeList)
-
         requestAnimationFrame(() => {
-            rootElement.appendChild(renderFragment)
+            const fragmentClone = document.importNode(renderFragment, true);
+            rootElement.appendChild(fragmentClone)
         });
     } else {
+
         // Wrapped element
         createAndAppendNode(renderFragment, node);
         requestAnimationFrame(() => {
             if (!isPartial) {
-                console.log()
                 const fragmentClone = document.importNode(renderFragment, true);
                 rootElement.appendChild(fragmentClone)
             }
@@ -229,12 +212,10 @@ const createAndAppendNode = (frag, node) => {
     }
     // // COMMENT_NODE     8
     if (node.t === 'COM') {
-        // console.log('node.val', node.val)
         const commentNode = document.createComment(node.val);
         frag.appendChild(commentNode);
         return;
     }
-    // console.log('notAnElement', node)
     const notAnElement = !node.hasOwnProperty('el');
 
     let element;
@@ -345,7 +326,7 @@ const ibIa2 = (nodeType, childNodesLength, childNode, offset, queriedParent, new
     }
 }
 
-const r1 = (type,selector, nodeType, newDOMNode, CMDHasMany, queriedParent) => {
+const r1 = (type, selector, nodeType, newDOMNode, CMDHasMany, queriedParent) => {
     if (type === 'all') {
         const children = queriedParent.querySelectorAll(selector);
         const childrenLength = children.length;
@@ -396,11 +377,113 @@ const r2 = (nodeType, queriedParent, offset, newDOMNode, refNode, childNode) => 
     }
 }
 
+
+
 const replaceNode = (type, queriedParent, query, newDOMNode) => {
     const child = queriedParent.querySelector(query);
     const childRelative = type ? child[type] : child;
     childRelative.replaceWith(newDOMNode);
 }
+
+
+const rm = (nodeType, type, queriedParent, selector, removeType, offset) => {
+
+    if (nodeType === 't') {
+
+        if (type === 'single') {
+            // const children = queriedParent.querySelectorAll(selector);
+            queriedParent.style.backgroundColor = 'red'
+            const childNodes = queriedParent.childNodes
+            const childNodesLength = childNodes.length;
+
+            let textNode;
+            for (let i = 0; i < childNodesLength; i++) {
+                const childNode = childNodes[i];
+                if (childNode.nodeType === 3) {
+                    // textNode = offset === 0 ? childNode : childNodes[i + offset];
+                    console.log('childNodes', childNode)
+                    childNode.remove(childNodes[i + offset]);
+                    return;
+                }
+            }
+            return;
+        }
+
+        if (type === 'all') {
+            const matchingSelectors = queriedParent.querySelectorAll(selector);
+            const matchingSelectorsLength = matchingSelectors.length;
+            for (let j = 0; j < matchingSelectorsLength; j++) {
+                const childNodes = matchingSelectors[j].childNodes
+                matchingSelectors[j].style.backgroundColor = 'red'
+                const childNodesLength = childNodes.length;
+
+                let textNode;
+                for (let i = 0; i < childNodesLength; i++) {
+                    const childNode = childNodes[i];
+                    if (childNode.nodeType === 3) {
+                        matchingSelectors[j].remove(childNodes[i + offset]);
+                    }
+                }
+            }
+            return;
+        }
+    }
+
+
+    if (type === 'all') {
+        const children = queriedParent.querySelectorAll(selector);
+        const childrenLength = children.length;
+
+        switch (removeType) {
+            case 'selected':
+                for (let i = 0; i < childrenLength; i++) {
+                    const child = children[i];
+                    child.style.backgroundColor = 'pink'
+                    child.remove(child);
+                }
+                return;
+            case 'before':
+                console.log('BEFORE')
+                for (let i = 0; i < childrenLength; i++) {
+                    const child = children[i];
+                    if (i > 0) {
+                        child.remove(child.previousSibling);
+                    }
+                }
+                return;
+            case 'after':
+                for (let i = 0; i < childrenLength; i++) {
+                    const child = children[i];
+                    if (i < childrenLength - 1) {
+                        const nextSibling = child.nextSibling;
+                        nextSibling.remove(nextSibling);
+                    }
+                }
+                return;
+        }
+
+    } else {
+        switch (removeType) {
+            case 'selected':
+                queriedParent.parentElement.removeChild(queriedParent);
+                return;
+            case 'before':
+                const previousSibling = queriedParent.previousSibling;
+                if (!!previousSibling) {
+                    queriedParent.parentElement.removeChild(previousSibling);
+                }
+                return;
+            case 'after':
+                const nextSibling = queriedParent.nextSibling;
+                if (!!nextSibling) {
+                    queriedParent.parentElement.removeChild(nextSibling);
+                }
+                return;
+        }
+    }
+}
+
+
 const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode, type) => {
     const CMDList = CMD.split(' ');
     const CMDListLength = CMDList.length;
@@ -445,13 +528,6 @@ const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode,
         hasOffset + 0,
         hasQuery + 0
     ].join(''), 2);
-
-    // console.log('CMDcode', CMDcode)
-    // console.log('action', action)
-    // console.log('nodeType', nodeType)
-    // console.log('index', index)
-    // console.log('offset', offset)
-    // console.log('query', query)
 
     const ibIa = CMDcode => {
         switch (CMDcode) {
@@ -544,26 +620,18 @@ const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode,
                     newDOMNode
                 );
             }
-            break;
+            return;
         case 'rm':
-            //
-            break;
-        case 'rmb':
-            //
-            break;
-        case 'rma':
-            //
-            break;
-        case 'rmA':
-            //
-            break;
-        case 'rmAa':
-            //
-            break;
-        case 'rmAb':
-            //
-            break;
 
+
+            rm(nodeType, type, queriedParent, selector, 'selected', offset);
+            return;
+        case 'rmb':
+            rm(nodeType, type, queriedParent, selector, 'before', offset);
+            return;
+        case 'rma':
+            rm(nodeType, type, queriedParent, selector, 'after', offset);
+            return;
     }
 }
 
@@ -586,7 +654,6 @@ const updateCachedFragment = (query, newVNode, type) => {
 
     // The .all method uses the fragment for querySelectorAll and the queried node for querySelector
     const cachedNode = type === 'all' ? fragment : fragment.querySelector(selector);
-
     // When using `|r t` with .all() a string value will be expected.  
     const newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true);
 
@@ -609,11 +676,13 @@ const partialRenderInner = (partialNodes, type) => {
         const newVNode = partialNodes[partialNodeKey];
         updateCachedFragment(partialNodeKey, newVNode, type);
     }
-
     // Render the DOM with the updated cachedFragment.
     removeChildren(rootElement);
     const fragmentClone = document.importNode(fragment, true);
+
     rootElement.appendChild(fragmentClone);
+
+
 }
 
 const partialRender = (partialNodes) => partialRenderInner(partialNodes, 'single');
@@ -624,7 +693,7 @@ export const initialize = (rootSelector, vNode) => {
     const container = isElement(rootSelector) ? rootSelector : document.querySelector(rootSelector);
 
     // Shallowly validate vNode.
-    const initalVNode = isVNode(vNode) ? vNode : false;
+    const initalVNode = isVNode(vNode) || Array.isArray(vNode) ? vNode : false;
 
     if (initalVNode === false) {
         throw new Error(`vNode ${vDOM} is not valid`);
@@ -632,7 +701,6 @@ export const initialize = (rootSelector, vNode) => {
 
     // Cache valid vDOM
     vDOM = initalVNode;
-
     // Render the inital virual DOM and cache the selectors.
     render(container, false);
 
