@@ -41,25 +41,6 @@ const insertAfter = (parent, newElement, refNode) => {
     }
 };
 
-/** 
- * Shared cache accessible between modules. 
- */
-const cache = {
-  vDOM: null,
-  rootElement: null
-};
-
-const fragment = document.createDocumentFragment();
-
-var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
-
-/** 
- * @param {string} t - Text 
- * @param {Number} id - Identity (Not an attribute)
- * @param {Number} ix - Index 
- * @param {Object|string} at - Attributes | Primative
- * @param {Array} ch - Children 
- */
 const node = (t, at, ch, isSVG) => {
     switch (t) {
         case 'primitive':
@@ -90,7 +71,7 @@ const node = (t, at, ch, isSVG) => {
  The deepest nested tag of the youngest index is
  the first executed tag function.
 **/
-const assembly = (tagName, nodeType) => {
+var assembly = ((tagName, nodeType) => {
     const isSVG = nodeType === true;
 
     return function inner(...args) {
@@ -108,7 +89,6 @@ const assembly = (tagName, nodeType) => {
 
             // Check if item is a plane object = attribute.
             if (isItemObject && !isItemVnode) {
-                // let isSelector = false; 
                 attributes = item;
                 continue;
             }
@@ -154,66 +134,18 @@ const assembly = (tagName, nodeType) => {
 
         return node(tagNameStr, attributes, childNodes, isSVG);
     };
+});
+
+/** 
+ * Shared cache accessible between modules. 
+ */
+const cache = {
+	vDOM: null,
+	rootElement: null,
+	fragment: document.createDocumentFragment()
 };
 
-const render = (initalRootElement, vNode, isPartial) => {
-    // Cache root element 
-    if (cache.rootElement === null) {
-        cache.rootElement = initalRootElement;
-    }
-
-    // Creates a new fragment for partials but uses 
-    // the fragment cache for the inital render.
-    const renderFragment = isPartial === true ? document.createDocumentFragment() : fragment;
-
-    const node = isPartial === true ? vNode : cache.vDOM;
-
-    /** 
-     * Dummy wrapper to treat a non-wrap node as wrapped.
-     */
-    const dummyVDOM = {
-        "t": "div",
-        "id": 2,
-        "at": {
-            "id": "dummy"
-        },
-        "chx": 1,
-        "ch": node
-    };
-
-    if (Array.isArray(node)) {
-
-        createAndAppendNode(renderFragment, dummyVDOM);
-        const dummy = renderFragment.firstElementChild;
-        const innerNodes = Array.from(dummy.childNodes);
-        const innerNodesLength = innerNodes.length;
-        const outerNodeList = [];
-
-        for (let i = 0; i < innerNodesLength; i++) {
-            renderFragment.appendChild(innerNodes[i]);
-        }
-
-        renderFragment.removeChild(dummy);
-
-        requestAnimationFrame(() => {
-            const fragmentClone = document.importNode(renderFragment, true);
-            cache.rootElement.appendChild(fragmentClone);
-        });
-    } else {
-
-        // Wrapped element
-        createAndAppendNode(renderFragment, node);
-        requestAnimationFrame(() => {
-            if (!isPartial) {
-                const fragmentClone = document.importNode(renderFragment, true);
-                cache.rootElement.appendChild(fragmentClone);
-            }
-            return;
-        });
-    }
-
-    return renderFragment;
-};
+const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 const createAndAppendNode = (frag, node) => {
     const isSVG = node.svg === true;
@@ -299,6 +231,66 @@ const createAndAppendNode = (frag, node) => {
         });
     }
 };
+
+var render = ((initalRootElement, vNode, isPartial) => {
+    // Cache root element 
+    if (cache.rootElement === null) {
+        cache.rootElement = initalRootElement;
+    }
+
+    // Creates a new fragment for partials but uses 
+    // the fragment cache for the inital render.
+    const renderFragment = isPartial === true ? document.createDocumentFragment() : cache.fragment;
+
+    const node = isPartial === true ? vNode : cache.vDOM;
+
+    /** 
+     * Dummy wrapper to treat a non-wrap node as wrapped.
+     */
+    const dummyVDOM = {
+        "t": "div",
+        "id": 2,
+        "at": {
+            "id": "dummy"
+        },
+        "chx": 1,
+        "ch": node
+    };
+
+    if (Array.isArray(node)) {
+
+        createAndAppendNode(renderFragment, dummyVDOM);
+        const dummy = renderFragment.firstElementChild;
+        const innerNodes = Array.from(dummy.childNodes);
+        const innerNodesLength = innerNodes.length;
+        const outerNodeList = [];
+
+        for (let i = 0; i < innerNodesLength; i++) {
+            renderFragment.appendChild(innerNodes[i]);
+        }
+
+        renderFragment.removeChild(dummy);
+
+        requestAnimationFrame(() => {
+            const fragmentClone = document.importNode(renderFragment, true);
+            cache.rootElement.appendChild(fragmentClone);
+        });
+    } else {
+
+        // Wrapped element
+        createAndAppendNode(renderFragment, node);
+        requestAnimationFrame(() => {
+            if (!isPartial) {
+                const fragmentClone = document.importNode(renderFragment, true);
+                cache.rootElement.appendChild(fragmentClone);
+            }
+            return;
+        });
+    }
+
+    return renderFragment;
+});
+
 const ibIa1 = (nodeType, queriedParent, newDOMNode, childNode) => {
     if (nodeType === 't') {
         insert(queriedParent, newDOMNode, childNode);
@@ -403,14 +395,14 @@ const rm = (nodeType, type, queriedParent, selector, removeType, offset) => {
         }
 
         if (type === 'all') {
+            console.log('RM ALL');
+            console.log(nodeType, type, queriedParent, selector, removeType, offset);
             const matchingSelectors = queriedParent.querySelectorAll(selector);
             const matchingSelectorsLength = matchingSelectors.length;
             for (let j = 0; j < matchingSelectorsLength; j++) {
                 const childNodes = matchingSelectors[j].childNodes;
-                matchingSelectors[j].style.backgroundColor = 'red';
                 const childNodesLength = childNodes.length;
 
-                let textNode;
                 for (let i = 0; i < childNodesLength; i++) {
                     const childNode = childNodes[i];
                     if (childNode.nodeType === 3) {
@@ -600,7 +592,7 @@ const updateCachedFragment = (query, newVNode, type) => {
     const command = parts[1];
 
     // The .all method uses the fragment for querySelectorAll and the queried node for querySelector
-    const cachedNode = type === 'all' ? fragment : fragment.querySelector(selector);
+    const cachedNode = type === 'all' ? cache.fragment : cache.fragment.querySelector(selector);
     // When using `|r t` with .all() a string value will be expected.  
     const newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true);
 
@@ -614,6 +606,7 @@ const updateCachedFragment = (query, newVNode, type) => {
 };
 
 const partialRenderInner = (partialNodes, type) => {
+    console.log('partialNodes', partialNodes);
     const partialNodesKeys = Object.keys(partialNodes);
     const partialNodesLength = partialNodesKeys.length;
 
@@ -622,17 +615,17 @@ const partialRenderInner = (partialNodes, type) => {
         const newVNode = partialNodes[partialNodeKey];
         updateCachedFragment(partialNodeKey, newVNode, type);
     }
-    // Render the DOM with the updated cachedFragment.
+    // // Render the DOM with the updated cachedFragment.
     removeChildren(cache.rootElement);
-    const fragmentClone = document.importNode(fragment, true);
+    const fragmentClone = document.importNode(cache.fragment, true);
 
     cache.rootElement.appendChild(fragmentClone);
 };
 
-const partialRender = partialNodes => partialRenderInner(partialNodes, 'single');
-partialRender.all = partialNodes => partialRenderInner(partialNodes, 'all');
+const renderPartial = partialNodes => partialRenderInner(partialNodes, 'single');
+renderPartial.all = partialNodes => partialRenderInner(partialNodes, 'all');
 
-const initialize = (rootSelector, vNode) => {
+var initialize = ((rootSelector, vNode) => {
     // allow a string or element as a querySelector value.
     const container = isElement(rootSelector) ? rootSelector : document.querySelector(rootSelector);
 
@@ -648,8 +641,8 @@ const initialize = (rootSelector, vNode) => {
     // Render the inital virual DOM and cache the selectors.
     render(container, false);
 
-    return partialRender;
-};
+    return renderPartial;
+});
 
 const or = (vNodes, conditions, exclude) => {
     const filteredVNodes = [];

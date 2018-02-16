@@ -59,14 +59,6 @@ var insertAfter = function insertAfter(parent, newElement, refNode) {
     }
 };
 
-/** 
- * Shared cache accessible between modules. 
- */
-var cache = {
-  vDOM: null,
-  rootElement: null
-};
-
 var toConsumableArray = function (arr) {
   if (Array.isArray(arr)) {
     for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
@@ -77,17 +69,6 @@ var toConsumableArray = function (arr) {
   }
 };
 
-var fragment = document.createDocumentFragment();
-
-var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
-
-/** 
- * @param {string} t - Text 
- * @param {Number} id - Identity (Not an attribute)
- * @param {Number} ix - Index 
- * @param {Object|string} at - Attributes | Primative
- * @param {Array} ch - Children 
- */
 var node = function node(t, at, ch, isSVG) {
     switch (t) {
         case 'primitive':
@@ -118,7 +99,7 @@ var node = function node(t, at, ch, isSVG) {
  The deepest nested tag of the youngest index is
  the first executed tag function.
 **/
-var assembly = function assembly(tagName, nodeType) {
+var assembly = (function (tagName, nodeType) {
     var isSVG = nodeType === true;
 
     return function inner() {
@@ -141,7 +122,6 @@ var assembly = function assembly(tagName, nodeType) {
 
             // Check if item is a plane object = attribute.
             if (isItemObject && !isItemVnode) {
-                // let isSelector = false; 
                 attributes = item;
                 continue;
             }
@@ -165,16 +145,16 @@ var assembly = function assembly(tagName, nodeType) {
         }
 
         for (i = 0; i < childNodes.length; ++i) {
-            var _childNode = childNodes[i];
-            if (isPrimitive(_childNode)) {
+            var childNode = childNodes[i];
+            if (isPrimitive(childNode)) {
                 var type = void 0;
                 var value = void 0;
-                if (_childNode[0] === '@') {
+                if (childNode[0] === '@') {
                     type = 'comment';
-                    value = _childNode.slice(1);
+                    value = childNode.slice(1);
                 } else {
                     type = 'primitive';
-                    value = _childNode;
+                    value = childNode;
                 }
                 childNodes[i] = node(type, value, null, isSVG);
             }
@@ -187,66 +167,18 @@ var assembly = function assembly(tagName, nodeType) {
 
         return node(tagNameStr, attributes, childNodes, isSVG);
     };
+});
+
+/** 
+ * Shared cache accessible between modules. 
+ */
+var cache = {
+	vDOM: null,
+	rootElement: null,
+	fragment: document.createDocumentFragment()
 };
 
-var render = function render(initalRootElement, vNode, isPartial) {
-    // Cache root element 
-    if (cache.rootElement === null) {
-        cache.rootElement = initalRootElement;
-    }
-
-    // Creates a new fragment for partials but uses 
-    // the fragment cache for the inital render.
-    var renderFragment = isPartial === true ? document.createDocumentFragment() : fragment;
-
-    var node = isPartial === true ? vNode : cache.vDOM;
-
-    /** 
-     * Dummy wrapper to treat a non-wrap node as wrapped.
-     */
-    var dummyVDOM = {
-        "t": "div",
-        "id": 2,
-        "at": {
-            "id": "dummy"
-        },
-        "chx": 1,
-        "ch": node
-    };
-
-    if (Array.isArray(node)) {
-
-        createAndAppendNode(renderFragment, dummyVDOM);
-        var dummy = renderFragment.firstElementChild;
-        var innerNodes = Array.from(dummy.childNodes);
-        var innerNodesLength = innerNodes.length;
-        var outerNodeList = [];
-
-        for (var i = 0; i < innerNodesLength; i++) {
-            renderFragment.appendChild(innerNodes[i]);
-        }
-
-        renderFragment.removeChild(dummy);
-
-        requestAnimationFrame(function () {
-            var fragmentClone = document.importNode(renderFragment, true);
-            cache.rootElement.appendChild(fragmentClone);
-        });
-    } else {
-
-        // Wrapped element
-        createAndAppendNode(renderFragment, node);
-        requestAnimationFrame(function () {
-            if (!isPartial) {
-                var fragmentClone = document.importNode(renderFragment, true);
-                cache.rootElement.appendChild(fragmentClone);
-            }
-            return;
-        });
-    }
-
-    return renderFragment;
-};
+var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 var createAndAppendNode = function createAndAppendNode(frag, node) {
     var _element;
@@ -334,6 +266,66 @@ var createAndAppendNode = function createAndAppendNode(frag, node) {
         });
     }
 };
+
+var render = (function (initalRootElement, vNode, isPartial) {
+    // Cache root element 
+    if (cache.rootElement === null) {
+        cache.rootElement = initalRootElement;
+    }
+
+    // Creates a new fragment for partials but uses 
+    // the fragment cache for the inital render.
+    var renderFragment = isPartial === true ? document.createDocumentFragment() : cache.fragment;
+
+    var node = isPartial === true ? vNode : cache.vDOM;
+
+    /** 
+     * Dummy wrapper to treat a non-wrap node as wrapped.
+     */
+    var dummyVDOM = {
+        "t": "div",
+        "id": 2,
+        "at": {
+            "id": "dummy"
+        },
+        "chx": 1,
+        "ch": node
+    };
+
+    if (Array.isArray(node)) {
+
+        createAndAppendNode(renderFragment, dummyVDOM);
+        var dummy = renderFragment.firstElementChild;
+        var innerNodes = Array.from(dummy.childNodes);
+        var innerNodesLength = innerNodes.length;
+        var outerNodeList = [];
+
+        for (var i = 0; i < innerNodesLength; i++) {
+            renderFragment.appendChild(innerNodes[i]);
+        }
+
+        renderFragment.removeChild(dummy);
+
+        requestAnimationFrame(function () {
+            var fragmentClone = document.importNode(renderFragment, true);
+            cache.rootElement.appendChild(fragmentClone);
+        });
+    } else {
+
+        // Wrapped element
+        createAndAppendNode(renderFragment, node);
+        requestAnimationFrame(function () {
+            if (!isPartial) {
+                var fragmentClone = document.importNode(renderFragment, true);
+                cache.rootElement.appendChild(fragmentClone);
+            }
+            return;
+        });
+    }
+
+    return renderFragment;
+});
+
 var ibIa1 = function ibIa1(nodeType, queriedParent, newDOMNode, childNode) {
     if (nodeType === 't') {
         insert(queriedParent, newDOMNode, childNode);
@@ -346,9 +338,9 @@ var ibIa2 = function ibIa2(nodeType, childNodesLength, childNode, offset, querie
     if (nodeType === 't') {
         var textNode = void 0;
         for (var i = 0; i < childNodesLength; i++) {
-            var _childNode2 = childNodes[i];
-            if (_childNode2.nodeType === 3) {
-                textNode = offset === 0 ? _childNode2 : childNodes[i + offset];
+            var _childNode = childNodes[i];
+            if (_childNode.nodeType === 3) {
+                textNode = offset === 0 ? _childNode : childNodes[i + offset];
                 break;
             }
         }
@@ -397,9 +389,9 @@ var r2 = function r2(nodeType, queriedParent, offset, newDOMNode, refNode, child
         case 't':
             var textNode = void 0;
             for (var i = 0; i < childNodesLength; i++) {
-                var _childNode3 = childNodes[i];
-                if (_childNode3.nodeType === 3) {
-                    textNode = offset === 0 ? _childNode3 : childNodes[i + offset];
+                var _childNode2 = childNodes[i];
+                if (_childNode2.nodeType === 3) {
+                    textNode = offset === 0 ? _childNode2 : childNodes[i + offset];
                     break;
                 }
             }
@@ -426,11 +418,11 @@ var rm = function rm(nodeType, type, queriedParent, selector, removeType, offset
 
             var textNode = void 0;
             for (var i = 0; i < _childNodesLength; i++) {
-                var _childNode4 = _childNodes[i];
-                if (_childNode4.nodeType === 3) {
+                var childNode = _childNodes[i];
+                if (childNode.nodeType === 3) {
                     // textNode = offset === 0 ? childNode : childNodes[i + offset];
-                    console.log('childNodes', _childNode4);
-                    _childNode4.remove(_childNodes[i + offset]);
+                    console.log('childNodes', childNode);
+                    childNode.remove(_childNodes[i + offset]);
                     return;
                 }
             }
@@ -438,17 +430,17 @@ var rm = function rm(nodeType, type, queriedParent, selector, removeType, offset
         }
 
         if (type === 'all') {
+            console.log('RM ALL');
+            console.log(nodeType, type, queriedParent, selector, removeType, offset);
             var matchingSelectors = queriedParent.querySelectorAll(selector);
             var matchingSelectorsLength = matchingSelectors.length;
             for (var j = 0; j < matchingSelectorsLength; j++) {
                 var _childNodes2 = matchingSelectors[j].childNodes;
-                matchingSelectors[j].style.backgroundColor = 'red';
                 var _childNodesLength2 = _childNodes2.length;
 
-                var _textNode = void 0;
                 for (var _i2 = 0; _i2 < _childNodesLength2; _i2++) {
-                    var _childNode5 = _childNodes2[_i2];
-                    if (_childNode5.nodeType === 3) {
+                    var _childNode3 = _childNodes2[_i2];
+                    if (_childNode3.nodeType === 3) {
                         matchingSelectors[j].remove(_childNodes2[_i2 + offset]);
                     }
                 }
@@ -635,7 +627,7 @@ var updateCachedFragment = function updateCachedFragment(query, newVNode, type) 
     var command = parts[1];
 
     // The .all method uses the fragment for querySelectorAll and the queried node for querySelector
-    var cachedNode = type === 'all' ? fragment : fragment.querySelector(selector);
+    var cachedNode = type === 'all' ? cache.fragment : cache.fragment.querySelector(selector);
     // When using `|r t` with .all() a string value will be expected.  
     var newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true);
 
@@ -649,6 +641,7 @@ var updateCachedFragment = function updateCachedFragment(query, newVNode, type) 
 };
 
 var partialRenderInner = function partialRenderInner(partialNodes, type) {
+    console.log('partialNodes', partialNodes);
     var partialNodesKeys = Object.keys(partialNodes);
     var partialNodesLength = partialNodesKeys.length;
 
@@ -657,21 +650,21 @@ var partialRenderInner = function partialRenderInner(partialNodes, type) {
         var newVNode = partialNodes[partialNodeKey];
         updateCachedFragment(partialNodeKey, newVNode, type);
     }
-    // Render the DOM with the updated cachedFragment.
+    // // Render the DOM with the updated cachedFragment.
     removeChildren(cache.rootElement);
-    var fragmentClone = document.importNode(fragment, true);
+    var fragmentClone = document.importNode(cache.fragment, true);
 
     cache.rootElement.appendChild(fragmentClone);
 };
 
-var partialRender = function partialRender(partialNodes) {
+var renderPartial = function renderPartial(partialNodes) {
     return partialRenderInner(partialNodes, 'single');
 };
-partialRender.all = function (partialNodes) {
+renderPartial.all = function (partialNodes) {
     return partialRenderInner(partialNodes, 'all');
 };
 
-var initialize = function initialize(rootSelector, vNode) {
+var initialize = (function (rootSelector, vNode) {
     // allow a string or element as a querySelector value.
     var container = isElement(rootSelector) ? rootSelector : document.querySelector(rootSelector);
 
@@ -687,8 +680,8 @@ var initialize = function initialize(rootSelector, vNode) {
     // Render the inital virual DOM and cache the selectors.
     render(container, false);
 
-    return partialRender;
-};
+    return renderPartial;
+});
 
 var or = function or(vNodes, conditions, exclude) {
     var filteredVNodes = [];

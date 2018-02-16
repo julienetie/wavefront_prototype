@@ -3,7 +3,8 @@
  */
 const cache = {
 	vDOM: null,
-	rootElement: null
-}
+	rootElement: null,
+	fragment: document.createDocumentFragment()
+};
 
 export default cache;

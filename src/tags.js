@@ -1,4 +1,5 @@
-import { initialize, assembly } from './assembly';
+import assembly from './assembly';
+import initialize from './initialize';
 import { loop, or } from './logical-methods';
 
 // HTML Elements.
