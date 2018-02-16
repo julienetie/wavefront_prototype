@@ -121,7 +121,7 @@
 
     const twitterHref = 'http://google.com';
     const facebookHref = 'http://facebook.com';
-    const someUI = [
+    const someUI = div({class: 'yo'}, 
         div({ id: 'block-social-responsive', class: 'footer__social' },
             ul({ class: 'menu' },
                 li({ class: 'menu-item' },
@@ -188,7 +188,7 @@
             'Sorry, your browser does not support inline SVG.'
         ),
         `@This comment is outside`,
-    ]
+    )
     console.time('renderAll')
     const render = initialize('#root', someUI);
     console.timeEnd('renderAll')

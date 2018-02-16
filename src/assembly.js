@@ -11,9 +11,9 @@ import {
     insertAfter
 } from './helpers';
 
+import cache from './cache';
 
-let vDOM;
-let rootElement;
+
 const fragment = document.createDocumentFragment();
 
 var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
@@ -25,31 +25,27 @@ var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
  * @param {Object|string} at - Attributes | Primative
  * @param {Array} ch - Children 
  */
-const node = (t, id, at, ch, isSVG) => {
+const node = (t, at, ch, isSVG) => {
     switch (t) {
         case 'primitive':
-            return { t: 'TEXT', id, val: at };
+            return { t: 'TEXT', val: at };
         case 'comment':
-            return { t: 'COM', id, val: at };
+            return { t: 'COM', val: at };
         default:
             return isSVG ? {
                 t,
-                id,
                 at,
                 chx: ch.length,
                 ch,
                 svg: true
             } : {
                 t,
-                id,
                 at,
                 chx: ch.length,
                 ch
             };
     }
 }
-
-let count = 0;
 
 /** 
  Assembly is the mechanics of the tag functions. 
@@ -116,19 +112,16 @@ export const assembly = (tagName, nodeType) => {
                     type = 'primitive';
                     value = childNode;
                 }
-                count++;
-                childNodes[i] = node(type, count, value, null, isSVG);
+                childNodes[i] = node(type, value, null, isSVG);
             }
         }
 
-        count++;
         // Update child nodes with parentId
         for (i = 0; i < childNodes.length; ++i) {
-            childNodes[i].pid = count;
             childNodes[i].ix = i;
         }
 
-        return node(tagNameStr, count, attributes, childNodes, isSVG);
+        return node(tagNameStr, attributes, childNodes, isSVG);
     }
 }
 
@@ -140,15 +133,15 @@ var removeChilds = function(node) {
 
 const render = (initalRootElement, vNode, isPartial) => {
     // Cache root element 
-    if (rootElement === undefined) {
-        rootElement = initalRootElement;
+    if (cache.rootElement === null) {
+        cache.rootElement = initalRootElement;
     }
 
     // Creates a new fragment for partials but uses 
     // the fragment cache for the inital render.
     const renderFragment = isPartial === true ? document.createDocumentFragment() : fragment;
 
-    const node = isPartial === true ? vNode : vDOM;
+    const node = isPartial === true ? vNode : cache.vDOM;
 
     /** 
      * Dummy wrapper to treat a non-wrap node as wrapped.
@@ -163,7 +156,6 @@ const render = (initalRootElement, vNode, isPartial) => {
         "ch": node
     }
 
-    count = 0; // reset counter used for node ids.
 
     if (Array.isArray(node)) {
 
@@ -181,7 +173,7 @@ const render = (initalRootElement, vNode, isPartial) => {
 
         requestAnimationFrame(() => {
             const fragmentClone = document.importNode(renderFragment, true);
-            rootElement.appendChild(fragmentClone)
+            cache.rootElement.appendChild(fragmentClone)
         });
     } else {
 
@@ -190,7 +182,7 @@ const render = (initalRootElement, vNode, isPartial) => {
         requestAnimationFrame(() => {
             if (!isPartial) {
                 const fragmentClone = document.importNode(renderFragment, true);
-                rootElement.appendChild(fragmentClone)
+                cache.rootElement.appendChild(fragmentClone)
             }
             return;
         });
@@ -677,10 +669,10 @@ const partialRenderInner = (partialNodes, type) => {
         updateCachedFragment(partialNodeKey, newVNode, type);
     }
     // Render the DOM with the updated cachedFragment.
-    removeChildren(rootElement);
+    removeChildren(cache.rootElement);
     const fragmentClone = document.importNode(fragment, true);
 
-    rootElement.appendChild(fragmentClone);
+    cache.rootElement.appendChild(fragmentClone);
 
 
 }
@@ -696,11 +688,11 @@ export const initialize = (rootSelector, vNode) => {
     const initalVNode = isVNode(vNode) || Array.isArray(vNode) ? vNode : false;
 
     if (initalVNode === false) {
-        throw new Error(`vNode ${vDOM} is not valid`);
+        throw new Error(`vNode ${cache.vDOM} is not valid`);
     }
 
     // Cache valid vDOM
-    vDOM = initalVNode;
+    cache.vDOM = initalVNode;
     // Render the inital virual DOM and cache the selectors.
     render(container, false);
 

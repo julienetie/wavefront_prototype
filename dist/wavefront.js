@@ -18,7 +18,7 @@ var isElement = function isElement(value) {
     return value instanceof Element;
 };
 var isVNode = function isVNode(value) {
-    return value.hasOwnProperty('t') && value.hasOwnProperty('id');
+    return value.hasOwnProperty('t');
 };
 var removeChildren = function removeChildren(parentNode) {
     while (parentNode.firstChild) {
@@ -59,6 +59,14 @@ var insertAfter = function insertAfter(parent, newElement, refNode) {
     }
 };
 
+/** 
+ * Shared cache accessible between modules. 
+ */
+var cache = {
+  vDOM: null,
+  rootElement: null
+};
+
 var toConsumableArray = function (arr) {
   if (Array.isArray(arr)) {
     for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
@@ -69,8 +77,6 @@ var toConsumableArray = function (arr) {
   }
 };
 
-var vDOM = void 0;
-var rootElement = void 0;
 var fragment = document.createDocumentFragment();
 
 var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
@@ -82,31 +88,27 @@ var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
  * @param {Object|string} at - Attributes | Primative
  * @param {Array} ch - Children 
  */
-var node = function node(t, id, at, ch, isSVG) {
+var node = function node(t, at, ch, isSVG) {
     switch (t) {
         case 'primitive':
-            return { t: 'TEXT', id: id, val: at };
+            return { t: 'TEXT', val: at };
         case 'comment':
-            return { t: 'COM', id: id, val: at };
+            return { t: 'COM', val: at };
         default:
             return isSVG ? {
                 t: t,
-                id: id,
                 at: at,
                 chx: ch.length,
                 ch: ch,
                 svg: true
             } : {
                 t: t,
-                id: id,
                 at: at,
                 chx: ch.length,
                 ch: ch
             };
     }
 };
-
-var count = 0;
 
 /** 
  Assembly is the mechanics of the tag functions. 
@@ -174,33 +176,30 @@ var assembly = function assembly(tagName, nodeType) {
                     type = 'primitive';
                     value = _childNode;
                 }
-                count++;
-                childNodes[i] = node(type, count, value, null, isSVG);
+                childNodes[i] = node(type, value, null, isSVG);
             }
         }
 
-        count++;
         // Update child nodes with parentId
         for (i = 0; i < childNodes.length; ++i) {
-            childNodes[i].pid = count;
             childNodes[i].ix = i;
         }
 
-        return node(tagNameStr, count, attributes, childNodes, isSVG);
+        return node(tagNameStr, attributes, childNodes, isSVG);
     };
 };
 
 var render = function render(initalRootElement, vNode, isPartial) {
     // Cache root element 
-    if (rootElement === undefined) {
-        rootElement = initalRootElement;
+    if (cache.rootElement === null) {
+        cache.rootElement = initalRootElement;
     }
 
     // Creates a new fragment for partials but uses 
     // the fragment cache for the inital render.
     var renderFragment = isPartial === true ? document.createDocumentFragment() : fragment;
 
-    var node = isPartial === true ? vNode : vDOM;
+    var node = isPartial === true ? vNode : cache.vDOM;
 
     /** 
      * Dummy wrapper to treat a non-wrap node as wrapped.
@@ -214,8 +213,6 @@ var render = function render(initalRootElement, vNode, isPartial) {
         "chx": 1,
         "ch": node
     };
-
-    count = 0; // reset counter used for node ids.
 
     if (Array.isArray(node)) {
 
@@ -233,7 +230,7 @@ var render = function render(initalRootElement, vNode, isPartial) {
 
         requestAnimationFrame(function () {
             var fragmentClone = document.importNode(renderFragment, true);
-            rootElement.appendChild(fragmentClone);
+            cache.rootElement.appendChild(fragmentClone);
         });
     } else {
 
@@ -242,7 +239,7 @@ var render = function render(initalRootElement, vNode, isPartial) {
         requestAnimationFrame(function () {
             if (!isPartial) {
                 var fragmentClone = document.importNode(renderFragment, true);
-                rootElement.appendChild(fragmentClone);
+                cache.rootElement.appendChild(fragmentClone);
             }
             return;
         });
@@ -661,10 +658,10 @@ var partialRenderInner = function partialRenderInner(partialNodes, type) {
         updateCachedFragment(partialNodeKey, newVNode, type);
     }
     // Render the DOM with the updated cachedFragment.
-    removeChildren(rootElement);
+    removeChildren(cache.rootElement);
     var fragmentClone = document.importNode(fragment, true);
 
-    rootElement.appendChild(fragmentClone);
+    cache.rootElement.appendChild(fragmentClone);
 };
 
 var partialRender = function partialRender(partialNodes) {
@@ -682,11 +679,11 @@ var initialize = function initialize(rootSelector, vNode) {
     var initalVNode = isVNode(vNode) || Array.isArray(vNode) ? vNode : false;
 
     if (initalVNode === false) {
-        throw new Error('vNode ' + vDOM + ' is not valid');
+        throw new Error('vNode ' + cache.vDOM + ' is not valid');
     }
 
     // Cache valid vDOM
-    vDOM = initalVNode;
+    cache.vDOM = initalVNode;
     // Render the inital virual DOM and cache the selectors.
     render(container, false);
 
