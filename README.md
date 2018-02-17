@@ -1,36 +1,38 @@
 <p align="center"><img src="http://oi66.tinypic.com/fmrlnc.jpg" ></p>
 <p>&nbsp;</p>
 
-`Alpha, working prototype in development`
+`Alpha, working prototype in development: Not ready for production`
 
-# A cutting edge frontend view layer library.
+# A View Layer Based On JavaScript
+One of strongest aspects of JavaScript is that everything is an object.
+We can harness this power to create user interfaces from the point of 
+view of the end result rathter than an eco-system?
+
+## Wavefront featuers:
+- Declarative Templates (higher order, logicless templates)
+- Complete separatoin of logic from presentation
+- Render to the DOM
+- Abstract from the DOM
+- Render partials
+- Statically generate HTML
+- No eco-system
+- Less than 2Kb
+
 
 <img src="https://media.giphy.com/media/7hvkctkRc3Q6Q/giphy.gif" width="150">
 
 "Ugh not another one, off my lawn!" So what's the difference?
 
-## Wavefront featuers:
-- Delarative templating
-- View / Logic separation
-- Virtual DOM diffing (of course)
-- Reverse Virtual-DOM Interface
-- UI helpers
-- Synthetic and delegated event system
-- Navigation API for time travel, state management, history and routing
 
 
 ## Why?
-1. Discourages [vendor lock-in](https://en.wikipedia.org/wiki/Vendor_lock-in)
-2. Light weight
-3. Templating syntax has the exact notation of HTML/ SVG
-4. Features a complete separation of logic and semantics
-5. Requires no transpiler
-6. Child nodes do not require an outer container
-7. First-class everything
-8. No dependencies
-9. No build eco-system or build dependencies
-10. A non-eco-system for integrating existing vanilla Js libraries
-11. SEO without requering server-side rendering
+Because when considering the **END RESULT** of a project:
+- Industry standards frameworks are massively overkill in terms of API complexities.
+- Industry standards frameworks tend to perfom poorly with increasing UI complexities.
+- Industry standards frameworks require too much complex and specific tooling. 
+- Separation of Concerns is important for future maintenance.
+- Statically generated HTML is far more favourable than server side rendering.
+- Objects and first-class arguments are natural to the language.
 
 
 ### What are Declarative Templates
@@ -68,4 +70,4 @@ HTML Output...
 </div>
 ```
 
-MIT (C) Julien Etienne 2017
+MIT (C) Julien Etienne 2018
