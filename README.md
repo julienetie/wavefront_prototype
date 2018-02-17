@@ -30,6 +30,47 @@ When considering the **END RESULT** of a project:
 
 HTML is a simple semantic language that can be represented and manipulated in JavaScript using the paradigms of JavaScript.  
 
+### Wavefront → DOM | DOM → Wavefront
+If you are building a SPA  _(**Singe Page Application**)_, it may be ideal to build UIs in JS as waveNodes and render them to the DOM.
+```javascript 
+const render = initalize('#container', waveNode) // Renders a waveNode to the DOM and returns a render method. 
+```
+
+If you are building a MPA _(**Multi Page Application**)_, it may be preffered to serve UIs as HTML and then abstract them into Wavefront to enable interactivity.
+```javascript 
+const waveNode = abstract('#container') // Converts a DOM tree to a waveNode.
+```
+
+Or both.
+
+### Partial Rendering
+Partial rendering let's you search the cached DOM, modify specific nodes and then perform a render.  
+
+- Insert node before
+- Insert node after
+- Replace node 
+- Remove node 
+- Replace attribute
+- Remove attribute
+
+Nodes are located using the **querySelector** and **querySelectorAll** syntax. Commands are performed using Wavefront's partial commands.
+
+```javascript 
+render() // Partial renders are returned by the intialize function. 
+
+render({
+    '.menu nav a': a({class: 'active', id: 'contact'}, 'CONTACT US') 
+}); 
+```
+The above will replace the first _.menu nav a_ selector. 
+
+
+```javascript 
+render.all({
+    '.menu nav a': a({class: 'active', id: 'contact'}, 'CONTACT US') 
+}); 
+```
+The above will update all _.menu nav a_ selectors. 
 
 ### What are Declarative Templates
 WaveFront...
