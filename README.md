@@ -62,7 +62,7 @@ render({
     '.menu nav a': a({class: 'active', id: 'contact'}, 'CONTACT US') 
 }); 
 ```
-The above will replace the first _.menu nav a_ selector. 
+The above will replace the first _**.menu nav a**_ selector. 
 
 
 ```javascript 
@@ -70,7 +70,7 @@ render.all({
     '.menu nav a': a({class: 'active', id: 'contact'}, 'CONTACT US') 
 }); 
 ```
-The above will update all _.menu nav a_ selectors. 
+The above will update all _**.menu nav a**_ selectors. 
 
 ### What are Declarative Templates
 WaveFront...
