@@ -6,11 +6,11 @@
 # A View Layer Based On JavaScript
 One of strongest aspects of JavaScript is that everything is an object.
 We can harness this power to create user interfaces from the point of 
-view of the end result rathter than an eco-system?
+view of the end result rather than an eco-system?
 
-## Wavefront featuers:
-- Declarative Templates (higher order, logicless templates)
-- Complete separatoin of logic from presentation
+## Wavefront features:
+- Declarative Templates (higher order, logic-less templates)
+- Complete separation of logic from presentation
 - Render to the DOM
 - Abstract from the DOM
 - Render partials
@@ -18,21 +18,17 @@ view of the end result rathter than an eco-system?
 - No eco-system
 - Less than 2Kb
 
-
-<img src="https://media.giphy.com/media/7hvkctkRc3Q6Q/giphy.gif" width="150">
-
-"Ugh not another one, off my lawn!" So what's the difference?
-
-
-
-## Why?
-Because when considering the **END RESULT** of a project:
-- Industry standards frameworks are massively overkill in terms of API complexities.
-- Industry standards frameworks tend to perfom poorly with increasing UI complexities.
-- Industry standards frameworks require too much complex and specific tooling. 
+## Why is Wavefront necessary?
+When considering the **END RESULT** of a project:
+- Current industry standard frameworks are massively overkill in terms of API complexities.
+- Current industry standard frameworks tend to perform poorly with increasing UI complexities.
+- Current industry standard frameworks require too much complex and specific tooling. 
 - Separation of Concerns is important for future maintenance.
 - Statically generated HTML is far more favourable than server side rendering.
 - Objects and first-class arguments are natural to the language.
+
+
+HTML is a simple semantic language that can be represented and manipulated in JavaScript using the paradigms of JavaScript.  
 
 
 ### What are Declarative Templates
@@ -69,5 +65,8 @@ HTML Output...
     </figure>
 </div>
 ```
+<p>&nbsp;</p>
+<p align="center"><img src="http://oi66.tinypic.com/fmrlnc.jpg" ></p>
+
 
 MIT (C) Julien Etienne 2018
