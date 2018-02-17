@@ -1,16 +1,19 @@
+import abstract from './abstract';
 import assembly from './assembly';
 import initialize from './initialize';
 import { loop, or } from './logical-methods';
+
 
 // HTML Elements.
 const tags = ({
     a: assembly('a'),
     abbr: assembly('abbr'),
+    abstract, 
     address: assembly('address'),
     area: assembly('area'),
     article: assembly('article'),
     aside: assembly('aside'),
-    assembly,
+    assembly, 
     audio: assembly('audio'),
     childNodes: assembly('childNodes'),
     base: assembly('base'),

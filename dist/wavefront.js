@@ -7,16 +7,6 @@
 var isPlaneObject = function isPlaneObject(value) {
     return {}.toString.call(value) === '[object Object]';
 };
-var isString = function isString(value) {
-    return typeof value === 'string';
-};
-var isPrimitive = function isPrimitive(value) {
-    return isString(value) || typeof value === 'number';
-};
-
-var isElement = function isElement(value) {
-    return value instanceof Element;
-};
 var isVNode = function isVNode(value) {
     return value.hasOwnProperty('t');
 };
@@ -25,6 +15,7 @@ var removeChildren = function removeChildren(parentNode) {
         parentNode.removeChild(parentNode.firstChild);
     }
 };
+
 /** 
  * Filter by loop 
  * @param {Array} arr 
@@ -44,18 +35,108 @@ var filter = function filter(arr, callback) {
 /** 
  * Inserts a Node before a reference node.
  */
-var insertBefore = function insertBefore(parent, newNode, refNode) {
-    return parent.insertBefore(newNode, refNode);
-};
+
 
 /** 
  * Inserts a Node after a reference node.
  */
-var insertAfter = function insertAfter(parent, newElement, refNode) {
-    if (parent.lastChild === refNode) {
-        parent.appendChild(newElement);
-    } else {
-        parent.insertBefore(newElement, refNode.nextSibling);
+
+
+/** 
+ * @param {string} t - Tag name 
+ * @param {Object|string} at - Attributes | Primative
+ * @param {Array} ch - Children 
+ * @param {Boolean} isSVG 
+ */
+var vNode = function vNode(t, at, ch, isSVG) {
+    switch (t) {
+        case 'primitive':
+            return { t: 'TEXT', val: at };
+        case 'comment':
+            return { t: 'COM', val: at };
+        default:
+            return isSVG ? {
+                t: t,
+                at: at,
+                ch: ch,
+                svg: true
+            } : {
+                t: t,
+                at: at,
+                ch: ch
+            };
+    }
+};
+
+var getChildNodesAsArray = function getChildNodesAsArray(childNodes, whitespaceRules) {
+    var ignoreTrim = !(whitespaceRules === 'ignore-trim');
+    var childNodesArr = [];
+    var childNodesLength = childNodes.length;
+
+    for (var i = 0; i < childNodesLength; i++) {
+        if (childNodes[i].nodeType === 3 & ignoreTrim) {
+            /*
+             *  "\t" TAB \u0009
+             *  "\n" LF  \u000A
+             *  "\r" CR  \u000D
+             *  " "  SPC \u0020
+             */
+            if (childNodes[i].nodeValue === childNodes[i].nodeValue.replace(/^\s+|\s+$/g, '')) {
+                childNodesArr.push(abstract(childNodes[i], whitespaceRules));
+            }
+        } else {
+            childNodesArr.push(abstract(childNodes[i], whitespaceRules));
+        }
+    }
+
+    return childNodesArr;
+};
+
+var getDefinedAttributes = function getDefinedAttributes(element) {
+    var attributes = element.attributes;
+    var definedAttributes = {};
+    var attributesLength = attributes === null || attributes === undefined ? 0 : attributes.length;
+
+    for (var i = 0; i < attributesLength; i++) {
+        var attribute = attributes[i];
+        var attributeName = attributes[i].name;
+        var style = {};
+        var isStyle = attributeName === 'style';
+
+        if (isStyle) {
+            var cssText = element.style.cssText; // The interpreted value 
+            var cssList = cssText.length > 0 ? cssText.split(';') : ['']; //last item is ignored.
+            var cssListLength = cssList.length;
+
+            for (var j = 0; j < cssListLength - 1; j++) {
+                var part = cssList[j].split(': ');
+                style[part[0].trim()] = part[1];
+            }
+        }
+        definedAttributes[attribute.name] = isStyle ? style : attribute.value;
+    }
+
+    return definedAttributes;
+};
+
+var abstract = function abstract(interfaceSelector) {
+    var whitespaceRules = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'trim';
+
+    var element = typeof interfaceSelector.nodeType === 'number' ? interfaceSelector : document.querySelector(interfaceSelector);
+    var definedAttributes = getDefinedAttributes(element);
+    var isSVG = element instanceof SVGElement;
+    var childNodes = getChildNodesAsArray(element.childNodes, whitespaceRules);
+
+    switch (element.nodeType) {
+        case 1:
+            console.log(element.tagName);
+            return vNode(element.tagName, definedAttributes, childNodes, isSVG);
+        case 3:
+            console.log(element.nodeValue);
+            return vNode('primitive', element.nodeValue);
+        case 8:
+            console.log(element.nodeValue);
+            return vNode('comment', element.nodeValue);
     }
 };
 
@@ -69,54 +150,21 @@ var toConsumableArray = function (arr) {
   }
 };
 
-var node = function node(t, at, ch, isSVG) {
-    switch (t) {
-        case 'primitive':
-            return { t: 'TEXT', val: at };
-        case 'comment':
-            return { t: 'COM', val: at };
-        default:
-            return isSVG ? {
-                t: t,
-                at: at,
-                chx: ch.length,
-                ch: ch,
-                svg: true
-            } : {
-                t: t,
-                at: at,
-                chx: ch.length,
-                ch: ch
-            };
-    }
-};
-
-/** 
- Assembly is the mechanics of the tag functions. 
- A Wavefront template is a set of nested functions
- which act similar to recursion. 
-
- The deepest nested tag of the youngest index is
- the first executed tag function.
-**/
 var assembly = (function (tagName, nodeType) {
     var isSVG = nodeType === true;
-
-    return function inner() {
-        var tagNameStr = '' + tagName;
-        var attributes = void 0;
-        var item = void 0;
-        var childNodes = [];
-        var i = void 0;
-
+    return function () {
         for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
             args[_key] = arguments[_key];
         }
 
+        var tagNameStr = '' + tagName;
+        var attributes = void 0;
+        var childNodes = [];
         var argsLength = args.length;
+        var i = void 0;
 
         for (i = 0; i < argsLength; i++) {
-            item = args[i] || {};
+            var item = args[i] || {};
             var isItemObject = isPlaneObject(item);
             var isItemVnode = item.hasOwnProperty('t');
 
@@ -133,7 +181,7 @@ var assembly = (function (tagName, nodeType) {
             }
 
             // check if item is not an object, array or function = child element.
-            if (isItemObject && isItemVnode || isPrimitive(item)) {
+            if (isItemObject && isItemVnode || typeof item === 'string' || typeof item === 'number') {
                 childNodes.push(item);
                 continue;
             }
@@ -144,28 +192,19 @@ var assembly = (function (tagName, nodeType) {
             }
         }
 
-        for (i = 0; i < childNodes.length; ++i) {
+        var childNodesLength = childNodes.length;
+
+        for (i = 0; i < childNodesLength; ++i) {
             var childNode = childNodes[i];
-            if (isPrimitive(childNode)) {
-                var type = void 0;
-                var value = void 0;
-                if (childNode[0] === '@') {
-                    type = 'comment';
-                    value = childNode.slice(1);
-                } else {
-                    type = 'primitive';
-                    value = childNode;
-                }
-                childNodes[i] = node(type, value, null, isSVG);
+            if (typeof childNode === 'string' || typeof childNode === 'number') {
+                var isComment = childNode[0] === '@';
+                var type = isComment ? 'comment' : 'primitive';
+                var value = isComment ? childNode.slice(1) : childNode;
+                childNodes[i] = vNode(type, value, null, isSVG);
             }
         }
 
-        // Update child nodes with parentId
-        for (i = 0; i < childNodes.length; ++i) {
-            childNodes[i].ix = i;
-        }
-
-        return node(tagNameStr, attributes, childNodes, isSVG);
+        return vNode(tagNameStr, attributes, childNodes, isSVG);
     };
 });
 
@@ -267,7 +306,23 @@ var createAndAppendNode = function createAndAppendNode(frag, node) {
     }
 };
 
-var render = (function (initalRootElement, vNode, isPartial) {
+var updateDOM = function updateDOM(renderFragment, replace) {
+    var fragmentClone = document.importNode(renderFragment, true);
+    // console.log('fragmentClone',fragmentClone)
+    // console.log('cache.rootElement.parentElement',cache.rootElement.parentElement)
+    // console.log('replace',replace)
+
+    if (replace) {
+        var parent = cache.rootElement.parentElement;
+        parent.insertBefore(fragmentClone, cache.rootElement);
+        cache.rootElement.parentElement.removeChild(cache.rootElement);
+        cache.rootElement = fragmentClone;
+    } else {
+        cache.rootElement.appendChild(fragmentClone);
+    }
+};
+
+var render = (function (initalRootElement, vNode, isPartial, replace) {
     // Cache root element 
     if (cache.rootElement === null) {
         cache.rootElement = initalRootElement;
@@ -276,7 +331,6 @@ var render = (function (initalRootElement, vNode, isPartial) {
     // Creates a new fragment for partials but uses 
     // the fragment cache for the inital render.
     var renderFragment = isPartial === true ? document.createDocumentFragment() : cache.fragment;
-
     var node = isPartial === true ? vNode : cache.vDOM;
 
     /** 
@@ -288,12 +342,10 @@ var render = (function (initalRootElement, vNode, isPartial) {
         "at": {
             "id": "dummy"
         },
-        "chx": 1,
         "ch": node
     };
 
     if (Array.isArray(node)) {
-
         createAndAppendNode(renderFragment, dummyVDOM);
         var dummy = renderFragment.firstElementChild;
         var innerNodes = Array.from(dummy.childNodes);
@@ -307,8 +359,7 @@ var render = (function (initalRootElement, vNode, isPartial) {
         renderFragment.removeChild(dummy);
 
         requestAnimationFrame(function () {
-            var fragmentClone = document.importNode(renderFragment, true);
-            cache.rootElement.appendChild(fragmentClone);
+            updateDOM(renderFragment, replace);
         });
     } else {
 
@@ -316,8 +367,7 @@ var render = (function (initalRootElement, vNode, isPartial) {
         createAndAppendNode(renderFragment, node);
         requestAnimationFrame(function () {
             if (!isPartial) {
-                var fragmentClone = document.importNode(renderFragment, true);
-                cache.rootElement.appendChild(fragmentClone);
+                updateDOM(renderFragment, replace);
             }
             return;
         });
@@ -326,9 +376,17 @@ var render = (function (initalRootElement, vNode, isPartial) {
     return renderFragment;
 });
 
+// @todo Insert need to be arguments
+
+/** 
+ * 
+ */
+
+
 var ibIa1 = function ibIa1(nodeType, queriedParent, newDOMNode, childNode) {
     if (nodeType === 't') {
-        insert(queriedParent, newDOMNode, childNode);
+        // insert(queriedParent, newDOMNode, childNode);
+        insert(queriedParent.parentElement, newDOMNode, queriedParent);
     } else {
         insert(queriedParent.parentElement, newDOMNode, queriedParent);
     }
@@ -371,6 +429,9 @@ var r1 = function r1(type, selector, nodeType, newDOMNode, CMDHasMany, queriedPa
         }
     } else {
         if (!CMDHasMany) {
+            console.log('REMOVE');
+            console.log('newDOMNode', newDOMNode);
+            console.log('queriedParent', queriedParent);
             queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
         }
     }
@@ -502,6 +563,7 @@ var rm = function rm(nodeType, type, queriedParent, selector, removeType, offset
 };
 
 var updateCachedFragmentByCommand = function updateCachedFragmentByCommand(selector, CMD, queriedParent, newDOMNode, type) {
+    console.log('updateCachedFragmentByCommand', newDOMNode);
     var CMDList = CMD.split(' ');
     var CMDListLength = CMDList.length;
     var CMDHasMany = CMDListLength > 1;
@@ -509,7 +571,7 @@ var updateCachedFragmentByCommand = function updateCachedFragmentByCommand(selec
     var thirdCommand = CMDList[2];
     var secondCommand = CMDList[1];
     var action = CMDList[0];
-    var insert = action === 'ia' ? insertAfter : insertBefore;
+
     var childNodes = queriedParent.childNodes;
     var childNodesLength = childNodes.length;
     var childLengthAsIndex = childNodesLength - 1;
@@ -546,13 +608,13 @@ var updateCachedFragmentByCommand = function updateCachedFragmentByCommand(selec
             case 0: // ib
             case 8:
                 // ib e
-                ibIa1(nodeType, queriedParent, newDOMNode, childNode);
+                ibIa1(nodeType, queriedParent, newDOMNode);
                 return;
             case 10: // ib e +1
             case 12: // ib e i0
             case 14:
                 // ib e i0 +1
-                ibIa2(nodeType, childNodesLength, childNode, offset, queriedParent, newDOMNode);
+                ibIa2(nodeType, childNodesLength, undefined, offset, queriedParent, newDOMNode);
                 return;
         }
     };
@@ -561,6 +623,7 @@ var updateCachedFragmentByCommand = function updateCachedFragmentByCommand(selec
         switch (CMDcode) {
             case 8:
                 // r e
+                console.log('newDOMNode', newDOMNode);
                 r1(type, selector, nodeType, newDOMNode, CMDHasMany, queriedParent);
                 return;
             case 12:
@@ -629,8 +692,8 @@ var updateCachedFragment = function updateCachedFragment(query, newVNode, type) 
     // The .all method uses the fragment for querySelectorAll and the queried node for querySelector
     var cachedNode = type === 'all' ? cache.fragment : cache.fragment.querySelector(selector);
     // When using `|r t` with .all() a string value will be expected.  
-    var newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true);
-
+    var newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true, false);
+    console.log('newDOMNode', newDOMNode);
     if (hasCommand) {
         updateCachedFragmentByCommand(selector, command, cachedNode, newDOMNode, type);
     } else {
@@ -664,12 +727,12 @@ renderPartial.all = function (partialNodes) {
     return partialRenderInner(partialNodes, 'all');
 };
 
-var initialize = (function (rootSelector, vNode) {
+var initialize = (function (rootSelector, vNode$$1, replace) {
     // allow a string or element as a querySelector value.
-    var container = isElement(rootSelector) ? rootSelector : document.querySelector(rootSelector);
+    var container = rootSelector instanceof Element ? rootSelector : document.querySelector(rootSelector);
 
     // Shallowly validate vNode.
-    var initalVNode = isVNode(vNode) || Array.isArray(vNode) ? vNode : false;
+    var initalVNode = isVNode(vNode$$1) || Array.isArray(vNode$$1) ? vNode$$1 : false;
 
     if (initalVNode === false) {
         throw new Error('vNode ' + cache.vDOM + ' is not valid');
@@ -677,9 +740,15 @@ var initialize = (function (rootSelector, vNode) {
 
     // Cache valid vDOM
     cache.vDOM = initalVNode;
-    // Render the inital virual DOM and cache the selectors.
-    render(container, false);
+    // Empty the container
 
+    if (replace === true) {
+        render(container, false, undefined, replace);
+    } else {
+        removeChildren(container);
+        // Render the inital virual DOM and cache the selectors.
+        render(container, false, undefined, replace);
+    }
     return renderPartial;
 });
 
@@ -693,7 +762,7 @@ var or = function or(vNodes, conditions, exclude) {
     }
 
     // Ensure toggle is an array. 
-    var toggle = isString(conditions) ? [conditions] : conditions;
+    var toggle = typeof conditions === 'string' ? [conditions] : conditions;
 
     // Non-operational.
     if (!Array.isArray(toggle) || toggle.length === 0) {
@@ -721,8 +790,8 @@ var or = function or(vNodes, conditions, exclude) {
     var vNodesLength = vNodes.length;
 
     var _loop = function _loop(i) {
-        var vNode = vNodes[i];
-        var attributes = vNode.at;
+        var vNode$$1 = vNodes[i];
+        var attributes = vNode$$1.at;
 
         // Check class.
         if (classesLength > 0) {
@@ -745,7 +814,7 @@ var or = function or(vNodes, conditions, exclude) {
         // Check tags.
         if (tags.length > 0) {
             tags.forEach(function (c) {
-                if (vNode.t.toUpperCase() === c.toUpperCase()) {
+                if (vNode$$1.t.toUpperCase() === c.toUpperCase()) {
                     filteredIndexes.push(i);
                 }
             });
@@ -754,7 +823,7 @@ var or = function or(vNodes, conditions, exclude) {
         // Check children.
         if (children.length > 0) {
             children.forEach(function (x) {
-                var childrenLength = vNode.ch.filter(function (c) {
+                var childrenLength = vNode$$1.ch.filter(function (c) {
                     return c.t !== 'TEXT' && c.t !== 'COM';
                 }).length;
                 if (childrenLength == x.slice(1)) {
@@ -826,6 +895,7 @@ var loop = function loop(vNodes, data) {
 var tags$1 = {
     a: assembly('a'),
     abbr: assembly('abbr'),
+    abstract: abstract,
     address: assembly('address'),
     area: assembly('area'),
     article: assembly('article'),

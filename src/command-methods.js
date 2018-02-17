@@ -1,13 +1,27 @@
+
+
+// @todo Insert need to be arguments
+
+/** 
+ * 
+ */
 export const removeChilds = function(node) {
-    var last;
-    while (last = node.lastChild) node.removeChild(last);
+    let last;
+    while (last = node.lastChild) {
+        node.removeChild(last);
+    };
 };
 
 
 
 export const ibIa1 = (nodeType, queriedParent, newDOMNode, childNode) => {
     if (nodeType === 't') {
-        insert(queriedParent, newDOMNode, childNode);
+        // insert(queriedParent, newDOMNode, childNode);
+        insert(
+            queriedParent.parentElement,
+            newDOMNode,
+            queriedParent
+        );
     } else {
         insert(
             queriedParent.parentElement,
@@ -62,6 +76,9 @@ export const r1 = (type, selector, nodeType, newDOMNode, CMDHasMany, queriedPare
         }
     } else {
         if (!CMDHasMany) {
+            console.log('REMOVE')
+            console.log('newDOMNode', newDOMNode)
+            console.log('queriedParent', queriedParent)
             queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
         }
     }
@@ -126,7 +143,7 @@ export const rm = (nodeType, type, queriedParent, selector, removeType, offset) 
 
         if (type === 'all') {
             console.log('RM ALL')
-            console.log(nodeType, type, queriedParent, selector, removeType, offset )
+            console.log(nodeType, type, queriedParent, selector, removeType, offset)
             const matchingSelectors = queriedParent.querySelectorAll(selector);
             const matchingSelectorsLength = matchingSelectors.length;
             for (let j = 0; j < matchingSelectorsLength; j++) {

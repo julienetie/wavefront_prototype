@@ -1,14 +1,11 @@
 export const isPlaneObject = value => ({}).toString.call(value) === '[object Object]';
-export const isString = value => typeof value === 'string';
-export const isPrimitive = value => isString(value) || typeof value === 'number';
-export const isFunction = value => typeof value === 'function';
-export const isElement = value => value instanceof Element;
 export const isVNode = value => value.hasOwnProperty('t');
 export const removeChildren = parentNode => {
     while (parentNode.firstChild) {
         parentNode.removeChild(parentNode.firstChild);
     }
 }
+
 /** 
  * Filter by loop 
  * @param {Array} arr 
@@ -40,3 +37,30 @@ export const insertAfter = (parent, newElement, refNode) => {
         parent.insertBefore(newElement, refNode.nextSibling);
     }
 };
+
+
+/** 
+ * @param {string} t - Tag name 
+ * @param {Object|string} at - Attributes | Primative
+ * @param {Array} ch - Children 
+ * @param {Boolean} isSVG 
+ */
+export const vNode = (t, at, ch, isSVG) => {
+    switch (t) {
+        case 'primitive':
+            return { t: 'TEXT', val: at };
+        case 'comment':
+            return { t: 'COM', val: at };
+        default:
+            return isSVG ? {
+                t,
+                at,
+                ch,
+                svg: true
+            } : {
+                t,
+                at,
+                ch
+            };
+    }
+}

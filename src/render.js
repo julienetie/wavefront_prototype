@@ -87,8 +87,24 @@ const createAndAppendNode = (frag, node) => {
     }
 }
 
+const updateDOM = (renderFragment, replace) => {
+    const fragmentClone = document.importNode(renderFragment, true);
+    // console.log('fragmentClone',fragmentClone)
+    // console.log('cache.rootElement.parentElement',cache.rootElement.parentElement)
+    // console.log('replace',replace)
 
-export default (initalRootElement, vNode, isPartial) => {
+    if (replace) {
+        const parent = cache.rootElement.parentElement;
+        parent.insertBefore(fragmentClone, cache.rootElement)
+        cache.rootElement.parentElement.removeChild(cache.rootElement);
+        cache.rootElement = fragmentClone;
+    } else {
+        cache.rootElement.appendChild(fragmentClone)
+    }
+
+}
+
+export default (initalRootElement, vNode, isPartial, replace) => {
     // Cache root element 
     if (cache.rootElement === null) {
         cache.rootElement = initalRootElement;
@@ -97,7 +113,6 @@ export default (initalRootElement, vNode, isPartial) => {
     // Creates a new fragment for partials but uses 
     // the fragment cache for the inital render.
     const renderFragment = isPartial === true ? document.createDocumentFragment() : cache.fragment;
-
     const node = isPartial === true ? vNode : cache.vDOM;
 
     /** 
@@ -109,13 +124,11 @@ export default (initalRootElement, vNode, isPartial) => {
         "at": {
             "id": "dummy"
         },
-        "chx": 1,
         "ch": node
     }
 
 
     if (Array.isArray(node)) {
-
         createAndAppendNode(renderFragment, dummyVDOM);
         const dummy = renderFragment.firstElementChild;
         const innerNodes = Array.from(dummy.childNodes);
@@ -129,8 +142,7 @@ export default (initalRootElement, vNode, isPartial) => {
         renderFragment.removeChild(dummy);
 
         requestAnimationFrame(() => {
-            const fragmentClone = document.importNode(renderFragment, true);
-            cache.rootElement.appendChild(fragmentClone)
+            updateDOM(renderFragment, replace)
         });
     } else {
 
@@ -138,8 +150,7 @@ export default (initalRootElement, vNode, isPartial) => {
         createAndAppendNode(renderFragment, node);
         requestAnimationFrame(() => {
             if (!isPartial) {
-                const fragmentClone = document.importNode(renderFragment, true);
-                cache.rootElement.appendChild(fragmentClone)
+                updateDOM(renderFragment, replace)
             }
             return;
         });

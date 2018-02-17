@@ -1,4 +1,4 @@
-import { isPlaneObject, isString, filter} from './helpers';
+import { isPlaneObject, filter} from './helpers';
 
 /** 
  * The or method explicitly defines a condition between an array of nodes. 
@@ -18,7 +18,7 @@ export const or = (vNodes, conditions, exclude) => {
 
 
     // Ensure toggle is an array. 
-    const toggle = isString(conditions) ? [conditions] : conditions;
+    const toggle = typeof conditions === 'string' ? [conditions] : conditions;
 
 
     // Non-operational.
@@ -82,7 +82,6 @@ export const or = (vNodes, conditions, exclude) => {
 
     // Remove duplicate indexes.
     const indexList = [...(new Set(filteredIndexes))];
-
 
     if (exclude === true) {
         return filter(vNodes, (item, i) => indexList.indexOf(i) === -1);

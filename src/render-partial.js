@@ -19,6 +19,7 @@ import {
  *
  */
 const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode, type) => {
+             console.log('updateCachedFragmentByCommand',newDOMNode)
     const CMDList = CMD.split(' ');
     const CMDListLength = CMDList.length;
     const CMDHasMany = CMDListLength > 1;
@@ -26,7 +27,7 @@ const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode,
     const thirdCommand = CMDList[2];
     const secondCommand = CMDList[1];
     const action = CMDList[0];
-    const insert = action === 'ia' ? insertAfter : insertBefore;
+
     const childNodes = queriedParent.childNodes;
     const childNodesLength = childNodes.length;
     const childLengthAsIndex = childNodesLength - 1;
@@ -70,8 +71,7 @@ const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode,
                 ibIa1(
                     nodeType,
                     queriedParent,
-                    newDOMNode,
-                    childNode
+                    newDOMNode
                 );
                 return;
             case 10: // ib e +1
@@ -80,7 +80,7 @@ const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode,
                 ibIa2(
                     nodeType,
                     childNodesLength,
-                    childNode,
+                    undefined,
                     offset,
                     queriedParent,
                     newDOMNode
@@ -92,6 +92,7 @@ const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode,
     const r = (CMDcode) => {
         switch (CMDcode) {
             case 8: // r e
+            console.log('newDOMNode',newDOMNode)
                 r1(
                     type,
                     selector,
@@ -187,8 +188,8 @@ const updateCachedFragment = (query, newVNode, type) => {
     // The .all method uses the fragment for querySelectorAll and the queried node for querySelector
     const cachedNode = type === 'all' ? cache.fragment : cache.fragment.querySelector(selector);
     // When using `|r t` with .all() a string value will be expected.  
-    const newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true);
-
+    const newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true, false);
+    console.log('newDOMNode', newDOMNode)
     if (hasCommand) {
         updateCachedFragmentByCommand(selector, command, cachedNode, newDOMNode, type);
     } else {

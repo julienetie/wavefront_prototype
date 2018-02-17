@@ -1,14 +1,11 @@
 const isPlaneObject = value => ({}).toString.call(value) === '[object Object]';
-const isString = value => typeof value === 'string';
-const isPrimitive = value => isString(value) || typeof value === 'number';
-
-const isElement = value => value instanceof Element;
 const isVNode = value => value.hasOwnProperty('t');
 const removeChildren = parentNode => {
     while (parentNode.firstChild) {
         parentNode.removeChild(parentNode.firstChild);
     }
 };
+
 /** 
  * Filter by loop 
  * @param {Array} arr 
@@ -28,20 +25,20 @@ const filter = (arr, callback) => {
 /** 
  * Inserts a Node before a reference node.
  */
-const insertBefore = (parent, newNode, refNode) => parent.insertBefore(newNode, refNode);
+
 
 /** 
  * Inserts a Node after a reference node.
  */
-const insertAfter = (parent, newElement, refNode) => {
-    if (parent.lastChild === refNode) {
-        parent.appendChild(newElement);
-    } else {
-        parent.insertBefore(newElement, refNode.nextSibling);
-    }
-};
 
-const node = (t, at, ch, isSVG) => {
+
+/** 
+ * @param {string} t - Tag name 
+ * @param {Object|string} at - Attributes | Primative
+ * @param {Array} ch - Children 
+ * @param {Boolean} isSVG 
+ */
+const vNode = (t, at, ch, isSVG) => {
     switch (t) {
         case 'primitive':
             return { t: 'TEXT', val: at };
@@ -51,39 +48,97 @@ const node = (t, at, ch, isSVG) => {
             return isSVG ? {
                 t,
                 at,
-                chx: ch.length,
                 ch,
                 svg: true
             } : {
                 t,
                 at,
-                chx: ch.length,
                 ch
             };
     }
 };
 
-/** 
- Assembly is the mechanics of the tag functions. 
- A Wavefront template is a set of nested functions
- which act similar to recursion. 
+const getChildNodesAsArray = (childNodes, whitespaceRules) => {
+    const ignoreTrim = !(whitespaceRules === 'ignore-trim');
+    const childNodesArr = [];
+    const childNodesLength = childNodes.length;
 
- The deepest nested tag of the youngest index is
- the first executed tag function.
-**/
+    for (let i = 0; i < childNodesLength; i++) {
+        if (childNodes[i].nodeType === 3 & ignoreTrim) {
+            /*
+             *  "\t" TAB \u0009
+             *  "\n" LF  \u000A
+             *  "\r" CR  \u000D
+             *  " "  SPC \u0020
+             */
+            if (childNodes[i].nodeValue === childNodes[i].nodeValue.replace(/^\s+|\s+$/g, '')) {
+                childNodesArr.push(abstract(childNodes[i], whitespaceRules));
+            }
+        } else {
+            childNodesArr.push(abstract(childNodes[i], whitespaceRules));
+        }
+    }
+
+    return childNodesArr;
+};
+
+const getDefinedAttributes = element => {
+    const attributes = element.attributes;
+    const definedAttributes = {};
+    const attributesLength = attributes === null || attributes === undefined ? 0 : attributes.length;
+
+    for (let i = 0; i < attributesLength; i++) {
+        const attribute = attributes[i];
+        const attributeName = attributes[i].name;
+        const style = {};
+        const isStyle = attributeName === 'style';
+
+        if (isStyle) {
+            const cssText = element.style.cssText; // The interpreted value 
+            const cssList = cssText.length > 0 ? cssText.split(';') : ['']; //last item is ignored.
+            const cssListLength = cssList.length;
+
+            for (let j = 0; j < cssListLength - 1; j++) {
+                const part = cssList[j].split(': ');
+                style[part[0].trim()] = part[1];
+            }
+        }
+        definedAttributes[attribute.name] = isStyle ? style : attribute.value;
+    }
+
+    return definedAttributes;
+};
+
+const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
+    const element = typeof interfaceSelector.nodeType === 'number' ? interfaceSelector : document.querySelector(interfaceSelector);
+    const definedAttributes = getDefinedAttributes(element);
+    const isSVG = element instanceof SVGElement;
+    const childNodes = getChildNodesAsArray(element.childNodes, whitespaceRules);
+
+    switch (element.nodeType) {
+        case 1:
+            console.log(element.tagName);
+            return vNode(element.tagName, definedAttributes, childNodes, isSVG);
+        case 3:
+            console.log(element.nodeValue);
+            return vNode('primitive', element.nodeValue);
+        case 8:
+            console.log(element.nodeValue);
+            return vNode('comment', element.nodeValue);
+    }
+};
+
 var assembly = ((tagName, nodeType) => {
     const isSVG = nodeType === true;
-
-    return function inner(...args) {
+    return (...args) => {
         const tagNameStr = `${tagName}`;
         let attributes;
-        let item;
         let childNodes = [];
-        let i;
         const argsLength = args.length;
+        let i;
 
         for (i = 0; i < argsLength; i++) {
-            item = args[i] || {};
+            const item = args[i] || {};
             let isItemObject = isPlaneObject(item);
             let isItemVnode = item.hasOwnProperty('t');
 
@@ -100,7 +155,7 @@ var assembly = ((tagName, nodeType) => {
             }
 
             // check if item is not an object, array or function = child element.
-            if (isItemObject && isItemVnode || isPrimitive(item)) {
+            if (isItemObject && isItemVnode || typeof item === 'string' || typeof item === 'number') {
                 childNodes.push(item);
                 continue;
             }
@@ -111,28 +166,19 @@ var assembly = ((tagName, nodeType) => {
             }
         }
 
-        for (i = 0; i < childNodes.length; ++i) {
+        const childNodesLength = childNodes.length;
+
+        for (i = 0; i < childNodesLength; ++i) {
             const childNode = childNodes[i];
-            if (isPrimitive(childNode)) {
-                let type;
-                let value;
-                if (childNode[0] === '@') {
-                    type = 'comment';
-                    value = childNode.slice(1);
-                } else {
-                    type = 'primitive';
-                    value = childNode;
-                }
-                childNodes[i] = node(type, value, null, isSVG);
+            if (typeof childNode === 'string' || typeof childNode === 'number') {
+                const isComment = childNode[0] === '@';
+                const type = isComment ? 'comment' : 'primitive';
+                const value = isComment ? childNode.slice(1) : childNode;
+                childNodes[i] = vNode(type, value, null, isSVG);
             }
         }
 
-        // Update child nodes with parentId
-        for (i = 0; i < childNodes.length; ++i) {
-            childNodes[i].ix = i;
-        }
-
-        return node(tagNameStr, attributes, childNodes, isSVG);
+        return vNode(tagNameStr, attributes, childNodes, isSVG);
     };
 });
 
@@ -232,7 +278,23 @@ const createAndAppendNode = (frag, node) => {
     }
 };
 
-var render = ((initalRootElement, vNode, isPartial) => {
+const updateDOM = (renderFragment, replace) => {
+    const fragmentClone = document.importNode(renderFragment, true);
+    // console.log('fragmentClone',fragmentClone)
+    // console.log('cache.rootElement.parentElement',cache.rootElement.parentElement)
+    // console.log('replace',replace)
+
+    if (replace) {
+        const parent = cache.rootElement.parentElement;
+        parent.insertBefore(fragmentClone, cache.rootElement);
+        cache.rootElement.parentElement.removeChild(cache.rootElement);
+        cache.rootElement = fragmentClone;
+    } else {
+        cache.rootElement.appendChild(fragmentClone);
+    }
+};
+
+var render = ((initalRootElement, vNode, isPartial, replace) => {
     // Cache root element 
     if (cache.rootElement === null) {
         cache.rootElement = initalRootElement;
@@ -241,7 +303,6 @@ var render = ((initalRootElement, vNode, isPartial) => {
     // Creates a new fragment for partials but uses 
     // the fragment cache for the inital render.
     const renderFragment = isPartial === true ? document.createDocumentFragment() : cache.fragment;
-
     const node = isPartial === true ? vNode : cache.vDOM;
 
     /** 
@@ -253,12 +314,10 @@ var render = ((initalRootElement, vNode, isPartial) => {
         "at": {
             "id": "dummy"
         },
-        "chx": 1,
         "ch": node
     };
 
     if (Array.isArray(node)) {
-
         createAndAppendNode(renderFragment, dummyVDOM);
         const dummy = renderFragment.firstElementChild;
         const innerNodes = Array.from(dummy.childNodes);
@@ -272,8 +331,7 @@ var render = ((initalRootElement, vNode, isPartial) => {
         renderFragment.removeChild(dummy);
 
         requestAnimationFrame(() => {
-            const fragmentClone = document.importNode(renderFragment, true);
-            cache.rootElement.appendChild(fragmentClone);
+            updateDOM(renderFragment, replace);
         });
     } else {
 
@@ -281,8 +339,7 @@ var render = ((initalRootElement, vNode, isPartial) => {
         createAndAppendNode(renderFragment, node);
         requestAnimationFrame(() => {
             if (!isPartial) {
-                const fragmentClone = document.importNode(renderFragment, true);
-                cache.rootElement.appendChild(fragmentClone);
+                updateDOM(renderFragment, replace);
             }
             return;
         });
@@ -291,9 +348,17 @@ var render = ((initalRootElement, vNode, isPartial) => {
     return renderFragment;
 });
 
+// @todo Insert need to be arguments
+
+/** 
+ * 
+ */
+
+
 const ibIa1 = (nodeType, queriedParent, newDOMNode, childNode) => {
     if (nodeType === 't') {
-        insert(queriedParent, newDOMNode, childNode);
+        // insert(queriedParent, newDOMNode, childNode);
+        insert(queriedParent.parentElement, newDOMNode, queriedParent);
     } else {
         insert(queriedParent.parentElement, newDOMNode, queriedParent);
     }
@@ -336,6 +401,9 @@ const r1 = (type, selector, nodeType, newDOMNode, CMDHasMany, queriedParent) => 
         }
     } else {
         if (!CMDHasMany) {
+            console.log('REMOVE');
+            console.log('newDOMNode', newDOMNode);
+            console.log('queriedParent', queriedParent);
             queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
         }
     }
@@ -467,6 +535,7 @@ const rm = (nodeType, type, queriedParent, selector, removeType, offset) => {
 };
 
 const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode, type) => {
+    console.log('updateCachedFragmentByCommand', newDOMNode);
     const CMDList = CMD.split(' ');
     const CMDListLength = CMDList.length;
     const CMDHasMany = CMDListLength > 1;
@@ -474,7 +543,7 @@ const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode,
     const thirdCommand = CMDList[2];
     const secondCommand = CMDList[1];
     const action = CMDList[0];
-    const insert = action === 'ia' ? insertAfter : insertBefore;
+
     const childNodes = queriedParent.childNodes;
     const childNodesLength = childNodes.length;
     const childLengthAsIndex = childNodesLength - 1;
@@ -511,13 +580,13 @@ const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode,
             case 0: // ib
             case 8:
                 // ib e
-                ibIa1(nodeType, queriedParent, newDOMNode, childNode);
+                ibIa1(nodeType, queriedParent, newDOMNode);
                 return;
             case 10: // ib e +1
             case 12: // ib e i0
             case 14:
                 // ib e i0 +1
-                ibIa2(nodeType, childNodesLength, childNode, offset, queriedParent, newDOMNode);
+                ibIa2(nodeType, childNodesLength, undefined, offset, queriedParent, newDOMNode);
                 return;
         }
     };
@@ -526,6 +595,7 @@ const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode,
         switch (CMDcode) {
             case 8:
                 // r e
+                console.log('newDOMNode', newDOMNode);
                 r1(type, selector, nodeType, newDOMNode, CMDHasMany, queriedParent);
                 return;
             case 12:
@@ -594,8 +664,8 @@ const updateCachedFragment = (query, newVNode, type) => {
     // The .all method uses the fragment for querySelectorAll and the queried node for querySelector
     const cachedNode = type === 'all' ? cache.fragment : cache.fragment.querySelector(selector);
     // When using `|r t` with .all() a string value will be expected.  
-    const newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true);
-
+    const newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true, false);
+    console.log('newDOMNode', newDOMNode);
     if (hasCommand) {
         updateCachedFragmentByCommand(selector, command, cachedNode, newDOMNode, type);
     } else {
@@ -625,12 +695,12 @@ const partialRenderInner = (partialNodes, type) => {
 const renderPartial = partialNodes => partialRenderInner(partialNodes, 'single');
 renderPartial.all = partialNodes => partialRenderInner(partialNodes, 'all');
 
-var initialize = ((rootSelector, vNode) => {
+var initialize = ((rootSelector, vNode$$1, replace) => {
     // allow a string or element as a querySelector value.
-    const container = isElement(rootSelector) ? rootSelector : document.querySelector(rootSelector);
+    const container = rootSelector instanceof Element ? rootSelector : document.querySelector(rootSelector);
 
     // Shallowly validate vNode.
-    const initalVNode = isVNode(vNode) || Array.isArray(vNode) ? vNode : false;
+    const initalVNode = isVNode(vNode$$1) || Array.isArray(vNode$$1) ? vNode$$1 : false;
 
     if (initalVNode === false) {
         throw new Error(`vNode ${cache.vDOM} is not valid`);
@@ -638,9 +708,15 @@ var initialize = ((rootSelector, vNode) => {
 
     // Cache valid vDOM
     cache.vDOM = initalVNode;
-    // Render the inital virual DOM and cache the selectors.
-    render(container, false);
+    // Empty the container
 
+    if (replace === true) {
+        render(container, false, undefined, replace);
+    } else {
+        removeChildren(container);
+        // Render the inital virual DOM and cache the selectors.
+        render(container, false, undefined, replace);
+    }
     return renderPartial;
 });
 
@@ -654,7 +730,7 @@ const or = (vNodes, conditions, exclude) => {
     }
 
     // Ensure toggle is an array. 
-    const toggle = isString(conditions) ? [conditions] : conditions;
+    const toggle = typeof conditions === 'string' ? [conditions] : conditions;
 
     // Non-operational.
     if (!Array.isArray(toggle) || toggle.length === 0) {
@@ -671,8 +747,8 @@ const or = (vNodes, conditions, exclude) => {
     const vNodesLength = vNodes.length;
 
     for (let i = 0; i < vNodesLength; i++) {
-        const vNode = vNodes[i];
-        const attributes = vNode.at;
+        const vNode$$1 = vNodes[i];
+        const attributes = vNode$$1.at;
 
         // Check class.
         if (classesLength > 0) {
@@ -695,7 +771,7 @@ const or = (vNodes, conditions, exclude) => {
         // Check tags.
         if (tags.length > 0) {
             tags.forEach(c => {
-                if (vNode.t.toUpperCase() === c.toUpperCase()) {
+                if (vNode$$1.t.toUpperCase() === c.toUpperCase()) {
                     filteredIndexes.push(i);
                 }
             });
@@ -704,7 +780,7 @@ const or = (vNodes, conditions, exclude) => {
         // Check children.
         if (children.length > 0) {
             children.forEach(x => {
-                const childrenLength = vNode.ch.filter(c => c.t !== 'TEXT' && c.t !== 'COM').length;
+                const childrenLength = vNode$$1.ch.filter(c => c.t !== 'TEXT' && c.t !== 'COM').length;
                 if (childrenLength == x.slice(1)) {
                     filteredIndexes.push(i);
                 }
@@ -768,6 +844,7 @@ const loop = (vNodes, data) => {
 const tags$1 = {
     a: assembly('a'),
     abbr: assembly('abbr'),
+    abstract,
     address: assembly('address'),
     area: assembly('area'),
     article: assembly('article'),
