@@ -55,22 +55,24 @@ Partial rendering let's you search the cached DOM, modify specific nodes and the
 
 Nodes are located using the **querySelector** and **querySelectorAll** syntax. Commands are performed using Wavefront's partial commands.
 
+
+The below will replace the first _**.menu nav a**_ selector. 
 ```javascript 
-render() // Partial renders are returned by the intialize function. 
+render // Partial renders are returned by the intialize function. 
 
 render({
     '.menu nav a': a({class: 'active', id: 'contact'}, 'CONTACT US') 
 }); 
 ```
-The above will replace the first _**.menu nav a**_ selector. 
 
 
+The below will update all _**.menu nav a**_ selectors. 
 ```javascript 
 render.all({
     '.menu nav a': a({class: 'active', id: 'contact'}, 'CONTACT US') 
 }); 
 ```
-The above will update all _**.menu nav a**_ selectors. 
+
 
 ### What are Declarative Templates
 WaveFront...
