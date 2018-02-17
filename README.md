@@ -3,7 +3,7 @@
 
 `Alpha, working prototype in development: Not ready for production`
 
-# A View Layer Based On JavaScript
+# A Revolutionary View Layer Based On JavaScript
 One of strongest aspects of JavaScript is that everything is an object.
 We can harness this power to create user interfaces from the point of 
 view of the end result rather than an eco-system?
