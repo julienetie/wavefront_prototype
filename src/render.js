@@ -89,16 +89,22 @@ const createAndAppendNode = (frag, node) => {
 
 const updateDOM = (renderFragment, replace) => {
     const fragmentClone = document.importNode(renderFragment, true);
-    // console.log('fragmentClone',fragmentClone)
-    // console.log('cache.rootElement.parentElement',cache.rootElement.parentElement)
-    // console.log('replace',replace)
-
     if (replace) {
         const parent = cache.rootElement.parentElement;
-        parent.insertBefore(fragmentClone, cache.rootElement)
-        cache.rootElement.parentElement.removeChild(cache.rootElement);
-        cache.rootElement = fragmentClone;
+        const childNodes = parent.childNodes;
+        const childNodesLength = childNodes.length;
+
+        for (let i = 0; i < childNodesLength; i++) {
+            if (childNodes[i] === cache.rootElement) {
+                cache.rootElement.replaceWith(fragmentClone)
+                cache.rootElement = childNodes[i];
+                break;
+            }
+        }
+
+
     } else {
+        console.log('Append child fragment clone ')
         cache.rootElement.appendChild(fragmentClone)
     }
 

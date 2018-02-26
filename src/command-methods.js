@@ -76,9 +76,6 @@ export const r1 = (type, selector, nodeType, newDOMNode, CMDHasMany, queriedPare
         }
     } else {
         if (!CMDHasMany) {
-            console.log('REMOVE')
-            console.log('newDOMNode', newDOMNode)
-            console.log('queriedParent', queriedParent)
             queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
         }
     }
@@ -133,7 +130,6 @@ export const rm = (nodeType, type, queriedParent, selector, removeType, offset) 
                 const childNode = childNodes[i];
                 if (childNode.nodeType === 3) {
                     // textNode = offset === 0 ? childNode : childNodes[i + offset];
-                    console.log('childNodes', childNode)
                     childNode.remove(childNodes[i + offset]);
                     return;
                 }
@@ -142,8 +138,6 @@ export const rm = (nodeType, type, queriedParent, selector, removeType, offset) 
         }
 
         if (type === 'all') {
-            console.log('RM ALL')
-            console.log(nodeType, type, queriedParent, selector, removeType, offset)
             const matchingSelectors = queriedParent.querySelectorAll(selector);
             const matchingSelectorsLength = matchingSelectors.length;
             for (let j = 0; j < matchingSelectorsLength; j++) {
@@ -175,7 +169,6 @@ export const rm = (nodeType, type, queriedParent, selector, removeType, offset) 
                 }
                 return;
             case 'before':
-                console.log('BEFORE')
                 for (let i = 0; i < childrenLength; i++) {
                     const child = children[i];
                     if (i > 0) {

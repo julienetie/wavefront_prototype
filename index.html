@@ -418,12 +418,14 @@
     //    }, false);
 
     const abstracton = abstract('.main-wrapper');
-    console.log('vNodes', abstracton.at.style.display = 'block')
-    const render = initialize('.main-wrapper', abstracton, true);
+    abstracton.at.style.display = 'block';
+    console.log(abstracton)
+    const render = initialize('#root', abstracton, true);
 
     setTimeout(()=>{
+
     	render({
-    		'.hc-label|rm': div({class: 'hello'},'WEFWEFWEFWEFWEF')
+    		'.hc-label': div({class: 'hello'},'WEFWEFWEFWEFWEF')
     	})
 
     }, 3000)

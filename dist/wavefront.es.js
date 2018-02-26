@@ -117,13 +117,10 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
 
     switch (element.nodeType) {
         case 1:
-            console.log(element.tagName);
             return vNode(element.tagName, definedAttributes, childNodes, isSVG);
         case 3:
-            console.log(element.nodeValue);
             return vNode('primitive', element.nodeValue);
         case 8:
-            console.log(element.nodeValue);
             return vNode('comment', element.nodeValue);
     }
 };
@@ -280,16 +277,20 @@ const createAndAppendNode = (frag, node) => {
 
 const updateDOM = (renderFragment, replace) => {
     const fragmentClone = document.importNode(renderFragment, true);
-    // console.log('fragmentClone',fragmentClone)
-    // console.log('cache.rootElement.parentElement',cache.rootElement.parentElement)
-    // console.log('replace',replace)
-
     if (replace) {
         const parent = cache.rootElement.parentElement;
-        parent.insertBefore(fragmentClone, cache.rootElement);
-        cache.rootElement.parentElement.removeChild(cache.rootElement);
-        cache.rootElement = fragmentClone;
+        const childNodes = parent.childNodes;
+        const childNodesLength = childNodes.length;
+
+        for (let i = 0; i < childNodesLength; i++) {
+            if (childNodes[i] === cache.rootElement) {
+                cache.rootElement.replaceWith(fragmentClone);
+                cache.rootElement = childNodes[i];
+                break;
+            }
+        }
     } else {
+        console.log('Append child fragment clone ');
         cache.rootElement.appendChild(fragmentClone);
     }
 };
@@ -401,9 +402,6 @@ const r1 = (type, selector, nodeType, newDOMNode, CMDHasMany, queriedParent) => 
         }
     } else {
         if (!CMDHasMany) {
-            console.log('REMOVE');
-            console.log('newDOMNode', newDOMNode);
-            console.log('queriedParent', queriedParent);
             queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
         }
     }
@@ -454,7 +452,6 @@ const rm = (nodeType, type, queriedParent, selector, removeType, offset) => {
                 const childNode = childNodes[i];
                 if (childNode.nodeType === 3) {
                     // textNode = offset === 0 ? childNode : childNodes[i + offset];
-                    console.log('childNodes', childNode);
                     childNode.remove(childNodes[i + offset]);
                     return;
                 }
@@ -463,8 +460,6 @@ const rm = (nodeType, type, queriedParent, selector, removeType, offset) => {
         }
 
         if (type === 'all') {
-            console.log('RM ALL');
-            console.log(nodeType, type, queriedParent, selector, removeType, offset);
             const matchingSelectors = queriedParent.querySelectorAll(selector);
             const matchingSelectorsLength = matchingSelectors.length;
             for (let j = 0; j < matchingSelectorsLength; j++) {
@@ -495,7 +490,6 @@ const rm = (nodeType, type, queriedParent, selector, removeType, offset) => {
                 }
                 return;
             case 'before':
-                console.log('BEFORE');
                 for (let i = 0; i < childrenLength; i++) {
                     const child = children[i];
                     if (i > 0) {
@@ -535,7 +529,6 @@ const rm = (nodeType, type, queriedParent, selector, removeType, offset) => {
 };
 
 const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode, type) => {
-    console.log('updateCachedFragmentByCommand', newDOMNode);
     const CMDList = CMD.split(' ');
     const CMDListLength = CMDList.length;
     const CMDHasMany = CMDListLength > 1;
@@ -665,7 +658,7 @@ const updateCachedFragment = (query, newVNode, type) => {
     const cachedNode = type === 'all' ? cache.fragment : cache.fragment.querySelector(selector);
     // When using `|r t` with .all() a string value will be expected.  
     const newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true, false);
-    console.log('newDOMNode', newDOMNode);
+
     if (hasCommand) {
         updateCachedFragmentByCommand(selector, command, cachedNode, newDOMNode, type);
     } else {
@@ -676,7 +669,7 @@ const updateCachedFragment = (query, newVNode, type) => {
 };
 
 const partialRenderInner = (partialNodes, type) => {
-    console.log('partialNodes', partialNodes);
+
     const partialNodesKeys = Object.keys(partialNodes);
     const partialNodesLength = partialNodesKeys.length;
 
@@ -686,9 +679,10 @@ const partialRenderInner = (partialNodes, type) => {
         updateCachedFragment(partialNodeKey, newVNode, type);
     }
     // // Render the DOM with the updated cachedFragment.
+
     removeChildren(cache.rootElement);
     const fragmentClone = document.importNode(cache.fragment, true);
-
+    console.log(cache.fragment);
     cache.rootElement.appendChild(fragmentClone);
 };
 

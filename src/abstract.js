@@ -61,7 +61,6 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
 
     switch (element.nodeType) {
         case 1:
-          console.log(element.tagName)
             return vNode(
                 element.tagName,
                 definedAttributes,
@@ -69,13 +68,11 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
                 isSVG
             );
         case 3:
-              console.log(element.nodeValue)
             return vNode(
                 'primitive',
                 element.nodeValue
             );
         case 8:
-            console.log(element.nodeValue)
             return vNode(
                 'comment',
                 element.nodeValue

@@ -19,7 +19,6 @@ import {
  *
  */
 const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode, type) => {
-             console.log('updateCachedFragmentByCommand',newDOMNode)
     const CMDList = CMD.split(' ');
     const CMDListLength = CMDList.length;
     const CMDHasMany = CMDListLength > 1;
@@ -189,7 +188,7 @@ const updateCachedFragment = (query, newVNode, type) => {
     const cachedNode = type === 'all' ? cache.fragment : cache.fragment.querySelector(selector);
     // When using `|r t` with .all() a string value will be expected.  
     const newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true, false);
-    console.log('newDOMNode', newDOMNode)
+
     if (hasCommand) {
         updateCachedFragmentByCommand(selector, command, cachedNode, newDOMNode, type);
     } else {
@@ -201,7 +200,7 @@ const updateCachedFragment = (query, newVNode, type) => {
 
 
 const partialRenderInner = (partialNodes, type) => {
-    console.log('partialNodes', partialNodes)
+
     const partialNodesKeys = Object.keys(partialNodes);
     const partialNodesLength = partialNodesKeys.length;
 
@@ -211,9 +210,10 @@ const partialRenderInner = (partialNodes, type) => {
         updateCachedFragment(partialNodeKey, newVNode, type);
     }
     // // Render the DOM with the updated cachedFragment.
+
     removeChildren(cache.rootElement);
     const fragmentClone = document.importNode(cache.fragment, true);
-
+    console.log(cache.fragment)
     cache.rootElement.appendChild(fragmentClone);
 
 

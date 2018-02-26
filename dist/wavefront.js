@@ -129,13 +129,10 @@ var abstract = function abstract(interfaceSelector) {
 
     switch (element.nodeType) {
         case 1:
-            console.log(element.tagName);
             return vNode(element.tagName, definedAttributes, childNodes, isSVG);
         case 3:
-            console.log(element.nodeValue);
             return vNode('primitive', element.nodeValue);
         case 8:
-            console.log(element.nodeValue);
             return vNode('comment', element.nodeValue);
     }
 };
@@ -308,16 +305,20 @@ var createAndAppendNode = function createAndAppendNode(frag, node) {
 
 var updateDOM = function updateDOM(renderFragment, replace) {
     var fragmentClone = document.importNode(renderFragment, true);
-    // console.log('fragmentClone',fragmentClone)
-    // console.log('cache.rootElement.parentElement',cache.rootElement.parentElement)
-    // console.log('replace',replace)
-
     if (replace) {
         var parent = cache.rootElement.parentElement;
-        parent.insertBefore(fragmentClone, cache.rootElement);
-        cache.rootElement.parentElement.removeChild(cache.rootElement);
-        cache.rootElement = fragmentClone;
+        var childNodes = parent.childNodes;
+        var childNodesLength = childNodes.length;
+
+        for (var i = 0; i < childNodesLength; i++) {
+            if (childNodes[i] === cache.rootElement) {
+                cache.rootElement.replaceWith(fragmentClone);
+                cache.rootElement = childNodes[i];
+                break;
+            }
+        }
     } else {
+        console.log('Append child fragment clone ');
         cache.rootElement.appendChild(fragmentClone);
     }
 };
@@ -429,9 +430,6 @@ var r1 = function r1(type, selector, nodeType, newDOMNode, CMDHasMany, queriedPa
         }
     } else {
         if (!CMDHasMany) {
-            console.log('REMOVE');
-            console.log('newDOMNode', newDOMNode);
-            console.log('queriedParent', queriedParent);
             queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
         }
     }
@@ -482,7 +480,6 @@ var rm = function rm(nodeType, type, queriedParent, selector, removeType, offset
                 var childNode = _childNodes[i];
                 if (childNode.nodeType === 3) {
                     // textNode = offset === 0 ? childNode : childNodes[i + offset];
-                    console.log('childNodes', childNode);
                     childNode.remove(_childNodes[i + offset]);
                     return;
                 }
@@ -491,8 +488,6 @@ var rm = function rm(nodeType, type, queriedParent, selector, removeType, offset
         }
 
         if (type === 'all') {
-            console.log('RM ALL');
-            console.log(nodeType, type, queriedParent, selector, removeType, offset);
             var matchingSelectors = queriedParent.querySelectorAll(selector);
             var matchingSelectorsLength = matchingSelectors.length;
             for (var j = 0; j < matchingSelectorsLength; j++) {
@@ -523,7 +518,6 @@ var rm = function rm(nodeType, type, queriedParent, selector, removeType, offset
                 }
                 return;
             case 'before':
-                console.log('BEFORE');
                 for (var _i4 = 0; _i4 < childrenLength; _i4++) {
                     var _child = children[_i4];
                     if (_i4 > 0) {
@@ -563,7 +557,6 @@ var rm = function rm(nodeType, type, queriedParent, selector, removeType, offset
 };
 
 var updateCachedFragmentByCommand = function updateCachedFragmentByCommand(selector, CMD, queriedParent, newDOMNode, type) {
-    console.log('updateCachedFragmentByCommand', newDOMNode);
     var CMDList = CMD.split(' ');
     var CMDListLength = CMDList.length;
     var CMDHasMany = CMDListLength > 1;
@@ -693,7 +686,7 @@ var updateCachedFragment = function updateCachedFragment(query, newVNode, type) 
     var cachedNode = type === 'all' ? cache.fragment : cache.fragment.querySelector(selector);
     // When using `|r t` with .all() a string value will be expected.  
     var newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true, false);
-    console.log('newDOMNode', newDOMNode);
+
     if (hasCommand) {
         updateCachedFragmentByCommand(selector, command, cachedNode, newDOMNode, type);
     } else {
@@ -704,7 +697,7 @@ var updateCachedFragment = function updateCachedFragment(query, newVNode, type) 
 };
 
 var partialRenderInner = function partialRenderInner(partialNodes, type) {
-    console.log('partialNodes', partialNodes);
+
     var partialNodesKeys = Object.keys(partialNodes);
     var partialNodesLength = partialNodesKeys.length;
 
@@ -714,9 +707,10 @@ var partialRenderInner = function partialRenderInner(partialNodes, type) {
         updateCachedFragment(partialNodeKey, newVNode, type);
     }
     // // Render the DOM with the updated cachedFragment.
+
     removeChildren(cache.rootElement);
     var fragmentClone = document.importNode(cache.fragment, true);
-
+    console.log(cache.fragment);
     cache.rootElement.appendChild(fragmentClone);
 };
 
