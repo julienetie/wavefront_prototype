@@ -1,36 +1,77 @@
 <p align="center"><img src="http://oi66.tinypic.com/fmrlnc.jpg" ></p>
 <p>&nbsp;</p>
 
-`Alpha, working prototype in development`
+`Alpha, working prototype in development: Not ready for production`
 
-# A cutting edge frontend view layer library.
+# A Revolutionary View Layer Based On JavaScript
+One of strongest aspects of JavaScript is that everything is an object.
+We can harness this power to create user interfaces from the point of 
+view of the end result rather than an eco-system?
 
-<img src="https://media.giphy.com/media/7hvkctkRc3Q6Q/giphy.gif" width="150">
+## Wavefront features:
+- Declarative Templates (higher order, logic-less templates)
+- Complete separation of logic from presentation
+- Render to the DOM
+- Abstract from the DOM
+- Render partials
+- Statically generate HTML
+- No eco-system
+- Less than 2Kb
 
-"Ugh not another one, off my lawn!" So what's the difference?
-
-## Wavefront featuers:
-- Delarative templating
-- View / Logic separation
-- Virtual DOM diffing (of course)
-- Reverse Virtual-DOM Interface
-- UI helpers
-- Synthetic and delegated event system
-- Navigation API for time travel, state management, history and routing
+## Why is Wavefront necessary?
+When considering the **END RESULT** of a project:
+- Current industry standard frameworks are massively overkill in terms of API complexities.
+- Current industry standard frameworks tend to perform poorly with increasing UI complexities.
+- Current industry standard frameworks require too much complex and specific tooling. 
+- Separation of Concerns is important for future maintenance.
+- Statically generated HTML is far more favourable than server side rendering.
+- Objects and first-class arguments are natural to the language.
 
 
-## Why?
-1. Discourages [vendor lock-in](https://en.wikipedia.org/wiki/Vendor_lock-in)
-2. Light weight
-3. Templating syntax has the exact notation of HTML/ SVG
-4. Features a complete separation of logic and semantics
-5. Requires no transpiler
-6. Child nodes do not require an outer container
-7. First-class everything
-8. No dependencies
-9. No build eco-system or build dependencies
-10. A non-eco-system for integrating existing vanilla Js libraries
-11. SEO without requering server-side rendering
+HTML is a simple semantic language that can be represented and manipulated in JavaScript using the paradigms of JavaScript.  
+
+### Wavefront → DOM | DOM → Wavefront
+If you are building a SPA  _(**Singe Page Application**)_, it may be ideal to build UIs in JS as waveNodes and render them to the DOM.
+```javascript 
+const render = initalize('#container', waveNode) // Renders a waveNode to the DOM and returns a render method. 
+```
+
+If you are building a MPA _(**Multi Page Application**)_, it may be preffered to serve UIs as HTML and then abstract them into Wavefront to enable interactivity.
+```javascript 
+const waveNode = abstract('#container') // Converts a DOM tree to a waveNode.
+```
+
+Or both.
+
+### Partial Rendering
+Partial rendering let's you search the cached DOM, modify specific nodes and then perform a render.  
+
+- Insert node before
+- Insert node after
+- Replace node 
+- Remove node 
+- Replace attribute
+- Remove attribute
+
+Nodes are located using the **querySelector** and **querySelectorAll** syntax. Commands are performed using Wavefront's partial commands.
+
+
+The below will replace the first _**.menu nav a**_ selector. 
+```javascript 
+render // Partial renders are returned by the intialize function. 
+
+render({
+    '.menu nav a': a({class: 'active', id: 'contact'}, 'CONTACT US') 
+}); 
+```
+
+
+The below will update all _**.menu nav a**_ selectors. 
+```javascript 
+render.all({
+    '.menu nav a': a({class: 'active', id: 'contact'}, 'CONTACT US') 
+}); 
+```
 
 
 ### What are Declarative Templates
@@ -67,5 +108,8 @@ HTML Output...
     </figure>
 </div>
 ```
+<p>&nbsp;</p>
+<p align="center"><img src="http://oi66.tinypic.com/fmrlnc.jpg" ></p>
 
-MIT (C) Julien Etienne 2017
+
+MIT (C) Julien Etienne 2018
