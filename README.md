@@ -1,115 +1,42 @@
-<p align="center"><img src="http://oi66.tinypic.com/fmrlnc.jpg" ></p>
-<p>&nbsp;</p>
+#### _[[ Alpha use at your own risk ]]_
+<p align="center"><img src="http://oi66.tinypic.com/fmrlnc.jpg" >
 
-`Alpha, working prototype in development: Not ready for production`
+## A Beautiful View With Separated Concerns 
 
-# A Revolutionary View Layer Based On JavaScript
-One of strongest aspects of JavaScript is that everything is an object.
-We can harness this power to create user interfaces from the point of 
-view of the end result rather than an eco-system?
+#### Wavefront is a comprehensive ultra-fast view-layer that separates logic from semantics.
 
-## Wavefront features:
-- Declarative Templates (higher order, logic-less templates)
-- Complete separation of logic from presentation
-- Render to the DOM
-- Abstract from the DOM
-- Render partials
-- Statically generate HTML
-- No eco-system
-- Less than 2Kb
+##### todo/view.js
+<img src="http://oi63.tinypic.com/2ihnvdh.jpg" >
 
-## Why is Wavefront necessary?
-When considering the **END RESULT** of a project:
-- Current industry standard frameworks are massively overkill in terms of API complexities.
-- Current industry standard frameworks tend to perform poorly with increasing UI complexities.
-- Current industry standard frameworks require too much complex and specific tooling. 
-- Separation of Concerns is important for future maintenance.
-- Statically generated HTML is far more favourable than server side rendering.
-- Objects and first-class arguments are natural to the language.
+##### todo/controller.js
+<p align="center"><img src="http://oi63.tinypic.com/rvwn7b.jpg" ></p>
 
 
-HTML is a simple semantic language that can be represented and manipulated in JavaScript using the paradigms of JavaScript.  
-
-### Wavefront → DOM | DOM → Wavefront
-If you are building a SPA  _(**Singe Page Application**)_, it may be ideal to build UIs in JS as waveNodes and render them to the DOM.
-```javascript 
-const render = initalize('#container', waveNode) // Renders a waveNode to the DOM and returns a render method. 
-```
-
-If you are building a MPA _(**Multi Page Application**)_, it may be preffered to serve UIs as HTML and then abstract them into Wavefront to enable interactivity.
-```javascript 
-const waveNode = abstract('#container') // Converts a DOM tree to a waveNode.
-```
-
-Or both.
-
-### Partial Rendering
-Partial rendering let's you search the cached DOM, modify specific nodes and then perform a render.  
-
-- Insert node before
-- Insert node after
-- Replace node 
-- Remove node 
-- Replace attribute
-- Remove attribute
-
-Nodes are located using the **querySelector** and **querySelectorAll** syntax. Commands are performed using Wavefront's partial commands.
-
-
-The below will replace the first _**.menu nav a**_ selector. 
-```javascript 
-render // Partial renders are returned by the intialize function. 
-
-render({
-    '.menu nav a': a({class: 'active', id: 'contact'}, 'CONTACT US') 
-}); 
-```
-
-
-The below will update all _**.menu nav a**_ selectors. 
-```javascript 
-render.all({
-    '.menu nav a': a({class: 'active', id: 'contact'}, 'CONTACT US') 
-}); 
-```
-
-
-### What are Declarative Templates
-WaveFront...
-
-```javascript
-import { div, h1, p, figure, figcaption, img } from 'wavefront'
-
-export default ({ someClass, someId, greeting }) =>
-/**
- * Greeting with three cat images.
- */
-div({ class: someClass, id: someId },
-    h1(greeting),
-    p('How are you?'),
-    figure({ class: 'images' },
-        figcaption('Three different breeds of cats.'),
-        img({ alt: 'Shorthair', src: 'shorthair.jpg' }),
-        img({ alt: 'Siamese', src: 'siamese.jpg' }),
-        img({ alt: 'Sphynx', src: 'sphynx.jpg' })
-    )
-)
-```
-HTML Output...
-```html
-<div class="welcome" id="intro">
-    <h1>Hello World!</h1>
-    <p>How are you?</p>
-    <figure class="images">
-        <figcaption>Three different breeds of cats.</figcaption>
-        <img alt="Shorthair" src="shorthair.jpg">
-        <img alt="Siamese" src="siamese.jpg">
-        <img alt="sphynx" src="sphynx.jpg">
-    </figure>
-</div>
-```
-<p>&nbsp;</p>
-<p align="center"><img src="http://oi66.tinypic.com/fmrlnc.jpg" ></p>
+#### Why
+Do you need a massive performance overhead, complexity and tangled flow control to build a high-end, enterprise-level or pet-project websites? Wavefront is light, ultra-fast and declarative but most importantly Wavefront has [**no vendor lock-In** ](https://en.wikipedia.org/wiki/Vendor_lock-in).
+___
+### Separation of Concerns
+**Wavefront in essence is a view-layer library, design pattern and a discipline based on ES6 and first-class functions**. It uses the concept of **_Declarative Templates_** to separate logic from presentation. Build application logic however you prefer providing there is no explicit logic within your templates. 
+___
+### Ultra-fast
+**Wavefront was designed to build real world websites and web applications not theoretical benchmarks challenges**. However it is possiblyone of the fastest "virtual-DOM" implementations out there.
+___
+### A Comprehensive DOM Solution
+- _Abstract from the DOM_
+- _Render to the DOM_
+- _Expose the cached DOM_
+- _DOM helper functions_
+- _Statically generate HTML per build (As a SSR Alternative)_
+___
+### No Vendor Lock-In
+Migration and vendor lock-in are expensive aspects of front-end development. wavefront-migration converts _Declarative Templates_ into HTML not only to escape lock-in but in case you have built Wavefront SPA interfaces you would like to later migrate to HTML.  
+___
+### Max size 3kb 
+Wavefront is currently 1kb minified but will not exceed 3kb
+___
+### Browser Support
+Supported browsers:
+IE11, Edge 12, Chrome ??, Safari ??, Firefox ??, Opera ?? - [Can support older browsers](#)
 
 
 MIT (C) Julien Etienne 2018
