@@ -28,6 +28,7 @@ const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode,
     const action = CMDList[0];
 
     const childNodes = queriedParent.childNodes;
+
     const childNodesLength = childNodes.length;
     const childLengthAsIndex = childNodesLength - 1;
 
@@ -68,30 +69,32 @@ const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode,
             case 0: // ib
             case 8: // ib e
                 ibIa1(
+                    action,
                     nodeType,
                     queriedParent,
-                    newDOMNode
+                    newDOMNode,
                 );
                 return;
             case 10: // ib e +1
             case 12: // ib e i0
             case 14: // ib e i0 +1
                 ibIa2(
+                    action,
                     nodeType,
                     childNodesLength,
                     undefined,
                     offset,
                     queriedParent,
-                    newDOMNode
+                    newDOMNode,
                 );
                 return;
         }
     }
 
     const r = (CMDcode) => {
+        console.log(type)
         switch (CMDcode) {
             case 8: // r e
-            console.log('newDOMNode',newDOMNode)
                 r1(
                     type,
                     selector,
@@ -99,6 +102,14 @@ const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode,
                     newDOMNode,
                     CMDHasMany,
                     queriedParent
+                );
+                r2(
+                    nodeType,
+                    queriedParent,
+                    offset,
+                    newDOMNode,
+                    // refNode,
+                    // childNode
                 );
                 return;
             case 12:
@@ -183,15 +194,16 @@ const updateCachedFragment = (query, newVNode, type) => {
     const hasCommand = (parts = query.split('|')).length === 2;
     const selector = parts[0];
     const command = parts[1];
-
+    console.log('cache.fragment.querySelector(selector);', cache.fragment)
     // The .all method uses the fragment for querySelectorAll and the queried node for querySelector
     const cachedNode = type === 'all' ? cache.fragment : cache.fragment.querySelector(selector);
     // When using `|r t` with .all() a string value will be expected.  
     const newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true, false);
-
     if (hasCommand) {
+        console.log('cache.fragment',cache.fragment)
         updateCachedFragmentByCommand(selector, command, cachedNode, newDOMNode, type);
     } else {
+        console.log(cache.fragment)
         removeChildren(cachedNode);
         // Append the new node to the cached fragment.
         cachedNode.appendChild(newDOMNode);
@@ -209,14 +221,11 @@ const partialRenderInner = (partialNodes, type) => {
         const newVNode = partialNodes[partialNodeKey];
         updateCachedFragment(partialNodeKey, newVNode, type);
     }
-    // // Render the DOM with the updated cachedFragment.
 
     removeChildren(cache.rootElement);
     const fragmentClone = document.importNode(cache.fragment, true);
-    console.log(cache.fragment)
+
     cache.rootElement.appendChild(fragmentClone);
-
-
 }
 
 const renderPartial = (partialNodes) => partialRenderInner(partialNodes, 'single');

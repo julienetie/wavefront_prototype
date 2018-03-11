@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tic Tac Toe: Wavefront</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="root">
+        <div class="game">
+            <div class="game-board">
+                <button class="square"></button>
+                <button class="square"></button>
+                <button class="square"></button>
+                <button class="square"></button>
+                <button class="square"></button>
+                <button class="square"></button>
+                <button class="square"></button>
+                <button class="square"></button>
+                <button class="square"></button>
+            </div>
+            <div class="game-info">
+                <div>Next player: X</div>
+                <ol>
+                    <li>
+                        <button>Go to game start</button>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <script>
+    // document.addEventListener('click', e => {
+    // 	console.log(e.target)
+    //     if (e.target.tagName === 'A' && e.target.getAttribute('href') === '#') {
+    //         e.preventDefault();
+    //     }
+    // });
+
+    // window.addEventListener('mousedown', function(e) {
+    //   document.body.classList.add('mouse-navigation');
+    //   document.body.classList.remove('kbd-navigation');
+    // });
+    // window.addEventListener('keydown', function(e) {
+    //   if (e.keyCode === 9) {
+    //     document.body.classList.add('kbd-navigation');
+    //     document.body.classList.remove('mouse-navigation');
+    //   }
+    // });
+    // window.addEventListener('click', function(e) {
+    //   if (e.target.tagName === 'A' && e.target.getAttribute('href') === '#') {
+    //     e.preventDefault();
+    //   }
+    // });
+    // window.onerror = function(message, source, line, col, error) {
+    //   var text = error ? error.stack || error : message + ' (at ' + source + ':' + line + ':' + col + ')';
+    //   errors.textContent += text + '\n';
+    //   errors.style.display = '';
+    // };
+    // console.error = (function(old) {
+    //   return function error() {
+    //     errors.textContent += Array.prototype.slice.call(arguments).join(' ') + '\n';
+    //     errors.style.display = '';
+    //     old.apply(this, arguments);
+    //   }
+    // })(console.error);
+    </script>
+    <script src="../../dist/wavefront.js"></script>
+    <script>
+    const {
+        abstract,
+        assembly,
+        initialize,
+        loop,
+        or,
+        button
+    } = wavefront;
+
+
+    const targetIndex = (parent, target) => Array.prototype.indexOf.call(parent.children, target);
+    const abstracton = abstract('#root');
+    const render = initialize('#root', abstracton, true);
+    const X = 'X';
+    const O = 'O';
+
+
+    const checkWinner = log => {
+        const rules = [1, 2, 3, 4];
+        const rulesLength = rules.length;
+        const playerSelections = log
+        const playerSelectionsLength = playerSelections.length;
+        const playLength = 3;
+        const isMaxOrMin = (collectn, middle) => !(Math.max(...collectn) === middle || Math.min(...collectn) === middle);
+        const checkRuleMatch = (playerSelections, collectn) => collectn.every((rule) => playerSelections.includes(rule));
+
+
+
+
+        const checkRules = (collection, playLength, playerSelections, middle) => {
+            const collectionLength = collection.length;
+            for (let i = 0; i < collectionLength; i++) {
+                const collectn = collection[i].slice(0, playLength);
+                const rulesMatch = checkRuleMatch(playerSelections, collectn);
+                const isLinear = isMaxOrMin(collectn, middle);
+                if (rulesMatch && isLinear) {
+                    return true;
+                }
+            }
+        }
+
+
+
+
+        const createRuleCollection = (playerSelection, rules) => {
+            const coll = []
+            rules.forEach((rule, j) => {
+                const ruleAcc = [];
+                for (let k = 0; k < playLength; k++) {
+                    if (k === 0) {
+                        ruleAcc.push(playerSelection)
+                    }
+                    ruleAcc.push(ruleAcc[ruleAcc.length - 1] + rules[j]);
+                }
+                coll.push(ruleAcc); // removed array from 
+            });
+            return coll;
+        }
+
+
+        if (log.length >= playLength) {
+            for (let t = 0; t < playerSelectionsLength; t++) {
+                const playerSelection = playerSelections[t];
+                const collection = createRuleCollection(playerSelection, rules);
+                const breakOuter = checkRules(collection, playLength, playerSelections, 5);
+                if (breakOuter === true) {
+                    return true;
+                }
+            }
+        }
+
+    }
+
+
+
+    const nextPlayPartial = () => {
+        const log = {
+            currentPlayer: X,
+            playsX: [],
+            playsO: []
+        }
+        let nextPlayer = X;
+        return ({ target }) => {
+            const parent = target.parentElement;
+
+            if (parent !== null) {
+                const count = targetIndex(parent, target) + 1;
+                if (!(log.playsX.includes(count) || log.playsO.includes(count))) {
+                    switch (target.className) {
+                        case 'square':
+                            const plays = log[`plays${log.currentPlayer}`];
+                            plays.push(count);
+                            render({
+                                [`.square:nth-of-type(${count})|r t`]: log.currentPlayer
+                            })
+                            console.log(plays)
+                            const isWinner = checkWinner(plays);
+                            console.log('The Winner Is: ', isWinner === true ? log.currentPlayer : '')
+
+                            break;
+                    }
+                    log.currentPlayer = log.currentPlayer === X ? O : X;
+                }
+            }
+
+        }
+    }
+    const nextPlay = nextPlayPartial();
+    document.addEventListener('click', nextPlay)
+    </script>
+</body>
+
+</html>

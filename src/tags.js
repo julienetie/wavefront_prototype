@@ -1,6 +1,6 @@
 import abstract from './abstract';
 import assembly from './assembly';
-import initialize from './initialize';
+import render from './render';
 import { loop, or } from './logical-methods';
 
 
@@ -57,7 +57,6 @@ const tags = ({
     i: assembly('i'),
     iframe: assembly('iframe'),
     img: assembly('img'),
-    initialize,
     input: assembly('input'),
     ins: assembly('ins'),
     kbd: assembly('kbd'),
@@ -83,6 +82,7 @@ const tags = ({
     pre: assembly('pre'),
     progress: assembly('progress'),
     q: assembly('q'),
+    render,
     rp: assembly('rp'),
     rt: assembly('rt'),
     ruby: assembly('ruby'),

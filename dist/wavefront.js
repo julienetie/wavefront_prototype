@@ -33,16 +33,6 @@ var filter = function filter(arr, callback) {
 };
 
 /** 
- * Inserts a Node before a reference node.
- */
-
-
-/** 
- * Inserts a Node after a reference node.
- */
-
-
-/** 
  * @param {string} t - Tag name 
  * @param {Object|string} at - Attributes | Primative
  * @param {Array} ch - Children 
@@ -147,6 +137,14 @@ var toConsumableArray = function (arr) {
   }
 };
 
+/** 
+ Assembly is the mechanics of the tag functions. 
+ A Wavefront template is a set of nested functions
+ which act similar to recursion. 
+
+ The deepest nested tag of the youngest index is
+ the first executed tag function.
+**/
 var assembly = (function (tagName, nodeType) {
     var isSVG = nodeType === true;
     return function () {
@@ -303,31 +301,30 @@ var createAndAppendNode = function createAndAppendNode(frag, node) {
     }
 };
 
-var updateDOM = function updateDOM(renderFragment, replace) {
+var updateDOM = function updateDOM(initalRootElement, renderFragment, replace) {
     var fragmentClone = document.importNode(renderFragment, true);
     if (replace) {
-        var parent = cache.rootElement.parentElement;
+        var parent = initalRootElement.parentElement;
         var childNodes = parent.childNodes;
         var childNodesLength = childNodes.length;
-
+        console.log(initalRootElement, fragmentClone);
         for (var i = 0; i < childNodesLength; i++) {
-            if (childNodes[i] === cache.rootElement) {
-                cache.rootElement.replaceWith(fragmentClone);
-                cache.rootElement = childNodes[i];
+            if (childNodes[i] === initalRootElement) {
+                initalRootElement.replaceWith(fragmentClone);
                 break;
             }
         }
     } else {
         console.log('Append child fragment clone ');
-        cache.rootElement.appendChild(fragmentClone);
+        initalRootElement.appendChild(fragmentClone);
     }
 };
 
-var render = (function (initalRootElement, vNode, isPartial, replace) {
+var renderPrev = (function (initalRootElement, vNode, isPartial, replace) {
     // Cache root element 
-    if (cache.rootElement === null) {
-        cache.rootElement = initalRootElement;
-    }
+    // if (cache.rootElement === null) {
+    //     cache.rootElement = initalRootElement;
+    // }
 
     // Creates a new fragment for partials but uses 
     // the fragment cache for the inital render.
@@ -351,7 +348,6 @@ var render = (function (initalRootElement, vNode, isPartial, replace) {
         var dummy = renderFragment.firstElementChild;
         var innerNodes = Array.from(dummy.childNodes);
         var innerNodesLength = innerNodes.length;
-        var outerNodeList = [];
 
         for (var i = 0; i < innerNodesLength; i++) {
             renderFragment.appendChild(innerNodes[i]);
@@ -360,7 +356,7 @@ var render = (function (initalRootElement, vNode, isPartial, replace) {
         renderFragment.removeChild(dummy);
 
         requestAnimationFrame(function () {
-            updateDOM(renderFragment, replace);
+            updateDOM(initalRootElement, renderFragment, replace);
         });
     } else {
 
@@ -368,7 +364,7 @@ var render = (function (initalRootElement, vNode, isPartial, replace) {
         createAndAppendNode(renderFragment, node);
         requestAnimationFrame(function () {
             if (!isPartial) {
-                updateDOM(renderFragment, replace);
+                updateDOM(initalRootElement, renderFragment, replace);
             }
             return;
         });
@@ -377,357 +373,17 @@ var render = (function (initalRootElement, vNode, isPartial, replace) {
     return renderFragment;
 });
 
-// @todo Insert need to be arguments
-
-/** 
- * 
- */
-
-
-var ibIa1 = function ibIa1(nodeType, queriedParent, newDOMNode, childNode) {
-    if (nodeType === 't') {
-        // insert(queriedParent, newDOMNode, childNode);
-        insert(queriedParent.parentElement, newDOMNode, queriedParent);
-    } else {
-        insert(queriedParent.parentElement, newDOMNode, queriedParent);
-    }
+var getElement = function getElement(value) {
+    return document.querySelector(value);
 };
-
-var ibIa2 = function ibIa2(nodeType, childNodesLength, childNode, offset, queriedParent, newDOMNode) {
-    if (nodeType === 't') {
-        var textNode = void 0;
-        for (var i = 0; i < childNodesLength; i++) {
-            var _childNode = childNodes[i];
-            if (_childNode.nodeType === 3) {
-                textNode = offset === 0 ? _childNode : childNodes[i + offset];
-                break;
-            }
-        }
-        insert(queriedParent, newDOMNode, textNode);
-    } else {
-        insert(queriedParent, newDOMNode, queriedParent.children[index + offset]);
-    }
-};
-
-var r1 = function r1(type, selector, nodeType, newDOMNode, CMDHasMany, queriedParent) {
-    if (type === 'all') {
-        var children = queriedParent.querySelectorAll(selector);
-        var childrenLength = children.length;
-        var clones = [];
-
-        if (nodeType !== 't') {
-            for (var i = 0; i < childrenLength; i++) {
-                clones.push(newDOMNode.cloneNode(true));
-            }
-        }
-
-        for (var _i = 0; _i < childrenLength; _i++) {
-            if (nodeType === 't') {
-                children[_i].innerHTML = newDOMNode;
-            } else {
-                children[_i].replaceWith(clones[_i]);
-            }
-        }
-    } else {
-        if (!CMDHasMany) {
-            queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
-        }
-    }
-};
-
-var r2 = function r2(nodeType, queriedParent, offset, newDOMNode, refNode, childNode) {
-    switch (nodeType) {
-        case 'e':
-            var _refNode = queriedParent.children[index + offset];
-            queriedParent.replaceChild(newDOMNode, _refNode);
-            return;
-        case 'n':
-            _refNode = queriedParent.childNodes[index + offset];
-            queriedParent.replaceChild(newDOMNode, _refNode);
-            return;
-        case 't':
-            var textNode = void 0;
-            for (var i = 0; i < childNodesLength; i++) {
-                var _childNode2 = childNodes[i];
-                if (_childNode2.nodeType === 3) {
-                    textNode = offset === 0 ? _childNode2 : childNodes[i + offset];
-                    break;
-                }
-            }
-            queriedParent.replaceChild(newDOMNode, textNode);
-            return;
-    }
-};
-
-var replaceNode = function replaceNode(type, queriedParent, query, newDOMNode) {
-    var child = queriedParent.querySelector(query);
-    var childRelative = type ? child[type] : child;
-    childRelative.replaceWith(newDOMNode);
-};
-
-var rm = function rm(nodeType, type, queriedParent, selector, removeType, offset) {
-
-    if (nodeType === 't') {
-
-        if (type === 'single') {
-            // const children = queriedParent.querySelectorAll(selector);
-            queriedParent.style.backgroundColor = 'red';
-            var _childNodes = queriedParent.childNodes;
-            var _childNodesLength = _childNodes.length;
-
-            var textNode = void 0;
-            for (var i = 0; i < _childNodesLength; i++) {
-                var childNode = _childNodes[i];
-                if (childNode.nodeType === 3) {
-                    // textNode = offset === 0 ? childNode : childNodes[i + offset];
-                    childNode.remove(_childNodes[i + offset]);
-                    return;
-                }
-            }
-            return;
-        }
-
-        if (type === 'all') {
-            var matchingSelectors = queriedParent.querySelectorAll(selector);
-            var matchingSelectorsLength = matchingSelectors.length;
-            for (var j = 0; j < matchingSelectorsLength; j++) {
-                var _childNodes2 = matchingSelectors[j].childNodes;
-                var _childNodesLength2 = _childNodes2.length;
-
-                for (var _i2 = 0; _i2 < _childNodesLength2; _i2++) {
-                    var _childNode3 = _childNodes2[_i2];
-                    if (_childNode3.nodeType === 3) {
-                        matchingSelectors[j].remove(_childNodes2[_i2 + offset]);
-                    }
-                }
-            }
-            return;
-        }
-    }
-
-    if (type === 'all') {
-        var children = queriedParent.querySelectorAll(selector);
-        var childrenLength = children.length;
-
-        switch (removeType) {
-            case 'selected':
-                for (var _i3 = 0; _i3 < childrenLength; _i3++) {
-                    var child = children[_i3];
-                    child.style.backgroundColor = 'pink';
-                    child.remove(child);
-                }
-                return;
-            case 'before':
-                for (var _i4 = 0; _i4 < childrenLength; _i4++) {
-                    var _child = children[_i4];
-                    if (_i4 > 0) {
-                        _child.remove(_child.previousSibling);
-                    }
-                }
-                return;
-            case 'after':
-                for (var _i5 = 0; _i5 < childrenLength; _i5++) {
-                    var _child2 = children[_i5];
-                    if (_i5 < childrenLength - 1) {
-                        var nextSibling = _child2.nextSibling;
-                        nextSibling.remove(nextSibling);
-                    }
-                }
-                return;
-        }
-    } else {
-        switch (removeType) {
-            case 'selected':
-                queriedParent.parentElement.removeChild(queriedParent);
-                return;
-            case 'before':
-                var previousSibling = queriedParent.previousSibling;
-                if (!!previousSibling) {
-                    queriedParent.parentElement.removeChild(previousSibling);
-                }
-                return;
-            case 'after':
-                var _nextSibling = queriedParent.nextSibling;
-                if (!!_nextSibling) {
-                    queriedParent.parentElement.removeChild(_nextSibling);
-                }
-                return;
-        }
-    }
-};
-
-var updateCachedFragmentByCommand = function updateCachedFragmentByCommand(selector, CMD, queriedParent, newDOMNode, type) {
-    var CMDList = CMD.split(' ');
-    var CMDListLength = CMDList.length;
-    var CMDHasMany = CMDListLength > 1;
-    var lastCommand = CMDList[CMDListLength - 1];
-    var thirdCommand = CMDList[2];
-    var secondCommand = CMDList[1];
-    var action = CMDList[0];
-
-    var childNodes = queriedParent.childNodes;
-    var childNodesLength = childNodes.length;
-    var childLengthAsIndex = childNodesLength - 1;
-
-    // offset. 
-    var hasOffset = CMDHasMany ? lastCommand[0] === '+' : false;
-    var initialOffset = hasOffset ? parseInt(lastCommand.slice(1), 10) : 0;
-
-    // index.
-    var hasIndex = !!thirdCommand ? thirdCommand[0] === 'i' : false;
-    var initalIndex = hasIndex ? parseInt(thirdCommand.slice(1), 10) : 0;
-
-    // Limit the index to the child nodes length.
-    var index = initalIndex + offset > childLengthAsIndex ? childLengthAsIndex : initalIndex;
-    var offset = index + initialOffset > childLengthAsIndex ? 0 : initialOffset;
-
-    // nodeType.
-    var nodeType = !!secondCommand ? secondCommand[0] : 'e';
-
-    // query.
-    var hasQuery = !!secondCommand ? secondCommand.indexOf('=') >= 0 : false;
-    var query = hasQuery ? secondCommand.split('=')[1] : null;
-
-    /** 
-     * NodeType|Index|Offset|Query
-     *  CMDcode is a binary representation of 
-     * the presetnt commands. 
-     * Action is present by default.
-     */
-    var CMDcode = parseInt([1, hasIndex + 0, hasOffset + 0, hasQuery + 0].join(''), 2);
-
-    var ibIa = function ibIa(CMDcode) {
-        switch (CMDcode) {
-            case 0: // ib
-            case 8:
-                // ib e
-                ibIa1(nodeType, queriedParent, newDOMNode);
-                return;
-            case 10: // ib e +1
-            case 12: // ib e i0
-            case 14:
-                // ib e i0 +1
-                ibIa2(nodeType, childNodesLength, undefined, offset, queriedParent, newDOMNode);
-                return;
-        }
-    };
-
-    var r = function r(CMDcode) {
-        switch (CMDcode) {
-            case 8:
-                // r e
-                console.log('newDOMNode', newDOMNode);
-                r1(type, selector, nodeType, newDOMNode, CMDHasMany, queriedParent);
-                return;
-            case 12:
-            case 14:
-                r2(nodeType, queriedParent, offset, newDOMNode, refNode, childNode);
-                return;
-            case 9:
-                replaceNode(null, queriedParent, query, newDOMNode);
-                return;
-        }
-    };
-
-    switch (action) {
-        /**
-         * Insert Before Insert After
-         * Insert before|after without an index will insert the new node
-         * before the parent.
-         */
-        case 'ib':
-        case 'ia':
-            ibIa(CMDcode);
-            return;
-        /** 
-            Replace Node
-        **/
-        case 'r':
-            r(CMDcode);
-            break;
-        case 'rb':
-            if (CMDcode === 9) {
-                replaceNode('previousSibling', queriedParent, query, newDOMNode);
-            }
-            break;
-        case 'ra':
-            if (CMDcode === 9) {
-                replaceNode('nextSibling', queriedParent, query, newDOMNode);
-            }
-            return;
-        case 'rm':
-
-            rm(nodeType, type, queriedParent, selector, 'selected', offset);
-            return;
-        case 'rmb':
-            rm(nodeType, type, queriedParent, selector, 'before', offset);
-            return;
-        case 'rma':
-            rm(nodeType, type, queriedParent, selector, 'after', offset);
-            return;
-    }
-};
-
-/** 
- * Updates the cached fragment by creating the new node 
- * and then replacing the childNodes. Updating by command
- * will only modify portions of the cached DOM tree.
- * @param {string} query - The selector and Wavefront query.  
- * @param {Object|string} newVNode - The new node or text
- * @param {Boolean} type - Truthy for .all()
- */
-var updateCachedFragment = function updateCachedFragment(query, newVNode, type) {
-    var parts = void 0;
-    var hasCommand = (parts = query.split('|')).length === 2;
-    var selector = parts[0];
-    var command = parts[1];
-
-    // The .all method uses the fragment for querySelectorAll and the queried node for querySelector
-    var cachedNode = type === 'all' ? cache.fragment : cache.fragment.querySelector(selector);
-    // When using `|r t` with .all() a string value will be expected.  
-    var newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true, false);
-
-    if (hasCommand) {
-        updateCachedFragmentByCommand(selector, command, cachedNode, newDOMNode, type);
-    } else {
-        removeChildren(cachedNode);
-        // Append the new node to the cached fragment.
-        cachedNode.appendChild(newDOMNode);
-    }
-};
-
-var partialRenderInner = function partialRenderInner(partialNodes, type) {
-
-    var partialNodesKeys = Object.keys(partialNodes);
-    var partialNodesLength = partialNodesKeys.length;
-
-    for (var i = 0; i < partialNodesLength; i++) {
-        var partialNodeKey = partialNodesKeys[i];
-        var newVNode = partialNodes[partialNodeKey];
-        updateCachedFragment(partialNodeKey, newVNode, type);
-    }
-    // // Render the DOM with the updated cachedFragment.
-
-    removeChildren(cache.rootElement);
-    var fragmentClone = document.importNode(cache.fragment, true);
-    console.log(cache.fragment);
-    cache.rootElement.appendChild(fragmentClone);
-};
-
-var renderPartial = function renderPartial(partialNodes) {
-    return partialRenderInner(partialNodes, 'single');
-};
-renderPartial.all = function (partialNodes) {
-    return partialRenderInner(partialNodes, 'all');
-};
-
-var initialize = (function (rootSelector, vNode$$1, replace) {
+var render = (function (selector, vNode$$1, replace) {
     // allow a string or element as a querySelector value.
-    var container = rootSelector instanceof Element ? rootSelector : document.querySelector(rootSelector);
+    var container = typeof selector === 'string' ? getElement(selector) : selector;
 
     // Shallowly validate vNode.
     var initalVNode = isVNode(vNode$$1) || Array.isArray(vNode$$1) ? vNode$$1 : false;
 
+    // Throw an error if not a valid vNode.
     if (initalVNode === false) {
         throw new Error('vNode ' + cache.vDOM + ' is not valid');
     }
@@ -737,15 +393,21 @@ var initialize = (function (rootSelector, vNode$$1, replace) {
     // Empty the container
 
     if (replace === true) {
-        render(container, false, undefined, replace);
+        renderPrev(container, initalVNode, undefined, replace);
     } else {
         removeChildren(container);
         // Render the inital virual DOM and cache the selectors.
-        render(container, false, undefined, replace);
+        renderPrev(container, initalVNode, undefined, replace);
     }
-    return renderPartial;
 });
 
+/** 
+ * The or method explicitly defines a condition between an array of nodes. 
+ * @param {Array} vNodes - An array of vNodes 
+ * @param {Number|Array} switch - A number or series of inidcators (as an array) of what elements to display.
+ * @exclude {Boolean} exclude - 
+ * 
+ */
 var or = function or(vNodes, conditions, exclude) {
     var filteredVNodes = [];
     var filteredIndexes = [];
@@ -886,7 +548,8 @@ var loop = function loop(vNodes, data) {
     }
 };
 
-var tags$1 = {
+// HTML Elements.
+var tags = {
     a: assembly('a'),
     abbr: assembly('abbr'),
     abstract: abstract,
@@ -938,7 +601,6 @@ var tags$1 = {
     i: assembly('i'),
     iframe: assembly('iframe'),
     img: assembly('img'),
-    initialize: initialize,
     input: assembly('input'),
     ins: assembly('ins'),
     kbd: assembly('kbd'),
@@ -964,6 +626,7 @@ var tags$1 = {
     pre: assembly('pre'),
     progress: assembly('progress'),
     q: assembly('q'),
+    render: render,
     rp: assembly('rp'),
     rt: assembly('rt'),
     ruby: assembly('ruby'),
@@ -1088,7 +751,7 @@ var tags$1 = {
     vkern: assembly('vkern', true)
 };
 
-return tags$1;
+return tags;
 
 })));
 //# sourceMappingURL=wavefront.js.map

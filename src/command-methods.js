@@ -1,6 +1,8 @@
-
-
 // @todo Insert need to be arguments
+import {
+    insertBefore,
+    insertAfter
+} from './helpers';
 
 /** 
  * 
@@ -14,24 +16,28 @@ export const removeChilds = function(node) {
 
 
 
-export const ibIa1 = (nodeType, queriedParent, newDOMNode, childNode) => {
-    if (nodeType === 't') {
-        // insert(queriedParent, newDOMNode, childNode);
-        insert(
-            queriedParent.parentElement,
-            newDOMNode,
-            queriedParent
-        );
-    } else {
-        insert(
-            queriedParent.parentElement,
-            newDOMNode,
-            queriedParent
-        );
-    }
+export const ibIa1 = (action,nodeType, queriedParent, newDOMNode, childNode) => {
+    console.log(newDOMNode)
+    const insert = action.indexOf('ia') >= 0 ? insertAfter : insertBefore;
+    // if (nodeType === 't') {
+    //     // insert(queriedParent, newDOMNode, childNode);
+    //     insert(
+    //         queriedParent.parentElement,
+    //         newDOMNode,
+    //         queriedParent
+    //     );
+    // } else {
+    //     console.log(queriedParent.parentElement, newDOMNode, queriedParent)
+    //     insert(
+    //         queriedParent.parentElement,
+    //         newDOMNode,
+    //         queriedParent
+    //     );
+    // }
+    queriedParent.appendChild(newDOMNode)
 }
 
-export const ibIa2 = (nodeType, childNodesLength, childNode, offset, queriedParent, newDOMNode) => {
+export const ibIa2 = (action, nodeType, childNodesLength, childNode, offset, queriedParent, newDOMNode) => {
     if (nodeType === 't') {
         let textNode;
         for (let i = 0; i < childNodesLength; i++) {
@@ -57,6 +63,7 @@ export const ibIa2 = (nodeType, childNodesLength, childNode, offset, queriedPare
 
 export const r1 = (type, selector, nodeType, newDOMNode, CMDHasMany, queriedParent) => {
     if (type === 'all') {
+
         const children = queriedParent.querySelectorAll(selector);
         const childrenLength = children.length;
         const clones = [];
@@ -69,6 +76,7 @@ export const r1 = (type, selector, nodeType, newDOMNode, CMDHasMany, queriedPare
 
         for (let i = 0; i < childrenLength; i++) {
             if (nodeType === 't') {
+
                 children[i].innerHTML = newDOMNode;
             } else {
                 children[i].replaceWith(clones[i]);
@@ -82,26 +90,38 @@ export const r1 = (type, selector, nodeType, newDOMNode, CMDHasMany, queriedPare
 }
 
 
-export const r2 = (nodeType, queriedParent, offset, newDOMNode, refNode, childNode) => {
+export const r2 = (nodeType, queriedParent, offset, index, newDOMNode) => {
+    console.log('')
     switch (nodeType) {
         case 'e':
             let refNode = queriedParent.children[index + offset];
-            queriedParent.replaceChild(newDOMNode, refNode);
+            // queriedParent.replaceChild(newDOMNode, refNode);
+            // console.log('refNode', queriedParent)
+            // refNode.replace(newDOMNode)
+            // queriedParent.parentElement.replaceChild(newDOMNode, queriedParent)
             return;
         case 'n':
             refNode = queriedParent.childNodes[index + offset];
-            queriedParent.replaceChild(newDOMNode, refNode);
+            // queriedParent.replaceChild(newDOMNode, refNode);
+            refNode.replace(newDOMNode)
             return;
         case 't':
-            let textNode;
-            for (let i = 0; i < childNodesLength; i++) {
-                const childNode = childNodes[i];
-                if (childNode.nodeType === 3) {
-                    textNode = offset === 0 ? childNode : childNodes[i + offset];
-                    break;
-                }
-            }
-            queriedParent.replaceChild(newDOMNode, textNode);
+            // console.log(nodeType, queriedParent, offset, newDOMNode)
+            queriedParent.textContent = newDOMNode
+            // const childNodes = queriedParent.childNodes;
+            // const childNodesLength = childNodes.length
+            // let textNode;
+            // for (let i = 0; i < childNodesLength; i++) {
+            //     const childNode = childNodes[i];
+            //     console.log(childNodes[i])
+            //     if (childNode.nodeType === 3) {
+            //         textNode = offset === 0 ? childNode : childNodes[i + offset];
+            //         break;
+            //     }
+            // }
+            // console.log('textNode', textNode)
+            // // queriedParent.replaceChild(newDOMNode, textNode);
+            // textNode.replace(newDOMNode)
             return;
     }
 }

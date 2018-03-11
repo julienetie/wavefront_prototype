@@ -4,9 +4,7 @@ import sourcemaps from 'rollup-plugin-sourcemaps';
 import nodeResolve from 'rollup-plugin-node-resolve';
 
 export default {
-    moduleName: 'wavefront',
-    entry: './src/index.js',
-    sourceMap: true,
+    input: './src/index.js',
     plugins: [
         babel({
             babelrc: false,
@@ -22,6 +20,10 @@ export default {
         }),
         sourcemaps(),
     ],
-    format: 'es',
-    dest: './dist/wavefront.es.js'
+    output: {
+        sourcemap: true,
+        name: 'wavefront',
+        format: 'es',
+        file: './dist/wavefront.es.js'
+    }
 };

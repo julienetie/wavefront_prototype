@@ -23,16 +23,6 @@ const filter = (arr, callback) => {
 };
 
 /** 
- * Inserts a Node before a reference node.
- */
-
-
-/** 
- * Inserts a Node after a reference node.
- */
-
-
-/** 
  * @param {string} t - Tag name 
  * @param {Object|string} at - Attributes | Primative
  * @param {Array} ch - Children 
@@ -125,6 +115,14 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
     }
 };
 
+/** 
+ Assembly is the mechanics of the tag functions. 
+ A Wavefront template is a set of nested functions
+ which act similar to recursion. 
+
+ The deepest nested tag of the youngest index is
+ the first executed tag function.
+**/
 var assembly = ((tagName, nodeType) => {
     const isSVG = nodeType === true;
     return (...args) => {
@@ -275,31 +273,30 @@ const createAndAppendNode = (frag, node) => {
     }
 };
 
-const updateDOM = (renderFragment, replace) => {
+const updateDOM = (initalRootElement, renderFragment, replace) => {
     const fragmentClone = document.importNode(renderFragment, true);
     if (replace) {
-        const parent = cache.rootElement.parentElement;
+        const parent = initalRootElement.parentElement;
         const childNodes = parent.childNodes;
         const childNodesLength = childNodes.length;
-
+        console.log(initalRootElement, fragmentClone);
         for (let i = 0; i < childNodesLength; i++) {
-            if (childNodes[i] === cache.rootElement) {
-                cache.rootElement.replaceWith(fragmentClone);
-                cache.rootElement = childNodes[i];
+            if (childNodes[i] === initalRootElement) {
+                initalRootElement.replaceWith(fragmentClone);
                 break;
             }
         }
     } else {
         console.log('Append child fragment clone ');
-        cache.rootElement.appendChild(fragmentClone);
+        initalRootElement.appendChild(fragmentClone);
     }
 };
 
-var render = ((initalRootElement, vNode, isPartial, replace) => {
+var renderPrev = ((initalRootElement, vNode, isPartial, replace) => {
     // Cache root element 
-    if (cache.rootElement === null) {
-        cache.rootElement = initalRootElement;
-    }
+    // if (cache.rootElement === null) {
+    //     cache.rootElement = initalRootElement;
+    // }
 
     // Creates a new fragment for partials but uses 
     // the fragment cache for the inital render.
@@ -323,7 +320,6 @@ var render = ((initalRootElement, vNode, isPartial, replace) => {
         const dummy = renderFragment.firstElementChild;
         const innerNodes = Array.from(dummy.childNodes);
         const innerNodesLength = innerNodes.length;
-        const outerNodeList = [];
 
         for (let i = 0; i < innerNodesLength; i++) {
             renderFragment.appendChild(innerNodes[i]);
@@ -332,7 +328,7 @@ var render = ((initalRootElement, vNode, isPartial, replace) => {
         renderFragment.removeChild(dummy);
 
         requestAnimationFrame(() => {
-            updateDOM(renderFragment, replace);
+            updateDOM(initalRootElement, renderFragment, replace);
         });
     } else {
 
@@ -340,7 +336,7 @@ var render = ((initalRootElement, vNode, isPartial, replace) => {
         createAndAppendNode(renderFragment, node);
         requestAnimationFrame(() => {
             if (!isPartial) {
-                updateDOM(renderFragment, replace);
+                updateDOM(initalRootElement, renderFragment, replace);
             }
             return;
         });
@@ -349,353 +345,15 @@ var render = ((initalRootElement, vNode, isPartial, replace) => {
     return renderFragment;
 });
 
-// @todo Insert need to be arguments
-
-/** 
- * 
- */
-
-
-const ibIa1 = (nodeType, queriedParent, newDOMNode, childNode) => {
-    if (nodeType === 't') {
-        // insert(queriedParent, newDOMNode, childNode);
-        insert(queriedParent.parentElement, newDOMNode, queriedParent);
-    } else {
-        insert(queriedParent.parentElement, newDOMNode, queriedParent);
-    }
-};
-
-const ibIa2 = (nodeType, childNodesLength, childNode, offset, queriedParent, newDOMNode) => {
-    if (nodeType === 't') {
-        let textNode;
-        for (let i = 0; i < childNodesLength; i++) {
-            const childNode = childNodes[i];
-            if (childNode.nodeType === 3) {
-                textNode = offset === 0 ? childNode : childNodes[i + offset];
-                break;
-            }
-        }
-        insert(queriedParent, newDOMNode, textNode);
-    } else {
-        insert(queriedParent, newDOMNode, queriedParent.children[index + offset]);
-    }
-};
-
-const r1 = (type, selector, nodeType, newDOMNode, CMDHasMany, queriedParent) => {
-    if (type === 'all') {
-        const children = queriedParent.querySelectorAll(selector);
-        const childrenLength = children.length;
-        const clones = [];
-
-        if (nodeType !== 't') {
-            for (let i = 0; i < childrenLength; i++) {
-                clones.push(newDOMNode.cloneNode(true));
-            }
-        }
-
-        for (let i = 0; i < childrenLength; i++) {
-            if (nodeType === 't') {
-                children[i].innerHTML = newDOMNode;
-            } else {
-                children[i].replaceWith(clones[i]);
-            }
-        }
-    } else {
-        if (!CMDHasMany) {
-            queriedParent.parentElement.replaceChild(newDOMNode, queriedParent);
-        }
-    }
-};
-
-const r2 = (nodeType, queriedParent, offset, newDOMNode, refNode, childNode) => {
-    switch (nodeType) {
-        case 'e':
-            let refNode = queriedParent.children[index + offset];
-            queriedParent.replaceChild(newDOMNode, refNode);
-            return;
-        case 'n':
-            refNode = queriedParent.childNodes[index + offset];
-            queriedParent.replaceChild(newDOMNode, refNode);
-            return;
-        case 't':
-            let textNode;
-            for (let i = 0; i < childNodesLength; i++) {
-                const childNode = childNodes[i];
-                if (childNode.nodeType === 3) {
-                    textNode = offset === 0 ? childNode : childNodes[i + offset];
-                    break;
-                }
-            }
-            queriedParent.replaceChild(newDOMNode, textNode);
-            return;
-    }
-};
-
-const replaceNode = (type, queriedParent, query, newDOMNode) => {
-    const child = queriedParent.querySelector(query);
-    const childRelative = type ? child[type] : child;
-    childRelative.replaceWith(newDOMNode);
-};
-
-const rm = (nodeType, type, queriedParent, selector, removeType, offset) => {
-
-    if (nodeType === 't') {
-
-        if (type === 'single') {
-            // const children = queriedParent.querySelectorAll(selector);
-            queriedParent.style.backgroundColor = 'red';
-            const childNodes = queriedParent.childNodes;
-            const childNodesLength = childNodes.length;
-
-            let textNode;
-            for (let i = 0; i < childNodesLength; i++) {
-                const childNode = childNodes[i];
-                if (childNode.nodeType === 3) {
-                    // textNode = offset === 0 ? childNode : childNodes[i + offset];
-                    childNode.remove(childNodes[i + offset]);
-                    return;
-                }
-            }
-            return;
-        }
-
-        if (type === 'all') {
-            const matchingSelectors = queriedParent.querySelectorAll(selector);
-            const matchingSelectorsLength = matchingSelectors.length;
-            for (let j = 0; j < matchingSelectorsLength; j++) {
-                const childNodes = matchingSelectors[j].childNodes;
-                const childNodesLength = childNodes.length;
-
-                for (let i = 0; i < childNodesLength; i++) {
-                    const childNode = childNodes[i];
-                    if (childNode.nodeType === 3) {
-                        matchingSelectors[j].remove(childNodes[i + offset]);
-                    }
-                }
-            }
-            return;
-        }
-    }
-
-    if (type === 'all') {
-        const children = queriedParent.querySelectorAll(selector);
-        const childrenLength = children.length;
-
-        switch (removeType) {
-            case 'selected':
-                for (let i = 0; i < childrenLength; i++) {
-                    const child = children[i];
-                    child.style.backgroundColor = 'pink';
-                    child.remove(child);
-                }
-                return;
-            case 'before':
-                for (let i = 0; i < childrenLength; i++) {
-                    const child = children[i];
-                    if (i > 0) {
-                        child.remove(child.previousSibling);
-                    }
-                }
-                return;
-            case 'after':
-                for (let i = 0; i < childrenLength; i++) {
-                    const child = children[i];
-                    if (i < childrenLength - 1) {
-                        const nextSibling = child.nextSibling;
-                        nextSibling.remove(nextSibling);
-                    }
-                }
-                return;
-        }
-    } else {
-        switch (removeType) {
-            case 'selected':
-                queriedParent.parentElement.removeChild(queriedParent);
-                return;
-            case 'before':
-                const previousSibling = queriedParent.previousSibling;
-                if (!!previousSibling) {
-                    queriedParent.parentElement.removeChild(previousSibling);
-                }
-                return;
-            case 'after':
-                const nextSibling = queriedParent.nextSibling;
-                if (!!nextSibling) {
-                    queriedParent.parentElement.removeChild(nextSibling);
-                }
-                return;
-        }
-    }
-};
-
-const updateCachedFragmentByCommand = (selector, CMD, queriedParent, newDOMNode, type) => {
-    const CMDList = CMD.split(' ');
-    const CMDListLength = CMDList.length;
-    const CMDHasMany = CMDListLength > 1;
-    const lastCommand = CMDList[CMDListLength - 1];
-    const thirdCommand = CMDList[2];
-    const secondCommand = CMDList[1];
-    const action = CMDList[0];
-
-    const childNodes = queriedParent.childNodes;
-    const childNodesLength = childNodes.length;
-    const childLengthAsIndex = childNodesLength - 1;
-
-    // offset. 
-    const hasOffset = CMDHasMany ? lastCommand[0] === '+' : false;
-    let initialOffset = hasOffset ? parseInt(lastCommand.slice(1), 10) : 0;
-
-    // index.
-    const hasIndex = !!thirdCommand ? thirdCommand[0] === 'i' : false;
-    let initalIndex = hasIndex ? parseInt(thirdCommand.slice(1), 10) : 0;
-
-    // Limit the index to the child nodes length.
-    const index = initalIndex + offset > childLengthAsIndex ? childLengthAsIndex : initalIndex;
-    const offset = index + initialOffset > childLengthAsIndex ? 0 : initialOffset;
-
-    // nodeType.
-    const nodeType = !!secondCommand ? secondCommand[0] : 'e';
-
-    // query.
-    const hasQuery = !!secondCommand ? secondCommand.indexOf('=') >= 0 : false;
-    const query = hasQuery ? secondCommand.split('=')[1] : null;
-
-    /** 
-     * NodeType|Index|Offset|Query
-     *  CMDcode is a binary representation of 
-     * the presetnt commands. 
-     * Action is present by default.
-     */
-    const CMDcode = parseInt([1, hasIndex + 0, hasOffset + 0, hasQuery + 0].join(''), 2);
-
-    const ibIa = CMDcode => {
-        switch (CMDcode) {
-            case 0: // ib
-            case 8:
-                // ib e
-                ibIa1(nodeType, queriedParent, newDOMNode);
-                return;
-            case 10: // ib e +1
-            case 12: // ib e i0
-            case 14:
-                // ib e i0 +1
-                ibIa2(nodeType, childNodesLength, undefined, offset, queriedParent, newDOMNode);
-                return;
-        }
-    };
-
-    const r = CMDcode => {
-        switch (CMDcode) {
-            case 8:
-                // r e
-                console.log('newDOMNode', newDOMNode);
-                r1(type, selector, nodeType, newDOMNode, CMDHasMany, queriedParent);
-                return;
-            case 12:
-            case 14:
-                r2(nodeType, queriedParent, offset, newDOMNode, refNode, childNode);
-                return;
-            case 9:
-                replaceNode(null, queriedParent, query, newDOMNode);
-                return;
-        }
-    };
-
-    switch (action) {
-        /**
-         * Insert Before Insert After
-         * Insert before|after without an index will insert the new node
-         * before the parent.
-         */
-        case 'ib':
-        case 'ia':
-            ibIa(CMDcode);
-            return;
-        /** 
-            Replace Node
-        **/
-        case 'r':
-            r(CMDcode);
-            break;
-        case 'rb':
-            if (CMDcode === 9) {
-                replaceNode('previousSibling', queriedParent, query, newDOMNode);
-            }
-            break;
-        case 'ra':
-            if (CMDcode === 9) {
-                replaceNode('nextSibling', queriedParent, query, newDOMNode);
-            }
-            return;
-        case 'rm':
-
-            rm(nodeType, type, queriedParent, selector, 'selected', offset);
-            return;
-        case 'rmb':
-            rm(nodeType, type, queriedParent, selector, 'before', offset);
-            return;
-        case 'rma':
-            rm(nodeType, type, queriedParent, selector, 'after', offset);
-            return;
-    }
-};
-
-/** 
- * Updates the cached fragment by creating the new node 
- * and then replacing the childNodes. Updating by command
- * will only modify portions of the cached DOM tree.
- * @param {string} query - The selector and Wavefront query.  
- * @param {Object|string} newVNode - The new node or text
- * @param {Boolean} type - Truthy for .all()
- */
-const updateCachedFragment = (query, newVNode, type) => {
-    let parts;
-    const hasCommand = (parts = query.split('|')).length === 2;
-    const selector = parts[0];
-    const command = parts[1];
-
-    // The .all method uses the fragment for querySelectorAll and the queried node for querySelector
-    const cachedNode = type === 'all' ? cache.fragment : cache.fragment.querySelector(selector);
-    // When using `|r t` with .all() a string value will be expected.  
-    const newDOMNode = typeof newVNode === 'string' ? newVNode : render(undefined, newVNode, true, false);
-
-    if (hasCommand) {
-        updateCachedFragmentByCommand(selector, command, cachedNode, newDOMNode, type);
-    } else {
-        removeChildren(cachedNode);
-        // Append the new node to the cached fragment.
-        cachedNode.appendChild(newDOMNode);
-    }
-};
-
-const partialRenderInner = (partialNodes, type) => {
-
-    const partialNodesKeys = Object.keys(partialNodes);
-    const partialNodesLength = partialNodesKeys.length;
-
-    for (let i = 0; i < partialNodesLength; i++) {
-        const partialNodeKey = partialNodesKeys[i];
-        const newVNode = partialNodes[partialNodeKey];
-        updateCachedFragment(partialNodeKey, newVNode, type);
-    }
-    // // Render the DOM with the updated cachedFragment.
-
-    removeChildren(cache.rootElement);
-    const fragmentClone = document.importNode(cache.fragment, true);
-    console.log(cache.fragment);
-    cache.rootElement.appendChild(fragmentClone);
-};
-
-const renderPartial = partialNodes => partialRenderInner(partialNodes, 'single');
-renderPartial.all = partialNodes => partialRenderInner(partialNodes, 'all');
-
-var initialize = ((rootSelector, vNode$$1, replace) => {
+const getElement = value => document.querySelector(value);
+var render = ((selector, vNode$$1, replace) => {
     // allow a string or element as a querySelector value.
-    const container = rootSelector instanceof Element ? rootSelector : document.querySelector(rootSelector);
+    const container = typeof selector === 'string' ? getElement(selector) : selector;
 
     // Shallowly validate vNode.
     const initalVNode = isVNode(vNode$$1) || Array.isArray(vNode$$1) ? vNode$$1 : false;
 
+    // Throw an error if not a valid vNode.
     if (initalVNode === false) {
         throw new Error(`vNode ${cache.vDOM} is not valid`);
     }
@@ -705,15 +363,21 @@ var initialize = ((rootSelector, vNode$$1, replace) => {
     // Empty the container
 
     if (replace === true) {
-        render(container, false, undefined, replace);
+        renderPrev(container, initalVNode, undefined, replace);
     } else {
         removeChildren(container);
         // Render the inital virual DOM and cache the selectors.
-        render(container, false, undefined, replace);
+        renderPrev(container, initalVNode, undefined, replace);
     }
-    return renderPartial;
 });
 
+/** 
+ * The or method explicitly defines a condition between an array of nodes. 
+ * @param {Array} vNodes - An array of vNodes 
+ * @param {Number|Array} switch - A number or series of inidcators (as an array) of what elements to display.
+ * @exclude {Boolean} exclude - 
+ * 
+ */
 const or = (vNodes, conditions, exclude) => {
     const filteredVNodes = [];
     const filteredIndexes = [];
@@ -835,7 +499,8 @@ const loop = (vNodes, data) => {
     }
 };
 
-const tags$1 = {
+// HTML Elements.
+const tags = {
     a: assembly('a'),
     abbr: assembly('abbr'),
     abstract,
@@ -887,7 +552,6 @@ const tags$1 = {
     i: assembly('i'),
     iframe: assembly('iframe'),
     img: assembly('img'),
-    initialize,
     input: assembly('input'),
     ins: assembly('ins'),
     kbd: assembly('kbd'),
@@ -913,6 +577,7 @@ const tags$1 = {
     pre: assembly('pre'),
     progress: assembly('progress'),
     q: assembly('q'),
+    render,
     rp: assembly('rp'),
     rt: assembly('rt'),
     ruby: assembly('ruby'),
@@ -1037,5 +702,5 @@ const tags$1 = {
     vkern: assembly('vkern', true)
 };
 
-export default tags$1;
+export default tags;
 //# sourceMappingURL=wavefront.es.js.map

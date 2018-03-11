@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Wavefront github commits example</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Delete ".min" for console warnings in development -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
+</head>
+
+<body>
+	<!-- 
+	This example is based on the Vue.js commits example, please see here: https://github.com/vuejs/vue/tree/dev/examples
+	-->
+    <div id="root">
+        <h1>Latest Wavefront Commits</h1>
+        <input type="radio" id="master" name="branch" value="master" checked="checked">
+        <label for="master">master</label>
+        <input type="radio" id="dev" name="branch" value="dev" >
+        <label for="dev">dev</label>
+        <p>wavefront@master</p>
+        <ul>
+            <li><a href="#" target="_blank" class="commit">______</a> - <span class="message">________________________</span>
+                <br> by <span class="author"><a href="#____________" target="_blank">____________</a></span> at <span class="date">__________________</span>
+            </li>
+            <li><a href="#" target="_blank" class="commit">______</a> - <span class="message">________________________</span>
+                <br> by <span class="author"><a href="#____________" target="_blank">____________</a></span> at <span class="date">__________________</span>
+            </li>
+            <li><a href="#" target="_blank" class="commit">______</a> - <span class="message">________________________</span>
+                <br> by <span class="author"><a href="#____________" target="_blank">____________</a></span> at <span class="date">__________________</span>
+            </li>
+        </ul>
+    </div>
+    <div id='test'>THIS IS A TEST</div>
+        <script src="../../dist/wavefront.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
