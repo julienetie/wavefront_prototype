@@ -87,16 +87,30 @@ const createAndAppendNode = (frag, node) => {
     }
 }
 
+
+export const beforeRender = callback => {
+    cache.beforeRenderCallback = callback;
+}
+
+
+
+
 const updateDOM = (initalRootElement, renderFragment, replace) => {
-    const fragmentClone = document.importNode(renderFragment, true);
+    // const fragmentClone = document.importNode(renderFragment, true);
     if (replace) {
         const parent = initalRootElement.parentElement;
+        // console.log('parent', parent)
         const childNodes = parent.childNodes;
+        // console.log('childNodes', childNodes)
         const childNodesLength = childNodes.length;
-            console.log(initalRootElement, fragmentClone)
+        // console.log(initalRootElement, fragmentClone)
         for (let i = 0; i < childNodesLength; i++) {
             if (childNodes[i] === initalRootElement) {
-                initalRootElement.replaceWith(fragmentClone)
+
+                if (typeof cache.beforeRenderCallback  === 'function') {
+                     cache.beforeRenderCallback(renderFragment)
+                }
+                initalRootElement.replaceWith(renderFragment)
                 break;
             }
         }
@@ -109,7 +123,7 @@ const updateDOM = (initalRootElement, renderFragment, replace) => {
 
 }
 
-export default (initalRootElement, vNode, isPartial, replace) => {
+export const renderPrev = (initalRootElement, vNode, isPartial, replace) => {
     // Cache root element 
     // if (cache.rootElement === null) {
     //     cache.rootElement = initalRootElement;

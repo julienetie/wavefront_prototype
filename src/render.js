@@ -1,7 +1,7 @@
 import { isVNode, removeChildren } from './helpers';
 // import renderPartial from './render-partial';
 import cache from './cache';
-import renderPrev from './render_prev';
+import { renderPrev } from './render_prev';
 
 const getElement = value => document.querySelector(value);
 export default (selector, vNode, replace) => {
@@ -11,7 +11,7 @@ export default (selector, vNode, replace) => {
     // Shallowly validate vNode.
     const initalVNode = isVNode(vNode) || Array.isArray(vNode) ? vNode : false;
 
-    // Throw an error if not a valid vNode.
+    // Throw an error if not a valid vNod.
     if (initalVNode === false) {
         throw new Error(`vNode ${cache.vDOM} is not valid`);
     }

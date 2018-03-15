@@ -47,7 +47,7 @@ const devAttr = { type: 'radio', id: 'dev', name: 'branch', value: 'dev' };
 const abstracton = abstract('#root');
 const container = document.querySelector('#root');
 // console.log(render);
-render(container, abstracton, true);
+
 
 
 const loadView = (currentView, type) => {
@@ -61,10 +61,12 @@ const viewSwitchPrivate = () => {
     return ({ target }) => {
         switch (target.id) {
             case 'master':
+                console.info('MASTER')
                 loadView(currentView, 'master');
                 currentView = 'master'
                 return;
             case 'dev':
+                console.log('DEV')
                 loadView(currentView, 'dev')
                 currentView = 'dev'
                 break;
@@ -95,7 +97,6 @@ const loadCommits = (type) => {
                     date: author.date
                 });
             });
-            console.log('listContainer(logs)', listContainer(logs))
 
             if (type === 'master') {
                 masterAttr.checked = 'checked';
@@ -113,7 +114,7 @@ const loadCommits = (type) => {
                     input(masterAttr),
                     input(devAttr)
                 )
-            );
+            ,true);
 
         });
 }

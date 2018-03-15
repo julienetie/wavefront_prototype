@@ -2,6 +2,7 @@ import abstract from './abstract';
 import assembly from './assembly';
 import render from './render';
 import { loop, or } from './logical-methods';
+import { beforeRender } from './render_prev';
 
 
 // HTML Elements.
@@ -18,6 +19,7 @@ const tags = ({
     childNodes: assembly('childNodes'),
     base: assembly('base'),
     bdi: assembly('bdi'),
+    beforeRender,
     bdo: assembly('bdo'),
     blockquote: assembly('blockquote'),
     body: assembly('body'),

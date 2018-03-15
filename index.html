@@ -6,12 +6,13 @@
     <title>Wavefront dev</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
     <link href="https://fonts.googleapis.com/css?family=Oxygen:300,400,700" rel="stylesheet">
-    <link rel="stylesheet" href="http://localhost:8080/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div data-smash="what"></div>
+    <!-- main wrapper will replace root -->
     <div id="root"></div>
+
     <!-- This HTML is hidden and will remain hidden -->
     <div class='main-wrapper' style='display: none;'>
         <div class='hero-image'>
@@ -122,10 +123,34 @@
     <!-- End of hidden HTML -->
     <script src="dist/wavefront.js"></script>
     <script>
+
+
+var deepFind = function(obj, path) {
+
+  if (typeof path === 'string') {
+    path = path.split('.');
+  }
+
+  if (!Array.isArray(path)) {
+    path = path.concat();
+  }
+
+  return path.reduce(function (o, part) {
+    var keys = part.match(/\[(.*?)\]/);
+    if (keys) {
+      var key = part.replace(keys[0], '');
+      return o[key][keys[1]];
+    }
+    return o[part];
+  }, obj);
+};
+
+
+
     const {
         abstract,
         assembly,
-        initialize,
+        beforeRender,
         loop,
         or,
         div,
@@ -140,6 +165,7 @@
         tr,
         td,
         tbody,
+        render,
         svg,
         defs,
         linearGradient,
@@ -151,24 +177,28 @@
     const abstracton = abstract('.main-wrapper');
     abstracton.at.style.display = 'block';
     console.log(abstracton)
-    const render = initialize('#root', abstracton, true);
-
-    setTimeout(()=>{
-
-    	render({
-    		'.hc-label': div({class: 'hello'},'WEFWEFWEFWEFWEF')
-    	})
-
-    }, 3000)
+    render('#root', abstracton, true);
 
 
-    setTimeout(()=>{
+  
 
-    	render({
-    		'.hc-label': div({class: 'hello'},'Ziggady Zapppp!!!!')
-    	})
+        beforeRender(fragment =>{
+            fragment.querySelector('.hc-label').style.color = 'lime';
+        })
+    // 	render({
+    // 		'.hc-label': div({class: 'hello'},'WEFWEFWEFWEFWEF')
+    // 	})
 
-    }, 6000)
+
+
+
+    // setTimeout(()=>{
+
+    // 	render({
+    // 		'.hc-label': div({class: 'hello'},'Ziggady Zapppp!!!!')
+    // 	})
+
+    // }, 6000)
 
     </script>
     <script>
