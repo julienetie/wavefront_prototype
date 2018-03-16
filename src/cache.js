@@ -4,7 +4,9 @@
 const cache = {
 	vDOM: null,
 	rootElement: null,
-	fragment: document.createDocumentFragment()
+	fragment: document.createDocumentFragment(),
+	beforeRenderCallbacks: {},
+	afterRenderCallbacks: {}
 };
 
 export default cache;

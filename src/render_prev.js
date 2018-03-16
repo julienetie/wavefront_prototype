@@ -87,40 +87,78 @@ const createAndAppendNode = (frag, node) => {
     }
 }
 
-
-export const beforeRender = callback => {
-    cache.beforeRenderCallback = callback;
+const lifecycleMethod = lifecycleCallbacksCache => {
+    return callback => {
+        const callbackName = callback.name;
+        const renderCallbacks = cache[lifecycleCallbacksCache];
+        if (typeof callback !== 'function' || callbackName === '') {
+            throw new Error('The beforeRender callback should be a named function');
+        } else {
+            if (renderCallbacks[callbackName] === undefined) {
+                renderCallbacks[callbackName] = callback;
+            } else {
+                console.error(`${callbackName} has already been defined as a beforeRender callback`);
+            }
+        }
+    }
 }
 
+const lifecycleUnregister = lifecycleCallbacksCache => {
+    return callback => {
+        const renderCallbacks = cache[lifecycleCallbacksCache];
+        const nameTypes = { string: callback, function: callback.name };
+        const name = nameTypes[typeof callback];
+        renderCallbacks[name] = null;
+        delete renderCallbacks[name];
+    }
+}
+const lifecycleUnregisterAll = lifecycleCallbacksCache => {
+    return () => {
+        const renderCallbacks = cache[lifecycleCallbacksCache];
+        for (let callback in renderCallbacks) {
+            renderCallbacks[callback] = null;
+            delete renderCallbacks[callback];
+        }
+    }
+}
 
+export const beforeRender = lifecycleMethod('beforeRenderCallbacks');
+beforeRender.unregister = lifecycleUnregister('beforeRenderCallbacks');
+beforeRender.unregisterAll = lifecycleUnregisterAll('beforeRenderCallbacks');
+
+export const afterRender = lifecycleMethod('afterRenderCallbacks');
+afterRender.unregister = lifecycleUnregister('afterRenderCallbacks');
+afterRender.unregisterAll = lifecycleUnregisterAll('afterRenderCallbacks');
 
 
 const updateDOM = (initalRootElement, renderFragment, replace) => {
-    // const fragmentClone = document.importNode(renderFragment, true);
     if (replace) {
         const parent = initalRootElement.parentElement;
-        // console.log('parent', parent)
         const childNodes = parent.childNodes;
-        // console.log('childNodes', childNodes)
         const childNodesLength = childNodes.length;
-        // console.log(initalRootElement, fragmentClone)
+
         for (let i = 0; i < childNodesLength; i++) {
             if (childNodes[i] === initalRootElement) {
+                const beforeRenderCallbacks = cache.beforeRenderCallbacks;
+                if (Object.keys(beforeRenderCallbacks).length > 0) {
+                    for (let callback in beforeRenderCallbacks) {
+                        if (typeof beforeRenderCallbacks[callback] === 'function') {
+                            beforeRenderCallbacks[callback](renderFragment);
+                        }
 
-                if (typeof cache.beforeRenderCallback  === 'function') {
-                     cache.beforeRenderCallback(renderFragment)
+                    }
                 }
-                initalRootElement.replaceWith(renderFragment)
+
+                parent.insertBefore(renderFragment, initalRootElement);
+                cache.rootElement = initalRootElement.previousSibling;
+                parent.removeChild(initalRootElement);
                 break;
             }
         }
-
-
     } else {
-        console.log('Append child fragment clone ')
         initalRootElement.appendChild(fragmentClone);
     }
-
+    console.log('cache.beforeRenderCallbacks', cache.beforeRenderCallbacks)
 }
 
 export const renderPrev = (initalRootElement, vNode, isPartial, replace) => {
@@ -185,6 +223,22 @@ export const renderPrev = (initalRootElement, vNode, isPartial, replace) => {
             return;
         });
     }
+
+    void requestAnimationFrame(() => {
+        const afterRenderCallbacks = cache.afterRenderCallbacks;
+        if (Object.keys(afterRenderCallbacks).length > 0) {
+            for (let callback in afterRenderCallbacks) {
+                if (typeof afterRenderCallbacks[callback] === 'function') {
+                    console.log('cache.rootElement', cache.rootElement)
+                    afterRenderCallbacks[callback](cache.rootElement);
+
+                }
+
+            }
+        }
+    });
+
+
 
     return renderFragment;
 }

@@ -2,7 +2,7 @@ import abstract from './abstract';
 import assembly from './assembly';
 import render from './render';
 import { loop, or } from './logical-methods';
-import { beforeRender } from './render_prev';
+import { beforeRender, afterRender } from './render_prev';
 
 
 // HTML Elements.
@@ -11,6 +11,7 @@ const tags = ({
     abbr: assembly('abbr'),
     abstract, 
     address: assembly('address'),
+    afterRender,
     area: assembly('area'),
     article: assembly('article'),
     aside: assembly('aside'),

@@ -12,7 +12,6 @@
 <body>
     <!-- main wrapper will replace root -->
     <div id="root"></div>
-
     <!-- This HTML is hidden and will remain hidden -->
     <div class='main-wrapper' style='display: none;'>
         <div class='hero-image'>
@@ -123,27 +122,25 @@
     <!-- End of hidden HTML -->
     <script src="dist/wavefront.js"></script>
     <script>
+    var deepFind = function(obj, path) {
 
+        if (typeof path === 'string') {
+            path = path.split('.');
+        }
 
-var deepFind = function(obj, path) {
+        if (!Array.isArray(path)) {
+            path = path.concat();
+        }
 
-  if (typeof path === 'string') {
-    path = path.split('.');
-  }
-
-  if (!Array.isArray(path)) {
-    path = path.concat();
-  }
-
-  return path.reduce(function (o, part) {
-    var keys = part.match(/\[(.*?)\]/);
-    if (keys) {
-      var key = part.replace(keys[0], '');
-      return o[key][keys[1]];
-    }
-    return o[part];
-  }, obj);
-};
+        return path.reduce(function(o, part) {
+            var keys = part.match(/\[(.*?)\]/);
+            if (keys) {
+                var key = part.replace(keys[0], '');
+                return o[key][keys[1]];
+            }
+            return o[part];
+        }, obj);
+    };
 
 
 
@@ -151,6 +148,7 @@ var deepFind = function(obj, path) {
         abstract,
         assembly,
         beforeRender,
+        afterRender,
         loop,
         or,
         div,
@@ -180,29 +178,21 @@ var deepFind = function(obj, path) {
     render('#root', abstracton, true);
 
 
-  
+    // const makeThingGreen = fragment => {
+    //     fragment.querySelector('.hc-label').style.color = 'lime';
+    // };
 
-        beforeRender(fragment =>{
-            fragment.querySelector('.hc-label').style.color = 'lime';
-        })
-    // 	render({
-    // 		'.hc-label': div({class: 'hello'},'WEFWEFWEFWEFWEF')
-    // 	})
+    // const makeThingRed = fragment => {
+    //     fragment.querySelector('.hc-desc').style.color = 'yellow';
+    // };
 
+    // afterRender(makeThingGreen);
 
+    // afterRender(makeThingRed);
 
+    // afterRender.unregister(makeThingRed)
 
-    // setTimeout(()=>{
-
-    // 	render({
-    // 		'.hc-label': div({class: 'hello'},'Ziggady Zapppp!!!!')
-    // 	})
-
-    // }, 6000)
-
-    </script>
-    <script>
-
+    // afterRender.unregisterAll()
     </script>
 </body>
 
