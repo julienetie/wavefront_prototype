@@ -1,30 +1,6 @@
 import { vNode } from './helpers';
 
-const getChildNodesAsArray = (childNodes, whitespaceRules) => {
-    const ignoreTrim = !(whitespaceRules === 'ignore-trim');
-    const childNodesArr = [];
-    const childNodesLength = childNodes.length;
 
-    for (let i = 0; i < childNodesLength; i++) {
-        if (childNodes[i].nodeType === 3 & ignoreTrim) {
-            /*
-             * @TODO TBA
-             *
-             *  "\t" TAB \u0009
-             *  "\n" LF  \u000A
-             *  "\r" CR  \u000D
-             *  " "  SPC \u0020
-             */
-            if (childNodes[i].nodeValue === childNodes[i].nodeValue.replace(/^\s+|\s+$/g, '')) {
-                childNodesArr.push(abstract(childNodes[i], whitespaceRules));
-            }
-        } else {
-            childNodesArr.push(abstract(childNodes[i], whitespaceRules));
-        }
-    }
-
-    return childNodesArr;
-}
 
 
 const getDefinedAttributes = (element) => {
@@ -90,10 +66,13 @@ const searchType = selector => {
             const parts = remainder.split('=')
             const value = parts[1];
             const type = parts[0];
-            return { attribute: {
+            return {
+                attribute: {
                     [
                         [type]
-                    ]: value } };
+                    ]: value
+                }
+            };
         case '&': // text
             return { text: remainder };
         default: // tag
@@ -101,14 +80,89 @@ const searchType = selector => {
     }
 }
 
+
+
+const find = (details, waveNode, searchType = 'first') => {
+    const cacheResults = [];
+    const type = Object.keys(details)[0];
+    let recursion = true;
+    // console.log(type,details,waveNode);
+    const all = searchType === 'all';
+    let final;
+    const deepSearch = (nodeLevel, type, value) => {
+        if (nodeLevel.t === value) {
+            cacheResults.push(nodeLevel);
+            if (all === false) {
+                recursion = false;
+                return;
+            }
+        }
+
+        if (nodeLevel.ch) {
+            const childLength = nodeLevel.ch === undefined ? 0 : nodeLevel.ch.length;
+            for (let i = 0; i < childLength; i++) {
+                if (recursion === true) {
+                    deepSearch(nodeLevel.ch[i], type, value);
+                }
+            }
+        }
+        final = cacheResults;
+    }
+
+    const value = details[type].toUpperCase();
+    deepSearch(waveNode, type, value);
+    // Find by tag
+    // Find by class
+
+    // Find by id
+
+    // Find by attribute
+
+    // Find by Text
+    return final;
+}
+
+
 const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
-    const element = typeof interfaceSelector.nodeType === 'number' ? interfaceSelector : document.querySelector(interfaceSelector);
-    const definedAttributes = getDefinedAttributes(element);
-    const isSVG = element instanceof SVGElement;
-    const childNodes = getChildNodesAsArray(element.childNodes, whitespaceRules);
 
 
-    const waveNode = createWaveNode(element, definedAttributes, childNodes, isSVG);
+    const getChildNodesAsArray = (childNodes, whitespaceRules) => {
+        const ignoreTrim = !(whitespaceRules === 'ignore-trim');
+        const childNodesArr = [];
+        const childNodesLength = childNodes.length;
+
+        for (let i = 0; i < childNodesLength; i++) {
+            if (childNodes[i].nodeType === 3 & ignoreTrim) {
+                /*
+                 * @TODO TBA
+                 *
+                 *  "\t" TAB \u0009
+                 *  "\n" LF  \u000A
+                 *  "\r" CR  \u000D
+                 *  " "  SPC \u0020
+                 */
+                if (childNodes[i].nodeValue === childNodes[i].nodeValue.replace(/^\s+|\s+$/g, '')) {
+                    childNodesArr.push(abstractRecursive(childNodes[i], whitespaceRules));
+                }
+            } else {
+                childNodesArr.push(abstractRecursive(childNodes[i], whitespaceRules));
+            }
+        }
+
+        return childNodesArr;
+    }
+
+    const abstractRecursive = (interfaceSelector, whitespaceRules = 'trim') => {
+        const element = typeof interfaceSelector.nodeType === 'number' ? interfaceSelector : document.querySelector(interfaceSelector);
+        const definedAttributes = getDefinedAttributes(element);
+        const isSVG = element instanceof SVGElement;
+        const childNodes = getChildNodesAsArray(element.childNodes, whitespaceRules);
+        return createWaveNode(element, definedAttributes, childNodes, isSVG);
+    }
+
+    const waveNode = abstractRecursive(interfaceSelector, whitespaceRules);
+
+
 
     return {
         collage(selector) {
@@ -118,14 +172,11 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
             const _waveNode = waveNode;
             const firstChar = selector[0];
 
-
-            const type = searchType(selector)
-            console.log('firstChar', type)
-
-            // findBy[type]()
-
+            const searchDetails = searchType(selector);
+            const results = find(searchDetails, waveNode, 'all');
+ 
             return {
-
+                element: results
             }
 
         },
@@ -134,7 +185,7 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
             return this;
         }
     }
-    return waveNode
+
 }
 
 export default abstract;

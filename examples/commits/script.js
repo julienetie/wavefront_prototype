@@ -17,7 +17,7 @@ const {
 
 const {collage, collageAll} = abstract('#root');
 
-console.log(collage('hello'))
+console.log(collage('span'));
 // /* view.js */
 // const logEntry = ({ url, html_url, sha, message, name, date }) =>
 //     li({},
