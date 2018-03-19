@@ -1,6 +1,7 @@
 const {
     abstract,
     assembly,
+    beforeRender,
     render,
     loop,
     or,
@@ -14,111 +15,236 @@ const {
 } = wavefront;
 
 
-/* view.js */
-const logEntry = ({ url, html_url, sha, message, name, date }) =>
-    li({},
-        a({ href: url, target: '_blank', class: 'commit' }, sha),
-        ' - ',
-        span({ class: 'message' }, message),
-        br({}),
-        ' by ',
-        span({ class: 'author' },
-            a({ href: html_url, target: '_blank' },
-                ` ${name} `
-            )
-        ),
-        ' at ',
-        span({ class: 'date' },
-            ` ${date} `
-        )
-    );
+const {collage, collageAll} = abstract('#root');
 
-const listContainer = logs => ul({}, logs);
+console.log(collage('hello'))
+// /* view.js */
+// const logEntry = ({ url, html_url, sha, message, name, date }) =>
+//     li({},
+//         a({ href: url, target: '_blank', class: 'commit' }, sha),
+//         ' - ',
+//         span({ class: 'message' }, message),
+//         br({}),
+//         ' by ',
+//         span({ class: 'author' },
+//             a({ href: html_url, target: '_blank' },
+//                 ` ${name} `
+//             )
+//         ),
+//         ' at ',
+//         span({ class: 'date' },
+//             ` ${date} `
+//         )
+//     );
 
-
-
-/* controller.js */
-const wavefrontCommitsURL = 'https://api.github.com/repos/julienetie/wavefront/commits?per_page=3&sha=';
-const vueCommitsURL = 'https://api.github.com/repos/vuejs/vue/commits?per_page=3&sha=';
-
-const masterAttr = { type: 'radio', id: 'master', name: 'branch', value: 'master' };
-const devAttr = { type: 'radio', id: 'dev', name: 'branch', value: 'dev' };
-
-const abstracton = abstract('#root');
-const container = document.querySelector('#root');
-// console.log(render);
+// const listContainer = logs => ul({}, logs);
 
 
 
-const loadView = (currentView, type) => {
-    if (currentView === type) {
-        return;
-    }
-    loadCommits(type);
-}
-const viewSwitchPrivate = () => {
-    let currentView = 'master';
-    return ({ target }) => {
-        switch (target.id) {
-            case 'master':
-                console.info('MASTER')
-                loadView(currentView, 'master');
-                currentView = 'master'
-                return;
-            case 'dev':
-                console.log('DEV')
-                loadView(currentView, 'dev')
-                currentView = 'dev'
-                break;
-        }
-    }
-};
 
-const viewSwitch = viewSwitchPrivate();
+// // /* controller.js */
+// // const wavefrontCommitsURL = 'https://api.github.com/repos/julienetie/wavefront/commits?per_page=3&sha=';
+// const vueCommitsURL = 'https://api.github.com/repos/vuejs/vue/commits?per_page=3&sha=';
 
-document.addEventListener('click', viewSwitch)
+// const masterAttr = { type: 'radio', id: 'master', name: 'branch', value: 'master' };
+// const devAttr = { type: 'radio', id: 'dev', name: 'branch', value: 'dev' };
 
-const loadCommits = (type) => {
-    fetch(`${vueCommitsURL}${type}`)
-        .then(results => results.json())
-        .then(data => {
-            console.log(data)
-            const logs = data.map(commitInfo => {
-                const { sha, url, commit } = commitInfo;
-                const { message, author } = commit;
-                const { html_url } = commitInfo.author;
-                console.log('author.date', author.date)
-                return logEntry({
-                    url,
-                    html_url,
-                    sha: sha.slice(0, 7),
-                    message,
-                    name: author.name,
-                    date: author.date
-                });
-            });
-
-            if (type === 'master') {
-                masterAttr.checked = 'checked';
-                devAttr.checked = null;
-                delete devAttr.checked;
-            } else {
-                devAttr.checked = 'checked';
-                masterAttr.checked = null;
-                delete masterAttr.checked;
-            }
-
-            render(container,
-                div({},
-                    listContainer(logs),
-                    input(masterAttr),
-                    input(devAttr)
-                )
-            ,true);
-
-        });
-}
+// const abstracton = abstract('#root');
+// // const container = document.querySelector('#root');
+// // // console.log(render);
+// console.log('abstracton', abstracton)
 
 
-// // Init master
-loadCommits('master')
+// const loadCommits = (type) => {
+//     fetch(`${vueCommitsURL}${type}`)
+//         .then(results => results.json())
+//         .then(data => {
+//             console.log(data)
+//             const logs = data.map(commitInfo => {
+//                 const { sha, url, commit } = commitInfo;
+//                 const { message, author } = commit;
+//                 const { html_url } = commitInfo.author;
+//                 console.log('author.date', author.date)
+//                 return logEntry({
+//                     url,
+//                     html_url,
+//                     sha: sha.slice(0, 7),
+//                     message,
+//                     name: author.name,
+//                     date: author.date
+//                 });
+//             });
+
+
+//             if (type === 'master') {
+//                 masterAttr.checked = 'checked';
+//                 devAttr.checked = null;
+//                 delete devAttr.checked;
+//             } else {
+//                 devAttr.checked = 'checked';
+//                 masterAttr.checked = null;
+//                 delete masterAttr.checked;
+//             }
+
+//             render(container,
+//                 div({},
+//                     listContainer(logs),
+//                     input(masterAttr),
+//                     input(devAttr)
+//                 ), true);
+
+//         });
+// }
+
+
+
+
+// const act = (CMD, data) => {
+//     const type = CMD === 'master' ? 'red' : 'blue';
+//     const updateAbstraction = frame => {
+//         const masterButton = frame.querySelector('#master');
+//         const devButton = frame.querySelector('#dev');
+
+
+//         fetch(`${vueCommitsURL}${CMD}`)
+//             .then(results => results.json())
+//             .then(data => {
+//                 console.log(data)
+//                 const logs = data.map(commitInfo => {
+//                     const { sha, url, commit } = commitInfo;
+//                     const { message, author } = commit;
+//                     const { html_url } = commitInfo.author;
+//                     // console.log('author.date', author.date)
+//                     // return logEntry({
+//                     //     url,
+//                     //     html_url,
+//                     //     sha: sha.slice(0, 7),
+//                     //     message,
+//                     //     name: author.name,
+//                     //     date: author.date
+//                     // });
+//                 });
+
+//                 masterButton.checked = CMD === 'master' ? 'checked' : null;
+//                 devButton.checked = CMD === 'dev' ? 'checked' : null;
+
+
+//             });
+
+//         // Array.from(frame.querySelectorAll('*')).forEach(el => Object.assign(el.style, {
+//         //     border: `1px solid ${color}`,
+//         //     background: 'rgba(200,255,100,0.2)'
+//         // }));
+
+
+//     }
+
+//     beforeRender(updateAbstraction, true);
+//     render('#root', abstracton, true);
+// }
+
+
+// act('master');
+// // const getNode = (waveNode, selector) => {
+// //     const prefix = selector.substr(0,1);
+
+// //     switch(prefix){
+// //         case '.':
+// //             // find by class
+// //         break;
+// //         case '#':
+// //             // find by id
+// //         break;
+// //         case '@':
+// //             // find by attribute
+// //         break;
+// //         case '~':
+// //             // find by text
+// //         break;
+// //         default:
+// //             // Find by tag 
+
+// //     }
+
+// // id
+// // class
+// // tag
+// // attribute
+
+// // }
+
+
+// const loadView = (currentView, type) => {
+//     if (currentView === type) {
+//         return;
+//     }
+//     loadCommits(type);
+// }
+// const viewSwitchPrivate = () => {
+//     let currentView = 'master';
+//     return ({ target }) => {
+//         switch (target.id) {
+//             case 'master':
+//                 // console.info('MASTER')
+//                 // loadView(currentView, 'master');
+//                 // currentView = 'master'
+//                 act('master');
+//                 return;
+//             case 'dev':
+//                 // console.log('DEV')
+//                 // loadView(currentView, 'dev')
+//                 // currentView = 'dev'
+//                 act('dev');
+//                 break;
+//         }
+//     }
+// };
+
+// const viewSwitch = viewSwitchPrivate();
+
+// document.addEventListener('click', viewSwitch)
+
+// // const loadCommits = (type) => {
+// //     fetch(`${vueCommitsURL}${type}`)
+// //         .then(results => results.json())
+// //         .then(data => {
+// //             console.log(data)
+// //             const logs = data.map(commitInfo => {
+// //                 const { sha, url, commit } = commitInfo;
+// //                 const { message, author } = commit;
+// //                 const { html_url } = commitInfo.author;
+// //                 console.log('author.date', author.date)
+// //                 return logEntry({
+// //                     url,
+// //                     html_url,
+// //                     sha: sha.slice(0, 7),
+// //                     message,
+// //                     name: author.name,
+// //                     date: author.date
+// //                 });
+// //             });
+
+// //             if (type === 'master') {
+// //                 masterAttr.checked = 'checked';
+// //                 devAttr.checked = null;
+// //                 delete devAttr.checked;
+// //             } else {
+// //                 devAttr.checked = 'checked';
+// //                 masterAttr.checked = null;
+// //                 delete masterAttr.checked;
+// //             }
+
+// //             render(container,
+// //                 div({},
+// //                     listContainer(logs),
+// //                     input(masterAttr),
+// //                     input(devAttr)
+// //                 )
+// //             ,true);
+
+// //         });
+// // }
+
+
+// // // // Init master
+// // loadCommits('master')

@@ -8,6 +8,8 @@ const getChildNodesAsArray = (childNodes, whitespaceRules) => {
     for (let i = 0; i < childNodesLength; i++) {
         if (childNodes[i].nodeType === 3 & ignoreTrim) {
             /*
+             * @TODO TBA
+             *
              *  "\t" TAB \u0009
              *  "\n" LF  \u000A
              *  "\r" CR  \u000D
@@ -53,12 +55,7 @@ const getDefinedAttributes = (element) => {
 }
 
 
-const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
-    const element = typeof interfaceSelector.nodeType === 'number' ? interfaceSelector : document.querySelector(interfaceSelector);
-    const definedAttributes = getDefinedAttributes(element);
-    const isSVG = element instanceof SVGElement;
-    const childNodes = getChildNodesAsArray(element.childNodes, whitespaceRules);
-
+const createWaveNode = (element, definedAttributes, childNodes, isSVG) => {
     switch (element.nodeType) {
         case 1:
             return vNode(
@@ -78,6 +75,66 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
                 element.nodeValue
             );
     }
+}
+
+
+const searchType = selector => {
+    const prefix = selector[0];
+    const remainder = selector.substr(1);
+    switch (prefix) {
+        case '.': // Class
+            return { class: remainder };
+        case '#': // id
+            return { id: remainder };
+        case '~': // ~attr=value
+            const parts = remainder.split('=')
+            const value = parts[1];
+            const type = parts[0];
+            return { attribute: {
+                    [
+                        [type]
+                    ]: value } };
+        case '&': // text
+            return { text: remainder };
+        default: // tag
+            return { tag: selector };
+    }
+}
+
+const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
+    const element = typeof interfaceSelector.nodeType === 'number' ? interfaceSelector : document.querySelector(interfaceSelector);
+    const definedAttributes = getDefinedAttributes(element);
+    const isSVG = element instanceof SVGElement;
+    const childNodes = getChildNodesAsArray(element.childNodes, whitespaceRules);
+
+
+    const waveNode = createWaveNode(element, definedAttributes, childNodes, isSVG);
+
+    return {
+        collage(selector) {
+            if (selector.length < 2) {
+                throw new Error(`Selector ${selector} should be two or more characters`);
+            }
+            const _waveNode = waveNode;
+            const firstChar = selector[0];
+
+
+            const type = searchType(selector)
+            console.log('firstChar', type)
+
+            // findBy[type]()
+
+            return {
+
+            }
+
+        },
+        collageAll: function() {
+            // this.waveNode = waveNode;
+            return this;
+        }
+    }
+    return waveNode
 }
 
 export default abstract;

@@ -88,13 +88,15 @@ const createAndAppendNode = (frag, node) => {
 }
 
 const lifecycleMethod = lifecycleCallbacksCache => {
-    return callback => {
+    return (callback, disableCache) => {
         const callbackName = callback.name;
         const renderCallbacks = cache[lifecycleCallbacksCache];
         if (typeof callback !== 'function' || callbackName === '') {
             throw new Error('The beforeRender callback should be a named function');
         } else {
-            if (renderCallbacks[callbackName] === undefined) {
+            console.warn('renderCallbacks[callbackName]', renderCallbacks[callbackName])
+            console.warn('disableCache', disableCache)
+            if (renderCallbacks[callbackName] === undefined || disableCache === true) {
                 renderCallbacks[callbackName] = callback;
             } else {
                 console.error(`${callbackName} has already been defined as a beforeRender callback`);
