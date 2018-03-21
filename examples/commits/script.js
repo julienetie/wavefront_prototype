@@ -15,9 +15,10 @@ const {
 } = wavefront;
 
 
-const {collage, collageAll} = abstract('#root');
+const { collageAll } = abstract('#root');
 
-console.log(collage('span'));
+// #wonderful div:nth-child(2):nth-child(2)
+console.log(collageAll('span[href="http://yo.com"]::nth-child(bla) span:nth-child(4) > li > span > .something-else #blah ~ div + section + h1'));
 // /* view.js */
 // const logEntry = ({ url, html_url, sha, message, name, date }) =>
 //     li({},
