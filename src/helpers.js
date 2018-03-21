@@ -64,3 +64,18 @@ export const vNode = (t, at, ch, isSVG) => {
             };
     }
 }
+
+/** 
+ * Finds a complete word in a string separated by a delimiter.
+ * delimiter defaults to spaces.
+ * @param {string} string - Haystack.
+ * @param {string} word - Needle
+ * @returns {Boolean}
+ */
+export const containsWord = (string, word, delimiter = ' ') => {
+    const isLegalWord = word.indexOf(delimiter) === -1;
+    const isEndWord = string[string.length - word.length - 1] === delimiter && string.endsWith(word);
+    const isStartWord = string[word.length] === delimiter && string.startsWith(word);
+    const isCentralWord = string.indexOf(delimiter + word + delimiter) >= 0;
+    return (isEndWord || isStartWord || isCentralWord) && isLegalWord;
+}

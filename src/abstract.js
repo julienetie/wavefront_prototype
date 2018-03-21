@@ -1,4 +1,4 @@
-import { vNode } from './helpers';
+import { vNode, containsWord } from './helpers';
 
 /**
 
@@ -214,6 +214,30 @@ const unprefixSelector = selector => {
     }
 }
 
+const getByattributeOperator = (searchByAttribute, operator, attribute, needle) => {
+    // [attr]
+    console.log('attribute', attribute, searchByAttribute, operator)
+    if (searchByAttribute === true) {
+        return attribute !== undefined;
+    }
+    switch (operator) {
+        case '~': // [attr~=value]
+            return containsWord(attribute, needle);
+        case '|': // [attr|=value]
+            return attribute === needle || attribute.startsWith(`${needle}-`);
+        case '^': // [attr^=value]
+            return attribute.startsWith(needle);
+        case '$': // [attr$=value]
+            return attribute.endsWith(needle);
+        case '*': // [attr*=value]
+            return attribute.indexOf(needle) >= 0;
+        default:
+            // [attr=value]
+            return attribute === needle;
+    }
+}
+
+
 
 const find = (typeSelector, psuedoRule, type, waveNode, searchType = 'first') => {
     const cacheResults = [];
@@ -254,18 +278,38 @@ const find = (typeSelector, psuedoRule, type, waveNode, searchType = 'first') =>
 
         const isAttribute = type === 'attribute';
         const tagType = (typeSelector.split('[')[0]).toUpperCase();
-        const attr = typeSelector.split('=')[0].split('[')[1];
-        const attrValue = typeSelector.split('="')[1].split('"')[0]   //@TODO This is cheap not reliable 
-        if (isAttribute && nodeLevel.t === tagType && nodeLevel.at[attr] === attrValue) {
-            cacheResults.push(nodeLevel);
-            if (all === false) {
-                recursion = false;
-                return;
+
+
+        const searchByAttribute = typeSelector.indexOf('=') === -1;
+        const attrSpecial = searchByAttribute ? typeSelector.split('[')[1].split(']')[0] : typeSelector.split('=')[0].split('[')[1];
+        const attr = attrSpecial.replace(/[^\w\s]/gi, '');
+        const valueStartIndex = typeSelector.indexOf('=') + 2;
+        const valueEndIndex = typeSelector.lastIndexOf(']') - 1;
+
+        // console.log(attr)
+        const attrValue = typeSelector.substring(valueStartIndex, valueEndIndex); //@TODO This is cheap not reliable 
+        const attrOperator = typeSelector[typeSelector.indexOf('=') - 1];
+        console.log('typeSelector', attrOperator)
+
+        if (isAttribute && nodeLevel.t === tagType && nodeLevel.at) {
+            console.log('attr', attr)
+            const matchByAttribute = getByattributeOperator(
+                searchByAttribute,
+                attrOperator,
+                nodeLevel.at[attr] || '',
+                attrValue
+            );
+            if (matchByAttribute) {
+                cacheResults.push(nodeLevel);
+                if (all === false) {
+                    recursion = false;
+                    return;
+                }
             }
         }
 
 
-        if (nodeLevel.ch) {
+        if (nodeLevel.ch !== undefined) {
             const childLength = nodeLevel.ch === undefined ? 0 : nodeLevel.ch.length;
             for (let i = 0; i < childLength; i++) {
                 if (recursion === true) {
