@@ -214,9 +214,10 @@ const unprefixSelector = selector => {
     }
 }
 
-const getByattributeOperator = (searchByAttribute, operator, attribute, needle) => {
-    // [attr]
-    console.log('attribute', attribute, searchByAttribute, operator)
+const getByattributeOperator = (searchByAttribute, operator, attributeSensitive, needleSensitive, isInsensitive) => {
+  
+    const attribute = isInsensitive ? attributeSensitive.toLowerCase() : attributeSensitive;
+    const needle = isInsensitive ? needleSensitive.toLowerCase(): needleSensitive;
     if (searchByAttribute === true) {
         return attribute !== undefined;
     }
@@ -277,27 +278,36 @@ const find = (typeSelector, psuedoRule, type, waveNode, searchType = 'first') =>
 
 
         const isAttribute = type === 'attribute';
-        const tagType = (typeSelector.split('[')[0]).toUpperCase();
+        const cleanedSelector = typeSelector.replace(/ /g, '');
+        const isInsensitive = cleanedSelector.indexOf('i]') >= 0;  
+        const attrSelector = isInsensitive ? cleanedSelector.replace(/i]/,']') : cleanedSelector;
+        console.log('attrSelector', attrSelector)
 
+        const tagType = (attrSelector.split('[')[0]).toUpperCase();
 
-        const searchByAttribute = typeSelector.indexOf('=') === -1;
-        const attrSpecial = searchByAttribute ? typeSelector.split('[')[1].split(']')[0] : typeSelector.split('=')[0].split('[')[1];
+       
+
+        const searchByAttribute = attrSelector.indexOf('=') === -1;
+
+        const attrSpecial = searchByAttribute ? attrSelector.split('[')[1].split(']')[0] : attrSelector.split('=')[0].split('[')[1];
         const attr = attrSpecial.replace(/[^\w\s]/gi, '');
-        const valueStartIndex = typeSelector.indexOf('=') + 2;
-        const valueEndIndex = typeSelector.lastIndexOf(']') - 1;
+        const valueStartIndex = attrSelector.indexOf('=') + 2;
+        const valueEndIndex = attrSelector.lastIndexOf(']') - 1;
+
+
 
         // console.log(attr)
-        const attrValue = typeSelector.substring(valueStartIndex, valueEndIndex); //@TODO This is cheap not reliable 
-        const attrOperator = typeSelector[typeSelector.indexOf('=') - 1];
-        console.log('typeSelector', attrOperator)
-
+        const attrValue = attrSelector.substring(valueStartIndex, valueEndIndex); //@TODO This is cheap not reliable 
+        const attrOperator = attrSelector[attrSelector.indexOf('=') - 1];
+        // console.log('attrSelector', attrOperator)
         if (isAttribute && nodeLevel.t === tagType && nodeLevel.at) {
-            console.log('attr', attr)
+            // console.log('attr', attr)
             const matchByAttribute = getByattributeOperator(
                 searchByAttribute,
                 attrOperator,
                 nodeLevel.at[attr] || '',
-                attrValue
+                attrValue,
+                isInsensitive
             );
             if (matchByAttribute) {
                 cacheResults.push(nodeLevel);
@@ -404,14 +414,19 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
             const descendant = [' ']; // Goes through all generations of children to match selectors.
             const createTokens = (selectorString) => {
                 // Get index of first combinator.
-                const firstCombinatorIndex = selectorString.indexOf(' ');
+                const firstFoundIndex = selectorString.indexOf(' ');
+                const firstEndBracket = selectorString.indexOf(']');
+                const firstInsensitiveChar = selectorString.indexOf(' i');
+                const largestEndpoint = firstEndBracket > firstInsensitiveChar ? firstEndBracket : firstInsensitiveChar; 
+                const combinatorFromAttribute = selectorString.substr(largestEndpoint).indexOf(' ') + largestEndpoint
+                const firstCombinatorIndex  = firstEndBracket >= 0 ? combinatorFromAttribute : firstFoundIndex;
 
                 // If there are no more separate parts, add the last and exit.
                 if (firstCombinatorIndex === -1) {
                     tokens.push(['part', selectorString]);
                     return;
                 }
-
+       
                 // Check second character from index.
                 const secondCombinatorChar = selectorString[firstCombinatorIndex + 1];
                 const s = secondCombinatorChar;
@@ -449,10 +464,12 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
                     const secondFromLastColonIndex = part[lastColonIndex - 1] === ':' ? lastColonIndex - 1 : -1;
                     const splitColonIndex = secondFromLastColonIndex >= 0 ? secondFromLastColonIndex : lastColonIndex;
                     const splitPsuedo = splitColonIndex >= 0 && lastBracketIndex >= 0 && splitColonIndex > lastBracketIndex;
+                
                     const selectorPart = splitPsuedo ? part.substr(0, splitColonIndex) : part;
                     const psuedoRule = splitPsuedo ? part.substr(splitColonIndex, part.length - 1) : [];
                     const type = getSelectorPartType(selectorPart);
                     const unprefixedSelector = unprefixSelector(selectorPart);
+                    // console.log(unprefixedSelector, psuedoRule, type, waveNode)
                     results = find(unprefixedSelector, psuedoRule, type, waveNode, 'all');
                     break;
                 }
