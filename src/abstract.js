@@ -215,9 +215,9 @@ const unprefixSelector = selector => {
 }
 
 const getByattributeOperator = (searchByAttribute, operator, attributeSensitive, needleSensitive, isInsensitive) => {
-  
+
     const attribute = isInsensitive ? attributeSensitive.toLowerCase() : attributeSensitive;
-    const needle = isInsensitive ? needleSensitive.toLowerCase(): needleSensitive;
+    const needle = isInsensitive ? needleSensitive.toLowerCase() : needleSensitive;
     if (searchByAttribute === true) {
         return attribute !== undefined;
     }
@@ -243,7 +243,6 @@ const getByattributeOperator = (searchByAttribute, operator, attributeSensitive,
 const find = (typeSelector, psuedoRule, type, waveNode, searchType = 'first') => {
     const cacheResults = [];
     let recursion = true;
-    // console.log('plug walk: ', type, typeSelector, waveNode);
     const all = searchType === 'all';
     let final;
     const deepSearch = (nodeLevel, value) => {
@@ -279,13 +278,13 @@ const find = (typeSelector, psuedoRule, type, waveNode, searchType = 'first') =>
 
         const isAttribute = type === 'attribute';
         const cleanedSelector = typeSelector.replace(/ /g, '');
-        const isInsensitive = cleanedSelector.indexOf('i]') >= 0;  
-        const attrSelector = isInsensitive ? cleanedSelector.replace(/i]/,']') : cleanedSelector;
-        console.log('attrSelector', attrSelector)
+        const isInsensitive = cleanedSelector.indexOf('i]') >= 0;
+        const attrSelector = isInsensitive ? cleanedSelector.replace(/i]/, ']') : cleanedSelector;
+        // console.log('attrSelector', attrSelector)
 
         const tagType = (attrSelector.split('[')[0]).toUpperCase();
 
-       
+
 
         const searchByAttribute = attrSelector.indexOf('=') === -1;
 
@@ -405,152 +404,76 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
 
         // },
         collageAll(selector) {
-            const tokens = [];
-            const nonDescendants = [
-                ' > ', // First children 
-                ' ~ ', // Matches all matching siblings that follow next.
-                ' + ' // Matches all of type but it's self if ambiguous, matches next element if specific 
-            ];
-            const descendant = [' ']; // Goes through all generations of children to match selectors.
-            const createTokens = (selectorString) => {
-                // Get index of first combinator.
-                const firstFoundIndex = selectorString.indexOf(' ');
-                const firstEndBracket = selectorString.indexOf(']');
-                const firstInsensitiveChar = selectorString.indexOf(' i');
-                const largestEndpoint = firstEndBracket > firstInsensitiveChar ? firstEndBracket : firstInsensitiveChar; 
-                const combinatorFromAttribute = selectorString.substr(largestEndpoint).indexOf(' ') + largestEndpoint
-                const firstCombinatorIndex  = firstEndBracket >= 0 ? combinatorFromAttribute : firstFoundIndex;
 
-                // If there are no more separate parts, add the last and exit.
-                if (firstCombinatorIndex === -1) {
-                    tokens.push(['part', selectorString]);
-                    return;
+
+            const splitGroups = (selectorUntrimmed, store) => {
+                const storeGroups = Array.isArray(store) ? store : [];
+                const selector = selectorUntrimmed.trim();
+                const selectorLength = selector.length;
+                const tokens = [];
+                let openBracketIndex = -1;
+                let closedBracketIndex = -1;
+                let combinator = ''
+                let combinatorStartIndex = -1;
+                let combinatorEndIndex = -1;
+                let lastChar;
+                let lastBlank = -1;
+                for (let i = 0; i < selectorLength; i++) {
+                    const char = selector[i];
+                    // Store the first bracket.
+                    switch (char) {
+                        case '[':
+                            if (lastChar !== '\\') {
+                                openBracketIndex = i;
+                                closedBracketIndex = -1;
+                            }
+                            break;
+                        case ']':
+                            if (lastChar !== '\\') {
+                                closedBracketIndex = i;
+                                openBracketIndex = -1;
+                            }
+                            break;
+                        case ' ':
+                            lastBlank = i;
+                            if (closedBracketIndex >= 0) {
+                                lastBlank = -1;
+                                combinatorStartIndex = i;
+
+                            }
+                            break;
+                    }
+
+                    if (combinatorStartIndex >= 1) {
+                        break;
+                    }
+
+                    lastChar = char;
                 }
-       
-                // Check second character from index.
-                const secondCombinatorChar = selectorString[firstCombinatorIndex + 1];
-                const s = secondCombinatorChar;
 
-                // const isNonDescendant = s === '>' || s === '~' || s === '+';
-                const nonDescendantIndex = nonDescendants.indexOf(` ${secondCombinatorChar} `);
+                // Determine the combinator and create group
+                let selectorBlockIndex = combinatorStartIndex === -1 ? selectorLength - 1 : combinatorStartIndex;
+                selectorBlockIndex = lastBlank >= 0 ? lastBlank : selectorBlockIndex;
+                const combinatorNextChar = selector[selectorBlockIndex + 1];
+                const isNonDescendant = combinatorNextChar === '>' || combinatorNextChar === '+' || combinatorNextChar === '~';
+                const sliceIndex = isNonDescendant === true ? selectorBlockIndex + 3 : selectorBlockIndex + 1;
+                const group = selector.slice(0, sliceIndex);
+                const remainder = selector.slice(sliceIndex)
+                storeGroups.push(group);
+                if (remainder !== '') {
 
-                // Add first selector part.
-                const selectorPart = selectorString.substr(0, firstCombinatorIndex);
-                tokens.push(['part', selectorPart]);
+                    splitGroups(remainder, storeGroups);
+                }
 
-                const combinator = nonDescendantIndex > -1 ? nonDescendants[nonDescendantIndex] : descendant;
-
-                // Add first non-descendant combinator.
-                tokens.push([combinator]);
-
-                // Remove evaluated parts from string. 
-                const unevaluatedSelector = selectorString.substr(firstCombinatorIndex + combinator.length);
-                createTokens(unevaluatedSelector);
+                return storeGroups
             }
 
 
-            createTokens(selector)
-            // console.log('tokens', tokens)
-            const tokensLength = tokens.length;
+            const thing = splitGroups(selector);
+            console.log('thing', thing)
+            // Convert group to an object.
 
-            let results;
-            for (let i = 0; i < tokensLength; i++) {
-                const tokenType = tokens[i][0];
-
-                if (tokenType === 'part') {
-                    const part = tokens[i][1];
-                    const lastBracketIndex = part.lastIndexOf(']');
-                    const lastColonIndex = part.lastIndexOf(':');
-                    const secondFromLastColonIndex = part[lastColonIndex - 1] === ':' ? lastColonIndex - 1 : -1;
-                    const splitColonIndex = secondFromLastColonIndex >= 0 ? secondFromLastColonIndex : lastColonIndex;
-                    const splitPsuedo = splitColonIndex >= 0 && lastBracketIndex >= 0 && splitColonIndex > lastBracketIndex;
-                
-                    const selectorPart = splitPsuedo ? part.substr(0, splitColonIndex) : part;
-                    const psuedoRule = splitPsuedo ? part.substr(splitColonIndex, part.length - 1) : [];
-                    const type = getSelectorPartType(selectorPart);
-                    const unprefixedSelector = unprefixSelector(selectorPart);
-                    // console.log(unprefixedSelector, psuedoRule, type, waveNode)
-                    results = find(unprefixedSelector, psuedoRule, type, waveNode, 'all');
-                    break;
-                }
-
-            }
-
-            // Get Part 
-            console.info('results', results);
-
-            // APPLY psuedo rules.
-
-            /*
-            (2) ["part", "aside"]   <------------- traverse and find selectors.
-            1
-            :
-            [" "] <--------------------------------For each selector found traverse to find 
-            2
-            :
-            (2) ["part", "span:nth-child(4)"] <------------span  and filter using the psuedo rule 
-            3
-            :
-            " > "             <------------get first children of found 
-            4
-            :
-            (2) ["part", "li"] <-------- of type li 
-            5
-            :
-            " > " <------------------
-            6
-            :
-            (2) ["part", "span"]
-            7
-            :
-            " > "
-            8
-            :
-            (2) ["part", ".something-else"]
-            9
-            :
-            [" "]
-            10
-            :
-            (2) ["part", "#blah"]
-            11
-            :
-            " ~ "
-            12
-            :
-            (2) ["part", "div"]
-            13
-            :
-            " + "
-            14
-            :
-            (2) ["part", "section"]
-            15
-            :
-            " + "
-            16
-            :
-            (2) ["part", "h1"]
-            */
-
-
-
-
-
-
-
-            // if (selector.length < 2) {
-            //     throw new Error(`Selector ${selector} should be two or more characters`);
-            // }
-            // const _waveNode = waveNode;
-            // const firstChar = selector[0];
-
-            // const searchDetails = searchType(selector);
-            // const results = find(searchDetails, waveNode, 'all');
-
-            // return {
-            //     element: results
-            // }
+            // console.log(`|${group}|`)
         }
     }
 

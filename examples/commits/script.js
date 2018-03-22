@@ -18,7 +18,8 @@ const {
 const { collageAll } = abstract('#root');
 
 // #wonderful div:nth-child(2):nth-child(2)
-console.log(collageAll('span[href*="http://yo.com" i ]:nth-child(bla) span:nth-child(4) > li > span > .something-else #blah ~ div + section + h1'));
+// console.log(collageAll('span[href*="http://yo.com" i ]:nth-child(bla) span:nth-child(4) > li > span > .something-else #blah ~ div + section + h1'));
+console.log(collageAll('div[data-lang="zh-TW"] + span[data-lang="zh-TW"]:nth-child(800) > selector[data-lang="abcd"]'));
 // /* view.js */
 // const logEntry = ({ url, html_url, sha, message, name, date }) =>
 //     li({},
