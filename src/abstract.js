@@ -468,9 +468,112 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
                 return storeGroups
             }
 
+            const setGroupDetails = collection => {
+                const store = [];
+                const nonDescendants = [
+                    ' > ',
+                    ' + ',
+                    ' ~ '
+                ];
+                let selectorPsuedoBlock;
+                let combinator;
+                collection.forEach(group => {
+                    // console.log(group)
 
-            const thing = splitGroups(selector);
-            console.log('thing', thing)
+                    // Apply the combinator.
+                    let nonDescendant = nonDescendants.filter(combinator => {
+                        return group.endsWith(combinator);
+                    });
+
+                    if (nonDescendant.length === 0) {
+                        combinator = group.endsWith(' ') ? nonDescendant = [' '] : [''];
+                        selectorPsuedoBlock = group.substring(0, group.length);
+                    } else {
+                        combinator = nonDescendant;
+                        selectorPsuedoBlock = group.substring(0, group.length - 3);
+                    }
+                    // console.log('combinator:', combinator)
+
+                    // 
+                    const attributePsuedoSplitIndex = selectorPsuedoBlock.lastIndexOf(']:');
+                    const simplePsuedoSplitIndex = selectorPsuedoBlock.indexOf(':');
+                    const simpleSelector = attributePsuedoSplitIndex >= 0 ? selectorPsuedoBlock.slice(0, attributePsuedoSplitIndex + 1) : simplePsuedoSplitIndex >= 0 ? selectorPsuedoBlock.slice(0, simplePsuedoSplitIndex) : selectorPsuedoBlock;
+                    const psuedoSelector = attributePsuedoSplitIndex >= 0 ? selectorPsuedoBlock.slice(attributePsuedoSplitIndex + 1) : simplePsuedoSplitIndex >= 0 ? selectorPsuedoBlock.slice(simplePsuedoSplitIndex) : '';
+                    const psuedoSelectors = psuedoSelector.split(':').filter(value => value !== '');
+                    const compoundPsuedo = psuedoSelectors.map(psuedoSelector => {
+                        const parts = psuedoSelector.split('(');
+                        const psuedoSelctorType = parts[0];
+                        // console.log('parts[1]', parts[1])
+                        const value = parts.length === 2 ? parts[1].substr(0, parts[1].length - 1) : null;
+                        return [psuedoSelctorType, value];
+                    });
+
+                    // Check universal
+
+
+                    const universal = simpleSelector.trim().length === 1 ? true : false
+
+                    // let cleanedSimpleSelector;
+                    let type = null;
+                    let typeSplitIndex = 0;
+                    if (universal === false) {
+                        const cleanedSimpleSelector = simpleSelector.replace(/\*/, '');
+                        const firstChar = cleanedSimpleSelector[0];
+                        const isType = firstChar !== '.' || firstChar !== '#' || firstChar !== '[';
+                        const cleanedSimpleSelectorLength = cleanedSimpleSelector.length;
+                        let typeSelector = '';
+                        
+                        if (isType === true) {
+                            console.log('cleanedSimpleSelectorLength',cleanedSimpleSelectorLength)
+                            for (let i = 0; i < cleanedSimpleSelectorLength; i++) {
+                                const char = cleanedSimpleSelector[i];
+                                const typeEnd = i > 0 && (char === '.' || char === '#' || char === '[');
+                                if (typeEnd === true) {
+                                    type = typeSelector;
+                                    typeSplitIndex = i;
+                                    break;
+                                }
+                                typeSelector = typeSelector + char;
+                            }
+                        }
+
+                        const simpleSelectorNoType = cleanedSimpleSelector.slice(typeSplitIndex);
+                        console.log('simpleSelectorNoType', simpleSelectorNoType);
+
+                        // separate Attribute selector
+
+                        // separate Id selector
+
+                        // split and store class selectors 
+                    }
+
+
+                    // console.log(group)
+                    store.push({
+                        universal,
+                        combinator: combinator[0],
+                        compoundPsuedo,
+                        compoundClasses: null,
+                        id: null,
+                        type,
+                        compoundAttributes: {
+                            '~': null,
+                            '$': null,
+                            '*': null,
+                            '|': null,
+                            '^': null,
+                            '[]': null
+                        }
+                    });
+                });
+                console.log('STORE', store);
+            }
+
+
+            const collection = splitGroups(selector);
+            const detailedCollection = setGroupDetails(collection);
+
+
             // Convert group to an object.
 
             // console.log(`|${group}|`)
