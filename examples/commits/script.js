@@ -19,8 +19,14 @@ const { collageAll } = abstract('#root');
 
 // #wonderful div:nth-child(2):nth-child(2)
 // console.log(collageAll('span[href*="http://yo.com" i ]:nth-child(bla) span:nth-child(4) > li > span > .something-else #blah ~ div + section + h1'));
-console.log(collageAll('*div[data-lang="***zh-TW"] + *span#oifwef.fsfvsd:nth-child(800) > *:target:not(#top)::before'));
-// /* view.js */
+console.log(collageAll('*[name=\'t"hi"ng\']div.one.[data-lang$="*\]\]**\[gb-EN"]two.three[class]#blah.zzzz.erfwe.egrge[data-lang~="***ru-RH"] + *span#oifwef[type*=\'bla\'].fsfvsd:nth-child(800) > *.howdy:target:not(#top)::before'));
+    /**
+        [name=\'t"hi"ng\']
+        [data-lang="*\]\]**\[gb-EN"]
+        [data-lang="**\[\]*zh-TW\["]
+        [data-lang="***ru-RH"]
+    */
+// /* view.js */    
 // const logEntry = ({ url, html_url, sha, message, name, date }) =>
 //     li({},
 //         a({ href: url, target: '_blank', class: 'commit' }, sha),

@@ -509,6 +509,13 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
                     });
 
                     // Check universal
+                    const compoundAttributes = {
+                        '~': [],
+                        '$': [],
+                        '*': [],
+                        '|': [],
+                        '^': [],
+                    }
 
 
                     const universal = simpleSelector.trim().length === 1 ? true : false
@@ -516,15 +523,18 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
                     // let cleanedSimpleSelector;
                     let type = null;
                     let typeSplitIndex = 0;
+                    let compoundClasses;
+                    let id;
                     if (universal === false) {
+
                         const cleanedSimpleSelector = simpleSelector.replace(/\*/, '');
                         const firstChar = cleanedSimpleSelector[0];
-                        const isType = firstChar !== '.' || firstChar !== '#' || firstChar !== '[';
+                        // console.log('XXXXXXXXXx', firstChar)
+                        const isType = firstChar !== '.' && firstChar !== '#' && firstChar !== '[';
                         const cleanedSimpleSelectorLength = cleanedSimpleSelector.length;
                         let typeSelector = '';
-                        
+
                         if (isType === true) {
-                            console.log('cleanedSimpleSelectorLength',cleanedSimpleSelectorLength)
                             for (let i = 0; i < cleanedSimpleSelectorLength; i++) {
                                 const char = cleanedSimpleSelector[i];
                                 const typeEnd = i > 0 && (char === '.' || char === '#' || char === '[');
@@ -536,34 +546,113 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
                                 typeSelector = typeSelector + char;
                             }
                         }
+                        const simpleSelectorNoType = isType ? cleanedSimpleSelector.slice(typeSplitIndex) : cleanedSimpleSelector;
+                        const simpleSelectorNoTypeLength = simpleSelectorNoType.length;
+                        let lastChar;
+                        const slicePoints = [];
 
-                        const simpleSelectorNoType = cleanedSimpleSelector.slice(typeSplitIndex);
-                        console.log('simpleSelectorNoType', simpleSelectorNoType);
+                        let openiingMark;
+                        let isDouble = false;
+                        let isSingle = false;
+                        let doubleIndex = -1;
+                        let singleIndex = -1;
+                        // console.log('____________________')
+                        for (let i = 0; i < simpleSelectorNoTypeLength; i++) {
+                            const char = simpleSelectorNoType[i];
+                            // console.log(char)
+                            switch (char) {
+                                case '[':
+                                    if (isDouble === false && isSingle === false) {
+                                        slicePoints.push([i + 1, -1]);
+                                    }
+                                    break;
+                                case ']':
+                                    if (isDouble === false && isSingle === false) {
+                                        slicePoints[slicePoints.length - 1][1] = i;
+                                    }
+                                    break;
+                                case '\'':
+                                    isSingle = !isSingle;
+                                    singleIndex = i;
+                                    break;
+                                case '\"':
+                                    isDouble = !isDouble;
+                                    doubleIndex = i;
+                                    break;
+                            }
 
-                        // separate Attribute selector
 
+
+                        }
+                        console.log('slicePoints', slicePoints)
+                        console.log('____________________')
+                        const attributeTokens = [];
+                        const slicePointsLength = slicePoints.length;
+                        for (let i = 0; i < slicePointsLength; i++) {
+                            const slicePoint = slicePoints[i];
+                            const token = simpleSelectorNoType.slice(...slicePoint);
+                            attributeTokens.push(token);
+                        }
+
+
+
+                        // console.log('attributeTokens', attributeTokens)
+                        let nonAttributeSelector = simpleSelectorNoType;
+                        attributeTokens.forEach(token => {
+                            nonAttributeSelector = nonAttributeSelector.replace(`[${token}]`, '');
+                        });
+
+                        // console.log('nonAttributeSelector', nonAttributeSelector)
                         // separate Id selector
+                        const idIndex = nonAttributeSelector.indexOf('#');
 
-                        // split and store class selectors 
+                        const simpleSel = nonAttributeSelector.split('#');
+                        const first = simpleSel[0].split('.');
+                        // console.log('simpleSel', simpleSel)
+                        const second = simpleSel[1] === undefined ? [] : simpleSel[1].split('.');
+                        const idArr = second.splice(0, 1)
+                        id = idArr.length > 0 ? idArr[0] : null;
+                        // console.log('id', id)
+                        // console.log('first', first)
+                        // console.log('second', second)
+                        compoundClasses = [...first, ...second].filter(value => !!value);
+
+
+
+
+                        attributeTokens.map(token => {
+                            const tokenArr = token.split('=');
+
+                            const cleanValue = tokenArr[1] ? tokenArr[1].slice(0, -1).substring(1) : [];
+                            const cleanKey = tokenArr[0] ? tokenArr[0] : tokenArr[0];
+                            // console.log('cleanValue', cleanKey, cleanValue, )
+
+                            // Check the attribute type: 
+                            const type = cleanKey[cleanKey.length - 1];
+                            const symbol = ['*', '^', '$', '|', '~'].filter(value => type === value).find(a => a);
+
+
+                            if (symbol !== undefined) {
+                                compoundAttributes[symbol].push([cleanKey.slice(0, -1), cleanValue]);
+                            } else {
+                                if (!Array.isArray(compoundAttributes)) {
+                                    compoundAttributes['='] = []
+                                }
+                                compoundAttributes['='].push([cleanKey, cleanValue]);
+                            }
+                        })
                     }
 
-
+                    // console.log('compoundAttributes', compoundAttributes)
                     // console.log(group)
                     store.push({
                         universal,
                         combinator: combinator[0],
                         compoundPsuedo,
-                        compoundClasses: null,
-                        id: null,
+                        compoundClasses,
+                        id,
                         type,
-                        compoundAttributes: {
-                            '~': null,
-                            '$': null,
-                            '*': null,
-                            '|': null,
-                            '^': null,
-                            '[]': null
-                        }
+                        compoundAttributes
                     });
                 });
                 console.log('STORE', store);
