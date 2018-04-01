@@ -348,7 +348,7 @@ const createWaveNode = (element, definedAttributes, childNodes, isSVG) => {
 
 
 const match = {
-    contains(haystack, needle){
+    contains(haystack, needle) {
         return needle.every(elem => haystack.indexOf(elem) > -1);
     }
 }
@@ -361,7 +361,7 @@ const match = {
  * @returns {Object} waveNode
  */
 const find = (searchDetails, waveNode, searchType = 'first') => {
-    console.log(searchDetails, waveNode, searchType);
+    // console.log('Find', searchDetails, searchType);
 
     const searchModel = {
         t: 'H1',
@@ -369,29 +369,66 @@ const find = (searchDetails, waveNode, searchType = 'first') => {
         ch: null
     }
 
-
-
-    const deepSearch = (nodeLevel, searchDetails) => {
-            const {contains} = match;
-        if(nodeLevel.at !== undefined){
-            
-            // Match compound classes.
-            if(nodeLevel.at.class !== undefined){
-                const classes = nodeLevel.at.class.split(' ');
-                const classesToMatch = searchDetails.compoundClasses;
-
-                // Classes contains at-least all classesToMatch.
-                const hasClasses = contains(classes, classesToMatch);
-
-            }
+    // Root node will change per selector group.
+    let rootNode = waveNode;
+    const results = [];
+    const deepSearch = (nodeLevel, searchDetails, lastResults) => {
+        if(nodeLevel === undefined){
+            return ['lastResults', lastResults]
         }
 
 
-        
+        // const {contains} = match;
+        // if(nodeLevel.at !== undefined){
 
+        // Match compound classes.
+        // if(nodeLevel.at.class !== undefined){
+        //     const classes = nodeLevel.at.class.split(' ');
+        //     const classesToMatch = searchDetails.compoundClasses;
 
+        //     // Classes contains at-least all classesToMatch.
+        //     const hasClasses = contains(classes, classesToMatch);
+
+        // }
+        // }
+
+        // Is Universal.
+
+        if (searchDetails.universal === true) {
+            if (nodeLevel.ch === undefined) {
+                return [];
+            } else {
+                results.push(nodeLevel);
+                const childNodes = nodeLevel.ch;
+                const childNodesLength = childNodes.length;
+                for (let i = 0; i < childNodesLength; i++) {
+                    const child = childNodes[i];
+                    deepSearch(child, searchDetails);
+                }
+            }
+
+        }
+        return results;
     }
-    deepSearch(waveNode, searchDetails);
+
+    // deepSearch(waveNode, searchDetails);
+
+
+    const finalResults = searchDetails.reduce((acc, selectorGroup, i) => {
+        let val;
+        
+        if (i === 0) {
+            val = deepSearch(waveNode, selectorGroup);
+        } else {
+            val = deepSearch(undefined, selectorGroup, acc[i - 1])
+        }
+
+        acc.push(val)
+        return acc
+    }, [])
+    // return results;
+
+    return finalResults;
 }
 
 
@@ -464,7 +501,7 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
         // },
         collageAll(selector) {
             const collection = splitGroups(selector);
-            // console.log('collection...', collection)
+            console.log('splitGroups', collection)
             const searchDetails = setGroupDetails(collection);
             console.log('searchDetails', searchDetails)
             const results = find(searchDetails, waveNode, 'all');

@@ -45,11 +45,15 @@ const splitGroups = (selector, groupsTemp = []) => {
     const combinatorNextChar = selectorTrimmed[combinatorIndex + 1];
     // Is it a non-descendant combinator.
     const isNonDescendant = combinatorNextChar === '>' || combinatorNextChar === '+' || combinatorNextChar === '~';
+    console.log('isNonDescendant', isNonDescendant)
     const toSliceIndex = isNonDescendant === true ? combinatorIndex + 3 : combinatorIndex + 1;
     // A group is a set of simple selectors, pseudo selectors and a combinator. All parts are optional.
-    const group = selectorTrimmed.slice(0, toSliceIndex);
+
+    const isUniversal = selectorTrimmed.startsWith('* ');
+
+    const group = isUniversal ? '* ' : selectorTrimmed.slice(0, toSliceIndex);
     // The remaining selector string to be processed.
-    const remainder = selectorTrimmed.slice(toSliceIndex);
+    const remainder = isUniversal ? selectorTrimmed.slice(1) : selectorTrimmed.slice(toSliceIndex);
     // A collection of groups.
     groupsTemp.push(group);
 
