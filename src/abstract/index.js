@@ -360,55 +360,62 @@ const match = {
  * @param {string} searchType - all or first search type.
  * @returns {Object} waveNode
  */
-const find = (searchDetails, waveNode, searchType = 'first') => {
+const find = (partialSearchDetails, waveNode, searchType = 'first') => {
+    // Informs deepsearch to start from the root.
+    const searchDetails = ['root', ...partialSearchDetails];
+
+    console.log('find:searchDetails', searchDetails)
+
     // console.log('Find', searchDetails, searchType);
 
-    const searchModel = {
-        t: 'H1',
-        at: null,
-        ch: null
-    }
+
 
     // Root node will change per selector group.
     let rootNode = waveNode;
-    const results = [];
-    const deepSearch = (nodeLevel, searchDetails, lastResults) => {
-        if(nodeLevel === undefined){
-            return ['lastResults', lastResults]
-        }
+    let lastParent;
+    const deepSearch = (nodeLevel, searchDetails) => {
+        const collection = [];
+        const loop = (nodeLevel, searchDetails) => {
+            // If Root.
+            // console.log('searchDetails', searchDetails)
+            if (searchDetails === 'root') {
+                lastParent = waveNode;
+                collection.push(waveNode);
+            }
+
+            if (nodeLevel === undefined) {
+                return ['lastResults', null]
+            }
 
 
-        // const {contains} = match;
-        // if(nodeLevel.at !== undefined){
-
-        // Match compound classes.
-        // if(nodeLevel.at.class !== undefined){
-        //     const classes = nodeLevel.at.class.split(' ');
-        //     const classesToMatch = searchDetails.compoundClasses;
-
-        //     // Classes contains at-least all classesToMatch.
-        //     const hasClasses = contains(classes, classesToMatch);
-
-        // }
-        // }
-
-        // Is Universal.
-
-        if (searchDetails.universal === true) {
-            if (nodeLevel.ch === undefined) {
-                return [];
-            } else {
-                results.push(nodeLevel);
-                const childNodes = nodeLevel.ch;
-                const childNodesLength = childNodes.length;
-                for (let i = 0; i < childNodesLength; i++) {
-                    const child = childNodes[i];
-                    deepSearch(child, searchDetails);
+            // Is Universal.
+            if (searchDetails.universal === true) {
+                if (Array.isArray(nodeLevel)) {
+                    nodeLevel.forEach(node => {
+                        // console.log('node', node)
+                        if (node.ch === undefined) {
+                            collection.push([]);
+                        } else {
+                            // Add node to collection.
+                            collection.push(node);
+                            const childNodes = node.ch;
+                            const childNodesLength = childNodes.length;
+                            for (let i = 0; i < childNodesLength; i++) {
+                                const child = childNodes[i];
+                                loop([child], searchDetails);
+                            }
+                        }
+                    });
                 }
             }
 
+
+            // 
+
         }
-        return results;
+
+        loop(nodeLevel, searchDetails);
+        return collection;
     }
 
     // deepSearch(waveNode, searchDetails);
@@ -416,17 +423,18 @@ const find = (searchDetails, waveNode, searchType = 'first') => {
 
     const finalResults = searchDetails.reduce((acc, selectorGroup, i) => {
         let val;
-        
+
         if (i === 0) {
             val = deepSearch(waveNode, selectorGroup);
         } else {
-            val = deepSearch(undefined, selectorGroup, acc[i - 1])
+            val = deepSearch(acc[i - 1], selectorGroup)
         }
 
-        acc.push(val)
+        // val = deepSearch(waveNode, selectorGroup);
+
+        acc.push(val);
         return acc
-    }, [])
-    // return results;
+    }, []);
 
     return finalResults;
 }
@@ -501,12 +509,12 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
         // },
         collageAll(selector) {
             const collection = splitGroups(selector);
-            console.log('splitGroups', collection)
+            // console.log('splitGroups', collection)
             const searchDetails = setGroupDetails(collection);
-            console.log('searchDetails', searchDetails)
+            // console.log('searchDetails', searchDetails)
             const results = find(searchDetails, waveNode, 'all');
 
-            console.log('Results', results);
+            // console.log('Results', results);
         }
     }
 

@@ -53,18 +53,24 @@ const setEach = group => {
         const firstChar = cleanedSimpleSelector[0];
         // Check if the first character identifies as a selector type
         const isType = firstChar !== '.' && firstChar !== '#' && firstChar !== '[';
+        console.log('isType', isType)
         // The type selector string to be built. 
         let typeSelector = '';
 
         if (isType === true) {
             for (let i = 0; i < cleanedSimpleSelectorLength; i++) {
                 const char = cleanedSimpleSelector[i];
-                const typeEnd = i > 0 && (char === '.' || char === '#' || char === '[');
+                const isEndofPart = i === cleanedSimpleSelectorLength - 1;
+                console.log('isEndofPart', isEndofPart)
+                const typeEnd = i > 0 && ((char === '.' || char === '#' || char === '[') || isEndofPart);
+                // console.log('typeEnd', i, char, typeEnd)
                 if (typeEnd === true) {
+                    console.log('typeENDDD:', typeSelector)
                     type = typeSelector;
-                    typeSplitIndex = i;
+                    typeSplitIndex = isEndofPart ? cleanedSimpleSelectorLength  : i;
                     break;
                 }
+
                 typeSelector += char;
             }
         }
