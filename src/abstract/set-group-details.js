@@ -63,9 +63,8 @@ const setEach = group => {
                 const isEndofPart = i === cleanedSimpleSelectorLength - 1;
                 console.log('isEndofPart', isEndofPart)
                 const typeEnd = i > 0 && ((char === '.' || char === '#' || char === '[') || isEndofPart);
-                // console.log('typeEnd', i, char, typeEnd)
+
                 if (typeEnd === true) {
-                    console.log('typeENDDD:', typeSelector)
                     type = typeSelector;
                     typeSplitIndex = isEndofPart ? cleanedSimpleSelectorLength  : i;
                     break;

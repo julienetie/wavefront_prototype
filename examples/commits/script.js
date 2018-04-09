@@ -20,7 +20,7 @@ const { collageAll } = abstract('#root');
 // #wonderful div:nth-child(2):nth-child(2)
 // console.log(collageAll('span[href*="http://yo.com" i ]:nth-child(bla) span:nth-child(4) > li > span > .something-else #blah ~ div + section + h1'));
 // console.log(collageAll('*[name=\'t"hi"ng\']div.one.[data-lang$="*\]\]**\[gb-EN"]two.three[class]#blah.zzzz.erfwe.egrge[data-lang~="***ru-RH"] + *span#oifwef[type*=\'bla\'].fsfvsd:nth-child(800) > *.howdy:target:not(#top)::before'));
-console.log(collageAll('* label.hello.howAreyou#Idendity[name^=what]'));
+console.log(collageAll('* label#dev'));
     /**
         [name=\'t"hi"ng\']
         [data-lang="*\]\]**\[gb-EN"]

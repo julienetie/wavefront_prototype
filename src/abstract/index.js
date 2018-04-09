@@ -152,199 +152,6 @@ const createWaveNode = (element, definedAttributes, childNodes, isSVG) => {
 }
 
 
-// const getSelectorPartType = selector => {
-//     /*
-//         https://developer.mozilla.org/en-US/docs/Web/CSS/Type_selectors
-//         type selector 
-//         a
-//     */
-
-
-//     /*
-//         https://developer.mozilla.org/en-US/docs/Web/CSS/Class_selectors
-//         .spacious
-//         li.spacious
-//         li.spacious.elegant
-//     */
-
-//     /*
-//         https://developer.mozilla.org/en-US/docs/Web/CSS/ID_selectors
-//         # Id selector 
-//         #
-//     */
-
-
-//         https://developer.mozilla.org/en-US/docs/Web/CSS/Universal_selectors
-//         # Universal selector:
-//         ns|* - matches all elements in namespace ns
-//         *|* - matches all elements
-//         |* - matches all elements without any declared namespace
-
-
-//     /*
-//         https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors
-//         # Attribute selector:
-//         [attr]
-//         [attr=value]
-//         [attr~=value]
-//         [attr|=value]
-//         [attr^=value]
-//         [attr$=value]
-//         [attr*=value]
-//     */
-//     const prefix = selector[0];
-//     switch (prefix) {
-//         case '.': // Class
-//             return 'class';
-//         case '#': // id
-//             return 'id';
-//         default: // tag
-//             return selector.indexOf('[') === -1 ? 'type' : 'attribute';
-//     }
-// }
-
-// const unprefixSelector = selector => {
-//     const prefix = selector[0];
-//     switch (prefix) {
-//         case '.': // Class
-//             return selector.replace(/\./g, ' ').trim();
-//         case '#': // id
-//             return selector.substr(1);
-//         default: // tag
-//             return selector;
-//     }
-// }
-
-// const getByAttributeOperator = (searchByAttribute, operator, attributeSensitive, needleSensitive, isInsensitive) => {
-//     const attribute = isInsensitive ? attributeSensitive.toLowerCase() : attributeSensitive;
-//     const needle = isInsensitive ? needleSensitive.toLowerCase() : needleSensitive;
-//     if (searchByAttribute === true) {
-//         return attribute !== undefined;
-//     }
-//     switch (operator) {
-//         case '~': // [attr~=value]
-//             return containsWord(attribute, needle);
-//         case '|': // [attr|=value]
-//             return attribute === needle || attribute.startsWith(`${needle}-`);
-//         case '^': // [attr^=value]
-//             return attribute.startsWith(needle);
-//         case '$': // [attr$=value]
-//             return attribute.endsWith(needle);
-//         case '*': // [attr*=value]
-//             return attribute.indexOf(needle) >= 0;
-//         default:
-//             // [attr=value]
-//             return attribute === needle;
-//     }
-// }
-
-
-
-// const find = (typeSelector, pseudoRule, type, waveNode, searchType = 'first') => {
-//     const cacheResults = [];
-//     let recursion = true;
-//     const all = searchType === 'all';
-//     let final;
-//     const deepSearch = (nodeLevel, value) => {
-
-//         const isType = type === 'type';
-//         if (isType && nodeLevel.t === value) {
-//             cacheResults.push(nodeLevel);
-//             if (all === false) {
-//                 recursion = false;
-//                 return;
-//             }
-//         }
-
-//         const isClass = type === 'class';
-//         if (isClass && nodeLevel.at && nodeLevel.at.class && nodeLevel.at.class.indexOf(typeSelector) >= 0) {
-//             cacheResults.push(nodeLevel);
-//             if (all === false) {
-//                 recursion = false;
-//                 return;
-//             }
-//         }
-
-
-//         const isId = type === 'id';
-//         if (isId && nodeLevel.at && nodeLevel.at.id && nodeLevel.at.id === typeSelector) {
-//             cacheResults.push(nodeLevel);
-//             if (all === false) {
-//                 recursion = false;
-//                 return;
-//             }
-//         }
-
-
-//         const isAttribute = type === 'attribute';
-//         const cleanedSelector = typeSelector.replace(/ /g, '');
-//         const isInsensitive = cleanedSelector.indexOf('i]') >= 0;
-//         const attrSelector = isInsensitive ? cleanedSelector.replace(/i]/, ']') : cleanedSelector;
-//         // console.log('attrSelector', attrSelector)
-
-//         const tagType = (attrSelector.split('[')[0]).toUpperCase();
-
-
-
-//         const searchByAttribute = attrSelector.indexOf('=') === -1;
-
-//         const attrSpecial = searchByAttribute ? attrSelector.split('[')[1].split(']')[0] : attrSelector.split('=')[0].split('[')[1];
-//         const attr = attrSpecial.replace(/[^\w\s]/gi, '');
-//         const valueStartIndex = attrSelector.indexOf('=') + 2;
-//         const valueEndIndex = attrSelector.lastIndexOf(']') - 1;
-
-
-
-//         // console.log(attr)
-//         const attrValue = attrSelector.substring(valueStartIndex, valueEndIndex); //@TODO This is cheap not reliable 
-//         const attrOperator = attrSelector[attrSelector.indexOf('=') - 1];
-//         // console.log('attrSelector', attrOperator)
-//         if (isAttribute && nodeLevel.t === tagType && nodeLevel.at) {
-//             // console.log('attr', attr)
-//             const matchByAttribute = getByAttributeOperator(
-//                 searchByAttribute,
-//                 attrOperator,
-//                 nodeLevel.at[attr] || '',
-//                 attrValue,
-//                 isInsensitive
-//             );
-//             if (matchByAttribute) {
-//                 cacheResults.push(nodeLevel);
-//                 if (all === false) {
-//                     recursion = false;
-//                     return;
-//                 }
-//             }
-//         }
-
-
-//         if (nodeLevel.ch !== undefined) {
-//             const childLength = nodeLevel.ch === undefined ? 0 : nodeLevel.ch.length;
-//             for (let i = 0; i < childLength; i++) {
-//                 if (recursion === true) {
-//                     deepSearch(nodeLevel.ch[i], value);
-//                 }
-//             }
-//         }
-//         // console.log('cacheResults',cacheResults)
-//         final = cacheResults;
-//     }
-
-//     const value = type === 'type' ? typeSelector.toUpperCase() : null;
-
-//     deepSearch(waveNode, value);
-//     // Find by tag
-//     // Find by class
-
-//     // Find by id
-
-//     // Find by attribute
-
-//     // Find by Text
-//     // console.log(final)
-//     return final;
-// }
-
 
 
 const match = {
@@ -373,20 +180,34 @@ const find = (partialSearchDetails, waveNode, searchType = 'first') => {
     // Root node will change per selector group.
     let rootNode = waveNode;
     let lastParent;
+
     const deepSearch = (nodeLevel, searchDetails) => {
         const collection = [];
+        console.log('sss', searchDetails)
+        const isRoot = searchDetails === 'root';
+        const requirements = isRoot ? []:  Object.keys(searchDetails).map(key => {
+            const value = searchDetails[key];
+            // Is Array
+            if (Array.isArray(value)) {
+                return value.length === 0 ? null : key;
+            }
+            // Is Object
+            if (((value) + '').endsWith('Object]')) {
+                return null; // update later.
+            }
+            // Strings
+            return !!searchDetails[key] ? key : null;
+        }).filter(value => !!value)
+        console.log('requirements', requirements)
+        
+
         const loop = (nodeLevel, searchDetails) => {
+            const conditions = []; 
             // If Root.
-            // console.log('searchDetails', searchDetails)
             if (searchDetails === 'root') {
                 lastParent = waveNode;
                 collection.push(waveNode);
             }
-
-            if (nodeLevel === undefined) {
-                return ['lastResults', null]
-            }
-
 
             // Is Universal.
             if (searchDetails.universal === true) {
@@ -409,8 +230,46 @@ const find = (partialSearchDetails, waveNode, searchType = 'first') => {
                 }
             }
 
+            // Has type match
+            if(requirements.includes('type')){
+              const hasType = nodeLevel.t === searchDetails.type.toUpperCase();
+              conditions.push(hasType);
+            }
 
-            // 
+            // Has Id match
+            if(requirements.includes('id')){
+              const hasId = nodeLevel.at && nodeLevel.at.id 
+              ? nodeLevel.at.id === searchDetails.id : false;
+              conditions.push(hasId);
+            }
+
+
+
+
+
+            const typeLowerCase = searchDetails.type;
+            if (typeof typeLowerCase === 'string') {
+                const type = typeLowerCase.toUpperCase();
+                nodeLevel.forEach(node => {
+                    if (node.t === type) {
+                        collection.push(node);
+                    }
+                })
+            }
+
+            /** 
+    
+            if 
+            searchDetails {}
+            type classes id 
+
+            
+
+
+
+
+
+            */
 
         }
 
@@ -422,18 +281,10 @@ const find = (partialSearchDetails, waveNode, searchType = 'first') => {
 
 
     const finalResults = searchDetails.reduce((acc, selectorGroup, i) => {
-        let val;
-
-        if (i === 0) {
-            val = deepSearch(waveNode, selectorGroup);
-        } else {
-            val = deepSearch(acc[i - 1], selectorGroup)
-        }
-
-        // val = deepSearch(waveNode, selectorGroup);
-
+        const firstParam = i === 0 ? waveNode : acc[i - 1];
+        const val = deepSearch(firstParam, selectorGroup);
         acc.push(val);
-        return acc
+        return acc;
     }, []);
 
     return finalResults;
@@ -514,7 +365,7 @@ const abstract = (interfaceSelector, whitespaceRules = 'trim') => {
             // console.log('searchDetails', searchDetails)
             const results = find(searchDetails, waveNode, 'all');
 
-            // console.log('Results', results);
+            console.log('Results', results);
         }
     }
 
